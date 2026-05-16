@@ -2,9 +2,11 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Search, ScanLine, Plus } from 'lucide-react-native';
 import Svg, { Circle } from 'react-native-svg';
+import { useRouter } from 'expo-router';
 import { useNutrition } from '../../hooks/useNutrition';
 
 export default function NutritionScreen() {
+  const router = useRouter();
   const { data: nutrition, isLoading } = useNutrition();
 
   if (isLoading || !nutrition) {
@@ -109,7 +111,10 @@ export default function NutritionScreen() {
                 {meal.calories > 0 ? (
                   <Text style={styles.mealCals}>{meal.calories} <Text style={styles.mealCalsLabel}>kcal</Text></Text>
                 ) : (
-                  <TouchableOpacity style={styles.addBtn}>
+                  <TouchableOpacity 
+                    style={styles.addBtn}
+                    onPress={() => router.push({ pathname: '/addMeal', params: { mealName: meal.name } })}
+                  >
                     <Plus size={16} color="#D2FF00" strokeWidth={3} />
                   </TouchableOpacity>
                 )}

@@ -8,6 +8,8 @@ export interface UserProfile {
   height: number;       // cm
   weight: number;       // kg
   weightHistory: { value: number; date: string }[];
+  progressPhotos: { url: string; date: string }[];
+  measurements?: { chest?: number; waist?: number; arms?: number; legs?: number; date: string }[];
   age: number;
   bmi: number;
   bmiHistory: { value: number; date: string }[];

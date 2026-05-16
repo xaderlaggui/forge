@@ -108,6 +108,8 @@ function RootLayoutNav() {
           <Stack.Screen name="(onboarding)" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="addMeal" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="measurements" options={{ presentation: 'modal' }} />
         </Stack>
       </ThemeProvider>
     </QueryClientProvider>
