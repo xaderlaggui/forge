@@ -6,13 +6,13 @@ import { getStorage } from 'firebase/storage';
 // 🔧 Replace these values with your Firebase project config
 // Firebase Console → Project Settings → Your apps → SDK setup
 const firebaseConfig = {
-  apiKey: "AIzaSyB6n6NvTj-bQ-MCEM4Gz1ii_mG1X-QN2Yg",
-  authDomain: "fitness-app-3f79e.firebaseapp.com",
-  projectId: "fitness-app-3f79e",
-  storageBucket: "fitness-app-3f79e.firebasestorage.app",
-  messagingSenderId: "424926447189",
-  appId: "1:424926447189:web:036dba4c97a289f0be76dc",
-  measurementId: "G-PSE5BS252F"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 // Prevent re-initialization during hot reload
