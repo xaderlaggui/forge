@@ -11,6 +11,9 @@ import { doc, getDoc } from 'firebase/firestore';
 import { useColorScheme } from '@/components/useColorScheme';
 import { auth, db } from '@/services/firebase';
 import { useAuthStore } from '@/stores/authStore';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 export { ErrorBoundary } from 'expo-router';
 
