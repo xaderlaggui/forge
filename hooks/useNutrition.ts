@@ -26,9 +26,10 @@ export function useNutrition(dateStr: string = dayjs().format('YYYY-MM-DD')) {
       return {
         date: dateStr,
         meals: [
-          { name: "Breakfast", calories: 0, protein: 0, carbs: 0, fat: 0 },
-          { name: "Lunch", calories: 0, protein: 0, carbs: 0, fat: 0 },
-          { name: "Dinner", calories: 0, protein: 0, carbs: 0, fat: 0 },
+          { name: 'Breakfast', calories: 0, protein: 0, carbs: 0, fat: 0 },
+          { name: 'Lunch',     calories: 0, protein: 0, carbs: 0, fat: 0 },
+          { name: 'Dinner',   calories: 0, protein: 0, carbs: 0, fat: 0 },
+          { name: 'Snacks',   calories: 0, protein: 0, carbs: 0, fat: 0 },
         ],
         waterMl: 0,
         totalCalories: 0
@@ -48,5 +49,5 @@ export function useNutrition(dateStr: string = dayjs().format('YYYY-MM-DD')) {
     }
   });
 
-  return { ...query, updateNutrition: mutation.mutate };
+  return { ...query, updateNutrition: mutation.mutateAsync };
 }

@@ -34,7 +34,12 @@ export default function SplashScreen() {
     opacity: glowOpacity.value,
   }));
 
-  const navigate = () => router.replace('/(auth)/welcome');
+  const navigated = useRef(false);
+  const navigate = () => {
+    if (navigated.current) return;
+    navigated.current = true;
+    router.replace('/(auth)/welcome');
+  };
 
   const fadeAnim = useRef(new RNAnimated.Value(0)).current;
 

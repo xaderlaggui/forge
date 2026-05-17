@@ -76,12 +76,12 @@ function RootLayoutNav() {
   useEffect(() => {
     if (isLoading) return;
 
-    const inAuthGroup      = segments[0] === '(auth)';
+    const inAuthGroup       = segments[0] === '(auth)';
     const inOnboardingGroup = segments[0] === '(onboarding)';
-    const inSplash         = segments[0] === 'splash';
+    const inSplash          = segments[0] === 'splash';
 
-    // Don't redirect while splash is animating
-    if (inSplash) return;
+    // Don't redirect while splash is animating or segments haven't resolved yet
+    if (inSplash || !segments[0]) return;
 
     if (!user && !inAuthGroup) {
       router.replace('/(auth)/welcome');

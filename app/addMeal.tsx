@@ -9,13 +9,35 @@ import type { Meal } from '../types';
 
 export default function AddMealScreen() {
   const router = useRouter();
-  const { mealName } = useLocalSearchParams();
+  const { mealName: mealNameParam } = useLocalSearchParams();
   const { data: nutrition, updateNutrition } = useNutrition();
+
+  // Auto-detect meal slot from time of day if no param passed
+  const getDefaultMealSlot = () => {
+    const h = new Date().getHours();
+    if (h >= 5  && h < 11) return 'Breakfast';
+    if (h >= 11 && h < 16) return 'Lunch';
+    if (h >= 16 && h < 21) return 'Dinner';
+    return 'Snacks';
+  };
+  const mealName = (mealNameParam as string) || getDefaultMealSlot();
 
   const [description, setDescription] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzed, setAnalyzed] = useState(false);
   const [wasAiAnalyzed, setWasAiAnalyzed] = useState(false);
+  // Resolved meal slot — starts from param/time-of-day, can be overridden by description keywords
+  const [resolvedMealName, setResolvedMealName] = useState(mealName);
+
+  /** Scan free-text for meal-slot keywords and return the canonical slot name, or null if none found */
+  const detectMealSlotFromText = (text: string): string | null => {
+    const lower = text.toLowerCase();
+    if (/\bbreakfast\b/.test(lower)) return 'Breakfast';
+    if (/\blunch\b/.test(lower))     return 'Lunch';
+    if (/\bdinner\b/.test(lower))    return 'Dinner';
+    if (/\bsnack(s)?\b/.test(lower)) return 'Snacks';
+    return null;
+  };
 
   // Form State
   const [foodName, setFoodName] = useState('');
@@ -32,6 +54,10 @@ export default function AddMealScreen() {
       Alert.alert('Empty', 'Please describe what you ate first.');
       return;
     }
+
+    // Override meal slot if user mentioned it in the description
+    const detectedSlot = detectMealSlotFromText(description);
+    if (detectedSlot) setResolvedMealName(detectedSlot);
 
     setIsAnalyzing(true);
     try {
@@ -91,7 +117,7 @@ No markdown formatting, no backticks, just raw JSON.`
     }
 
     try {
-      const targetMealName = (mealName as string) || 'Snack';
+      const targetMealName = resolvedMealName;
       const existingMeals = nutrition?.meals || [];
 
       const mealIdx = existingMeals.findIndex(m => m.name === targetMealName);
@@ -153,7 +179,7 @@ No markdown formatting, no backticks, just raw JSON.`
         <TouchableOpacity onPress={() => router.back()} style={s.iconBtn}>
           <X size={24} color={T.colors.t1} />
         </TouchableOpacity>
-        <Text style={s.title}>LOG <Text style={{ color: T.colors.forge }}>{((mealName as string) || 'MEAL').toUpperCase()}</Text></Text>
+        <Text style={s.title}>LOG <Text style={{ color: T.colors.forge }}>{resolvedMealName.toUpperCase()}</Text></Text>
         <View style={{ width: 40 }} />
       </View>
 
