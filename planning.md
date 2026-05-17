@@ -207,8 +207,8 @@ fitapp/
 
 ---
 
-### Phase 4 — Advanced *(weeks 9–11)*
-- [ ] AI coach via Google Gemini API (Free Tier)
+### Phase 4 — Advanced Features *(weeks 8–10)*
+- [x] Google Gemini Free Tier integration for daily tips
 - [ ] Leaderboard with friend system
 - [ ] Wearable sync (HealthKit & Health Connect)
 - [ ] Barcode scanning for food
