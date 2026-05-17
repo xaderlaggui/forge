@@ -57,7 +57,11 @@ export default function NutritionScreen() {
       {/* ── Composition: Daily Stats ── */}
       <DailyCalorieSummary aggregates={aggregates} />
       <MacroBreakdown aggregates={aggregates} />
-      <HydrationTracker aggregates={aggregates} />
+      <HydrationTracker 
+        aggregates={aggregates} 
+        waterMl={nutrition.waterMl || 0} 
+        updateNutrition={updateNutrition} 
+      />
 
       {/* ── Composition: Meals ── */}
       {nutrition.totalCalories === 0 && (

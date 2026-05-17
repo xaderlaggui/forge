@@ -32,6 +32,7 @@ export interface Exercise {
   muscleGroups: string[];
   equipment: string;     // e.g. 'barbell', 'bodyweight'
   difficulty: 'beginner' | 'intermediate' | 'advanced';
+  purpose?: 'strength' | 'hypertrophy' | 'endurance' | 'mixed';
   instructions: string[];
   videoUrl?: string;
 }

@@ -9,6 +9,7 @@ import { useProgressData } from '../../features/progress/hooks/useProgressData';
 import { StatCard } from '../../features/progress/components/StatCard';
 import { MeasurementCard } from '../../features/progress/components/MeasurementCard';
 import { WeightChart } from '../../features/progress/components/WeightChart';
+import { VolumeChart } from '../../features/progress/components/VolumeChart';
 import { ProgressPhotos } from '../../features/progress/components/ProgressPhotos';
 
 export default function ProgressScreen() {
@@ -18,6 +19,7 @@ export default function ProgressScreen() {
   const {
     user, timeframe, setTimeframe,
     lineData, currentWeight, startWeight, weightDiff, minVal, maxVal,
+    volumeLineData, currentVolume, volumeDiff, minVol, maxVol,
     latest, prev,
     firstPhoto, lastPhoto,
     isUploading, takePhoto
@@ -66,6 +68,15 @@ export default function ProgressScreen() {
           <MeasurementCard label="Legs"  value={latest?.legs}  prevValue={prev?.legs}  onPress={() => router.push('/measurements')} />
         </View>
       </View>
+
+      {/* ── Composition: Progressive Overload ── */}
+      <VolumeChart 
+        volumeLineData={volumeLineData} 
+        currentVolume={currentVolume} 
+        volumeDiff={volumeDiff} 
+        minVol={minVol} 
+        maxVol={maxVol} 
+      />
 
       {/* ── Composition: Transformation ── */}
       <ProgressPhotos 

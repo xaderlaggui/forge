@@ -8,6 +8,7 @@ import { auth } from '../../services/firebase';
 import { useAuthStore } from '../../stores/authStore';
 import { seedExercises } from '../../utils/seedData';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 
 // ─── Sub-component ─────────────────────────────────────────
@@ -30,6 +31,7 @@ function SettingRow({ icon, label, onPress, isDanger = false }: { icon: React.Re
 export default function SettingsScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const queryClient = useQueryClient();
   const [seeding, setSeeding] = useState(false);
 
   const handleLogout = async () => {
@@ -49,6 +51,7 @@ export default function SettingsScreen() {
     try {
       setSeeding(true);
       const count = await seedExercises();
+      queryClient.invalidateQueries({ queryKey: ['exercises'] });
       Alert.alert('Success', `Seeded ${count} exercises to Firestore!`);
     } catch (error: any) {
       Alert.alert('Error', error.message);

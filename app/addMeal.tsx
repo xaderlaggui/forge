@@ -48,6 +48,7 @@ export default function AddMealScreen() {
   const [fat, setFat] = useState('');
   const [fiber, setFiber] = useState('');
   const [sugar, setSugar] = useState('');
+  const [waterMl, setWaterMl] = useState('');
 
   const analyzeMeal = async () => {
     if (!description.trim()) {
@@ -74,7 +75,8 @@ Respond ONLY with a valid, parsable JSON object containing exactly these keys:
 "carbs" (number, in grams),
 "fat" (number, in grams),
 "fiber" (number, in grams),
-"sugar" (number, in grams).
+"sugar" (number, in grams),
+"waterMl" (number, in milliliters. Convert glasses/cups to ml. 1 glass = ~250ml).
 No markdown formatting, no backticks, just raw JSON.`
         },
         {
@@ -98,6 +100,7 @@ No markdown formatting, no backticks, just raw JSON.`
       setFat(String(parsed.fat || 0));
       setFiber(String(parsed.fiber || 0));
       setSugar(String(parsed.sugar || 0));
+      setWaterMl(String(parsed.waterMl || 0));
 
       setAnalyzed(true);
       setWasAiAnalyzed(true);
@@ -164,7 +167,8 @@ No markdown formatting, no backticks, just raw JSON.`
 
       await updateNutrition({
         meals: updatedMeals,
-        totalCalories: (nutrition?.totalCalories || 0) + newMealData.calories
+        totalCalories: (nutrition?.totalCalories || 0) + newMealData.calories,
+        waterMl: (nutrition?.waterMl || 0) + (Number(waterMl) || 0)
       });
 
       router.back();
@@ -255,6 +259,14 @@ No markdown formatting, no backticks, just raw JSON.`
                 <Text style={s.label}>SUGAR (g)</Text>
                 <TextInput style={s.input} value={sugar} onChangeText={setSugar} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
               </View>
+            </View>
+
+            <View style={s.macroRow}>
+              <View style={s.macroCol}>
+                <Text style={s.label}>WATER (ml)</Text>
+                <TextInput style={s.input} value={waterMl} onChangeText={setWaterMl} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+              </View>
+              <View style={s.macroCol} />
             </View>
 
             <TouchableOpacity style={s.saveBtn} onPress={handleSave}>

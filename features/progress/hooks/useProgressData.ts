@@ -5,10 +5,13 @@ import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { db, storage } from '../../../services/firebase';
 import { useAuthStore } from '../../../stores/authStore';
+import { useWorkouts } from '../../../hooks/useWorkouts';
 import { WeightEntry, MeasurementEntry } from '../types';
+import dayjs from 'dayjs';
 
 export function useProgressData() {
   const { user } = useAuthStore();
+  const { workouts } = useWorkouts();
   const [timeframe, setTimeframe] = useState('1M');
   const [isUploading, setIsUploading] = useState(false);
 
@@ -37,6 +40,26 @@ export function useProgressData() {
   
   const firstPhoto = photos.length > 0 ? photos[0] : null;
   const lastPhoto  = photos.length > 0 ? photos[photos.length - 1] : null;
+
+  // ── Progressive Overload (Volume) ──
+  const sortedWorkouts = [...(workouts || [])].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  
+  const volumeLineData = sortedWorkouts.length > 0 
+    ? sortedWorkouts.map(w => {
+        let totalVol = 0;
+        w.exercises.forEach(ex => {
+          ex.sets.forEach(set => totalVol += (set.weight || 0) * (set.reps || 0));
+        });
+        return { value: totalVol, label: dayjs(w.date).format('MM/DD') };
+      })
+    : [{ value: 0, label: 'No Data' }];
+
+  const currentVolume = volumeLineData.length > 0 ? volumeLineData[volumeLineData.length - 1].value : 0;
+  const prevVolume    = volumeLineData.length > 1 ? volumeLineData[volumeLineData.length - 2].value : 0;
+  const volumeDiff    = currentVolume - prevVolume;
+  
+  const minVol = volumeLineData.length > 0 ? Math.min(...volumeLineData.map(v => v.value)) : 0;
+  const maxVol = volumeLineData.length > 0 ? Math.max(...volumeLineData.map(v => v.value)) : 0;
 
   // ── Camera ──
   const uploadPhoto = async (uri: string) => {
@@ -79,6 +102,7 @@ export function useProgressData() {
     user,
     timeframe, setTimeframe,
     lineData, currentWeight, startWeight, weightDiff, minVal, maxVal,
+    volumeLineData, currentVolume, volumeDiff, minVol, maxVol,
     latest, prev,
     firstPhoto, lastPhoto,
     isUploading, takePhoto

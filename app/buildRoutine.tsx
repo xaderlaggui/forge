@@ -5,6 +5,9 @@ import { ArrowUpCircle, ArrowDownCircle, PersonStanding, AlertTriangle, Plus, X 
 import { ForgeTheme as T } from '../constants/ForgeTheme';
 import { useRoutines } from '../hooks/useRoutines';
 import { useExercises } from '../hooks/useExercises';
+import { ExerciseLibrary, ExercisePreviewModal } from '../features/planner/components/ExerciseLibrary';
+import type { Exercise } from '../types';
+import { Modal, SafeAreaView } from 'react-native';
 
 
 type SplitType = 'push' | 'pull' | 'legs' | 'full';
@@ -34,6 +37,10 @@ export default function BuildRoutineScreen() {
   const [split, setSplit] = useState<SplitType>('push');
   const [exercises, setExercises] = useState<ExData[]>([]);
 
+  // Picker and Preview State
+  const [showPicker, setShowPicker] = useState(false);
+  const [previewEx, setPreviewEx] = useState<Exercise | null>(null);
+
 
   const overlapWarning = useMemo(() => {
     const cats = exercises.map(e => e.category).filter(Boolean);
@@ -53,16 +60,15 @@ export default function BuildRoutineScreen() {
       if (!name.trim()) return Alert.alert('Missing Name', 'Please name your routine.');
       
       if (exercises.length === 0 && dbExercises) {
-        const targetCats = SPLITS[split].categories;
         let pool = dbExercises;
-        if (targetCats.length > 0) {
-          pool = dbExercises.filter(e => targetCats.includes(e.category.toLowerCase()));
+        if (split !== 'full') {
+          pool = dbExercises.filter(e => e.category === split);
         }
         
-        // Group by category to try picking diverse exercises
+        // Group by primary muscle group to ensure diverse exercise selection
         const grouped: Record<string, typeof dbExercises> = {};
         pool.forEach(ex => {
-          const c = ex.category.toLowerCase();
+          const c = ex.muscleGroups[0] || 'other';
           if (!grouped[c]) grouped[c] = [];
           grouped[c].push(ex);
         });
@@ -123,6 +129,17 @@ export default function BuildRoutineScreen() {
 
   const removeEx = (idx: number) => {
     setExercises(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleAddExercise = (ex: Exercise) => {
+    setExercises(prev => [...prev, { name: ex.name, preset: '3×10', category: ex.category }]);
+    setShowPicker(false);
+  };
+
+  const handlePreview = (exName: string) => {
+    if (!dbExercises) return;
+    const fullEx = dbExercises.find(e => e.name === exName);
+    if (fullEx) setPreviewEx(fullEx);
   };
 
   return (
@@ -198,7 +215,9 @@ export default function BuildRoutineScreen() {
             {exercises.map((ex, idx) => (
               <View key={idx} style={s.exItem}>
                 <View style={s.exItemTop}>
-                  <Text style={s.exItemName}>{ex.name}</Text>
+                  <TouchableOpacity onPress={() => handlePreview(ex.name)} style={{ flex: 1 }}>
+                    <Text style={s.exItemName}>{ex.name}</Text>
+                  </TouchableOpacity>
                   <TouchableOpacity onPress={() => removeEx(idx)} style={{ padding: 4 }}>
                     <X size={16} color={T.colors.t3} />
                   </TouchableOpacity>
@@ -216,6 +235,11 @@ export default function BuildRoutineScreen() {
                 </ScrollView>
               </View>
             ))}
+
+            <TouchableOpacity style={s.addExBtn} onPress={() => setShowPicker(true)}>
+              <Plus size={18} color={T.colors.forge} />
+              <Text style={s.addExText}>Add Exercise</Text>
+            </TouchableOpacity>
 
             <View style={s.navRow}>
               <TouchableOpacity style={s.navBack} onPress={() => setStep(1)}>
@@ -263,6 +287,29 @@ export default function BuildRoutineScreen() {
         )}
       </ScrollView>
 
+      {/* Exercise Picker Modal */}
+      <Modal visible={showPicker} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowPicker(false)}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: T.colors.bg0 }}>
+          <View style={[s.header, { paddingTop: 16 }]}>
+            <TouchableOpacity onPress={() => setShowPicker(false)} style={s.iconBtn}>
+              <X size={24} color={T.colors.t1} />
+            </TouchableOpacity>
+            <Text style={s.title}>SELECT EXERCISE</Text>
+            <View style={{ width: 40 }} />
+          </View>
+          <ExerciseLibrary 
+            exercises={dbExercises} 
+            isLoading={!dbExercises} 
+            onSelect={handleAddExercise} 
+          />
+        </SafeAreaView>
+      </Modal>
+
+      {/* Preview Modal */}
+      <ExercisePreviewModal 
+        exercise={previewEx} 
+        onClose={() => setPreviewEx(null)} 
+      />
 
     </View>
   );
@@ -317,6 +364,13 @@ const s = StyleSheet.create({
   presetPill: { backgroundColor: T.colors.bg2, borderWidth: 0.5, borderColor: T.colors.b1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
   presetPillOn: { backgroundColor: 'rgba(255, 92, 46, 0.1)', borderColor: '#FF5C2E' },
   presetPillText: { color: T.colors.t3, fontSize: 12, fontWeight: '700' },
+
+  addExBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    borderWidth: 1, borderStyle: 'dashed', borderColor: T.colors.forge,
+    borderRadius: 14, padding: 16, marginBottom: 24,
+  },
+  addExText: { color: T.colors.forge, fontSize: 15, fontWeight: '700' },
 
 
   navRow: { flexDirection: 'row', gap: 12 },
