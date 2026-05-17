@@ -5,6 +5,7 @@ import { Flame, Droplet, Activity } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
 import { useNutrition } from '../../hooks/useNutrition';
+import { useAiCoach } from '../../hooks/useAiCoach';
 
 export default function HomeScreen() {
   const { user } = useAuthStore();
@@ -33,6 +34,8 @@ export default function HomeScreen() {
   
   const waterOffset = c - (waterPercent * c);
   const calOffset = c - (calPercent * c);
+
+  const { data: aiTip, isLoading: isAiLoading } = useAiCoach();
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
@@ -70,11 +73,20 @@ export default function HomeScreen() {
             <View style={styles.aiIconWrapper}>
               <Text style={styles.aiIconText}>AI</Text>
             </View>
-            <Text style={styles.aiTitle}>COACH CLAUDE</Text>
+            <Text style={styles.aiTitle}>AI COACH</Text>
           </View>
-          <Text style={styles.aiMessage}>
-            Good morning. Based on your <Text style={{ color: '#fff', fontWeight: 'bold' }}>low recovery metrics</Text> yesterday, I suggest a <Text style={{ color: '#D2FF00', fontWeight: 'bold' }}>mobility flow</Text> today instead of heavy lifting.
-          </Text>
+          {isAiLoading ? (
+             <ActivityIndicator size="small" color="#D2FF00" style={{ alignSelf: 'flex-start' }} />
+          ) : (
+            <Text style={styles.aiMessage}>
+              {aiTip?.split(/(\*.*?\*|`.*?`)/g).map((chunk: string, i: number) => {
+                if (chunk.startsWith('*') && chunk.endsWith('*')) {
+                  return <Text key={i} style={{ color: '#fff', fontWeight: 'bold' }}>{chunk.slice(1, -1)}</Text>;
+                }
+                return chunk;
+              })}
+            </Text>
+          )}
         </View>
       </View>
 
