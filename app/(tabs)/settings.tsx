@@ -8,6 +8,8 @@ import { auth } from '../../services/firebase';
 import { useAuthStore } from '../../stores/authStore';
 import { seedExercises } from '../../utils/seedData';
 
+import { useRouter } from 'expo-router';
+
 // ─── Sub-component ─────────────────────────────────────────
 function SettingRow({ icon, label, onPress, isDanger = false }: { icon: React.ReactNode; label: string; onPress: () => void; isDanger?: boolean }) {
   return (
@@ -26,6 +28,7 @@ function SettingRow({ icon, label, onPress, isDanger = false }: { icon: React.Re
 
 // ─── Main Screen ───────────────────────────────────────────
 export default function SettingsScreen() {
+  const router = useRouter();
   const { user } = useAuthStore();
   const [seeding, setSeeding] = useState(false);
 
@@ -119,6 +122,13 @@ export default function SettingsScreen() {
                 loading={seeding}
                 variant="secondary"
                 leftIcon={<Database size={16} color={T.colors.forge} />}
+                style={{ marginBottom: 12 }}
+              />
+              <ForgeButton
+                label="Generate AI Plan"
+                onPress={() => router.push('/plan-generator')}
+                variant="primary"
+                leftIcon={<Database size={16} color="#000" />}
               />
             </View>
           </View>
