@@ -43,7 +43,7 @@ export default function AddMealScreen() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'llama3-8b-8192',
+          model: 'llama-3.1-8b-instant',
           messages: [
             {
               role: 'system',
@@ -70,7 +70,10 @@ No markdown formatting, no backticks, just raw JSON.`
         })
       });
 
-      if (!response.ok) throw new Error('Network error');
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`API Error: ${response.status} ${errText}`);
+      }
       
       const data = await response.json();
       const content = data.choices[0].message.content;
