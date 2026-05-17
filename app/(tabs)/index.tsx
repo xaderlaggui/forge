@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Flame } from 'lucide-react-native';
 import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming } from 'react-native-reanimated';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { ForgeTheme } from '../../constants/ForgeTheme';
 import { useAiCoach } from '../../hooks/useAiCoach';
@@ -17,6 +18,15 @@ export default function HomeScreen() {
   const { data: nutrition, isLoading } = useNutrition();
   const { workouts } = useWorkouts();
   const { data: aiTip, isLoading: isAiLoading } = useAiCoach();
+
+  const pulse = useSharedValue(1);
+  React.useEffect(() => {
+    pulse.value = withRepeat(withTiming(1.05, { duration: 1500 }), -1, true);
+  }, []);
+
+  const pulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulse.value }],
+  }));
 
   if (isLoading) {
     return (

@@ -5,6 +5,7 @@ import { Check, Clock } from 'lucide-react-native';
 import { useWorkouts } from '../hooks/useWorkouts';
 import dayjs from 'dayjs';
 import { ForgeTheme } from '../constants/ForgeTheme';
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence, Easing } from 'react-native-reanimated';
 
 export default function ActiveWorkoutScreen() {
   const router = useRouter();
@@ -41,6 +42,24 @@ export default function ActiveWorkoutScreen() {
       setIsLoaded(true);
     }
   }, [id, workouts, isLoaded]);
+
+  const heartbeat = useSharedValue(1);
+  React.useEffect(() => {
+    heartbeat.value = withRepeat(
+      withSequence(
+        withTiming(1.2, { duration: 150 }),
+        withTiming(1.0, { duration: 150 }),
+        withTiming(1.2, { duration: 150 }),
+        withTiming(1.0, { duration: 550 })
+      ),
+      -1,
+      false
+    );
+  }, []);
+
+  const heartbeatStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: heartbeat.value }]
+  }));
 
   useEffect(() => {
     let interval: any;
@@ -106,7 +125,9 @@ export default function ActiveWorkoutScreen() {
       {isResting && (
         <View style={styles.restTimerContainer}>
           <View style={styles.restBanner}>
-            <Clock size={20} color={ForgeTheme.colors.forge} />
+            <Animated.View style={heartbeatStyle}>
+              <Clock size={20} color={ForgeTheme.colors.forge} />
+            </Animated.View>
             <Text style={styles.restText}>00:{restTime.toString().padStart(2, '0')}</Text>
           </View>
           <TouchableOpacity onPress={() => setIsResting(false)} style={styles.skipButton}>

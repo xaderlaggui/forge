@@ -8,6 +8,7 @@ import { db } from '../../services/firebase';
 import { useWorkouts } from '../../hooks/useWorkouts';
 import type { Exercise } from '../../types';
 import { ForgeTheme } from '../../constants/ForgeTheme';
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence, Easing } from 'react-native-reanimated';
 
 export default function WorkoutScreen() {
   const router = useRouter();
@@ -40,6 +41,21 @@ export default function WorkoutScreen() {
   const todayWorkout = useMemo(() => {
     return workouts.find(w => w.date.startsWith(activeDateStr));
   }, [workouts, activeDateStr]);
+
+  const buttonPulse = useSharedValue(1);
+  const dotOpacity = useSharedValue(0.6);
+
+  React.useEffect(() => {
+    buttonPulse.value = withRepeat(withTiming(1.05, { duration: 1500 }), -1, true);
+    dotOpacity.value = withRepeat(withTiming(1, { duration: 1500, easing: Easing.inOut(Easing.ease) }), -1, true);
+  }, []);
+
+  const buttonPulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: buttonPulse.value }],
+  }));
+  const dotOpacityStyle = useAnimatedStyle(() => ({
+    opacity: dotOpacity.value,
+  }));
 
   return (
     <View style={styles.container}>
@@ -96,7 +112,11 @@ export default function WorkoutScreen() {
                   style={styles.weekDotCol}
                 >
                   <Text style={styles.dayLabel}>{day.label}</Text>
-                  <View style={[styles.weekDot, isActive && styles.weekDotActive]} />
+                  {isActive ? (
+                    <Animated.View style={[styles.weekDot, styles.weekDotActive, dotOpacityStyle]} />
+                  ) : (
+                    <View style={styles.weekDot} />
+                  )}
                 </TouchableOpacity>
               )
             })}
@@ -109,10 +129,11 @@ export default function WorkoutScreen() {
               <Text style={styles.todayTitle}>SCHEDULED ROUTINE</Text>
               <Text style={styles.todaySub}>{todayWorkout.notes || 'Custom Workout'}</Text>
               <Text style={{ color: ForgeTheme.colors.t2, marginBottom: 24, fontSize: 13 }}>{todayWorkout.exercises.length} Exercises Planned</Text>
-              
-              <TouchableOpacity style={styles.startButton} onPress={() => router.push({ pathname: '/activeWorkout', params: { id: todayWorkout.id } })}>
-                <Text style={styles.startText}>▶ Start Workout</Text>
-              </TouchableOpacity>
+              <Animated.View style={[{ borderRadius: 12, backgroundColor: 'rgba(255, 92, 46, 0.4)' }, buttonPulseStyle]}>
+                <TouchableOpacity style={styles.startButton} onPress={() => router.push({ pathname: '/activeWorkout', params: { id: todayWorkout.id } })}>
+                  <Text style={styles.startText}>▶ Start Workout</Text>
+                </TouchableOpacity>
+              </Animated.View>
             </View>
           ) : (
             <View style={[styles.todayCard, { alignItems: 'center', paddingVertical: 40 }]}>
@@ -120,9 +141,11 @@ export default function WorkoutScreen() {
               <Text style={{ color: ForgeTheme.colors.t2, textAlign: 'center', marginBottom: 24, fontSize: 13 }}>No workout scheduled for this day.</Text>
               
               {/* If no workout, start a blank one */}
-              <TouchableOpacity style={styles.startButton} onPress={() => router.push({ pathname: '/activeWorkout', params: { date: activeDateStr } })}>
-                <Text style={styles.startText}>+ New Workout</Text>
-              </TouchableOpacity>
+              <Animated.View style={[{ borderRadius: 12, backgroundColor: 'rgba(255, 92, 46, 0.4)' }, buttonPulseStyle]}>
+                <TouchableOpacity style={styles.startButton} onPress={() => router.push({ pathname: '/activeWorkout', params: { date: activeDateStr } })}>
+                  <Text style={styles.startText}>+ New Workout</Text>
+                </TouchableOpacity>
+              </Animated.View>
             </View>
           )}
         </ScrollView>
