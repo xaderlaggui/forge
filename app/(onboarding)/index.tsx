@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { doc, updateDoc } from 'firebase/firestore';
-import { auth, db } from '../../services/firebase';
+import { db } from '../../services/firebase';
 import { calculateBMI } from '../../utils/bmi';
+import { useAuthStore } from '../../stores/authStore';
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -11,6 +12,7 @@ export default function OnboardingScreen() {
   const [height, setHeight] = useState(''); // cm
   const [weight, setWeight] = useState(''); // kg
   const [loading, setLoading] = useState(false);
+  const { user, setUser } = useAuthStore();
 
   const handleCompleteSetup = async () => {
     const ageNum = parseInt(age);
@@ -22,8 +24,7 @@ export default function OnboardingScreen() {
       return;
     }
 
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
+    if (!user?.uid) return;
 
     try {
       setLoading(true);
@@ -32,8 +33,8 @@ export default function OnboardingScreen() {
       const { bmi } = calculateBMI(weightNum, heightNum);
 
       // Update Firestore document
-      const userRef = doc(db, 'users', currentUser.uid);
-      await updateDoc(userRef, {
+      const userRef = doc(db, 'users', user.uid);
+      const updates = {
         age: ageNum,
         height: heightNum,
         weight: weightNum,
@@ -41,7 +42,12 @@ export default function OnboardingScreen() {
         // Also initialize bmiHistory with the first entry
         bmiHistory: [{ value: bmi, date: new Date().toISOString() }],
         isOnboarded: true // We can use this to track completion
-      });
+      };
+      
+      await updateDoc(userRef, updates);
+
+      // Update local state so _layout.tsx doesn't boot us back
+      setUser({ ...user, ...updates } as any);
 
       // Navigate to the main app!
       router.replace('/(tabs)');

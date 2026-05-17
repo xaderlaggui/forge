@@ -5,7 +5,7 @@ import { Lock, Mail, User } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
   ActivityIndicator, Alert,
-  KeyboardAvoidingView, Platform, ScrollView,
+  KeyboardAvoidingView, Platform,
   StyleSheet,
   Text, TextInput, TouchableOpacity,
   View,
@@ -20,6 +20,35 @@ import Animated, {
 import { MascotImage } from '../../components/common/MascotImage';
 import { ForgeTheme as T } from '../../constants/ForgeTheme';
 import { auth, db } from '../../services/firebase';
+
+function InputField({
+  icon, placeholder, value, onChangeText,
+  fieldKey, secureTextEntry = false,
+  keyboardType = 'default', returnKeyType = 'next',
+  focusedField, setFocusedField
+}: any) {
+  return (
+    <View style={[s.inputWrap, focusedField === fieldKey && s.inputWrapFocused]}>
+      {React.cloneElement(icon, {
+        color: focusedField === fieldKey ? T.colors.forge : T.colors.t3,
+        size: 18,
+      })}
+      <TextInput
+        style={s.input}
+        placeholder={placeholder}
+        placeholderTextColor={T.colors.t3}
+        value={value}
+        onChangeText={onChangeText}
+        secureTextEntry={secureTextEntry}
+        autoCapitalize={fieldKey === 'email' ? 'none' : 'words'}
+        keyboardType={keyboardType}
+        returnKeyType={returnKeyType}
+        onFocus={() => setFocusedField(fieldKey)}
+        onBlur={() => setFocusedField(null)}
+      />
+    </View>
+  );
+}
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -78,44 +107,14 @@ export default function SignupScreen() {
     }
   };
 
-  function InputField({
-    icon, placeholder, value, onChangeText,
-    fieldKey, secureTextEntry = false,
-    keyboardType = 'default', returnKeyType = 'next',
-  }: any) {
-    return (
-      <View style={[s.inputWrap, focusedField === fieldKey && s.inputWrapFocused]}>
-        {React.cloneElement(icon, {
-          color: focusedField === fieldKey ? T.colors.forge : T.colors.t3,
-          size: 18,
-        })}
-        <TextInput
-          style={s.input}
-          placeholder={placeholder}
-          placeholderTextColor={T.colors.t3}
-          value={value}
-          onChangeText={onChangeText}
-          secureTextEntry={secureTextEntry}
-          autoCapitalize={fieldKey === 'email' ? 'none' : 'words'}
-          keyboardType={keyboardType}
-          returnKeyType={returnKeyType}
-          onFocus={() => setFocusedField(fieldKey)}
-          onBlur={() => setFocusedField(null)}
-        />
-      </View>
-    );
-  }
+
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={s.container}
     >
-      <ScrollView
-        contentContainerStyle={s.scroll}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={s.innerWrapper}>
         <Animated.View style={[s.inner, animStyle]}>
 
           {/* Back to login */}
@@ -144,6 +143,8 @@ export default function SignupScreen() {
             value={name}
             onChangeText={setName}
             keyboardType="default"
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
           />
           <InputField
             fieldKey="email"
@@ -152,6 +153,8 @@ export default function SignupScreen() {
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
           />
           <InputField
             fieldKey="password"
@@ -160,6 +163,8 @@ export default function SignupScreen() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
           />
           <InputField
             fieldKey="confirm"
@@ -169,6 +174,8 @@ export default function SignupScreen() {
             onChangeText={setConfirmPassword}
             secureTextEntry
             returnKeyType="done"
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
           />
 
           {/* CTA */}
@@ -201,18 +208,18 @@ export default function SignupScreen() {
           </View>
 
         </Animated.View>
-      </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 }
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: T.colors.bg0 },
-  scroll: { flexGrow: 1 },
+  innerWrapper: { flex: 1 },
   inner: {
     flex: 1, paddingHorizontal: 24,
-    paddingTop: 64, paddingBottom: 48,
-    alignItems: 'center',
+    paddingTop: 54, paddingBottom: 24,
+    alignItems: 'center', justifyContent: 'center'
   },
 
   backRow: { alignSelf: 'flex-start', marginBottom: 28 },
