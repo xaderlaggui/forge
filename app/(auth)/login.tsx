@@ -61,6 +61,16 @@ export default function LoginScreen() {
       >
         <Animated.View style={[s.inner, animStyle]}>
 
+import { MascotImage } from '../../components/common/MascotImage';
+
+          <MascotImage
+            mascot="welcome"
+            width={180}
+            height={180}
+            animation="slideUp"
+            accessibilityLabel="Forge the bear waving hello"
+            style={{ alignSelf: 'center', marginBottom: 8 }}
+          />
           {/* Brand */}
           <View style={s.brandRow}>
             <Text style={s.wordmark}>FORGE</Text>

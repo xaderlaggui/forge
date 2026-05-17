@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, SafeAreaView, Dimensions } from 'react-native';
 import { X } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Body from 'react-native-body-highlighter';
 import { ForgeSkeleton } from '../../../components/forge/ForgeSkeleton';
 import { ForgeTheme as T } from '../../../constants/ForgeTheme';
@@ -19,7 +19,7 @@ function SkeletonLibrary() {
   );
 }
 
-const mapMusclesToSlugs = (groups: string[]): { slug: string; intensity: number }[] => {
+export const mapMusclesToSlugs = (groups: string[]): { slug: string; intensity: number }[] => {
   const map: Record<string, string[]> = {
     chest: ['chest'],
     shoulders: ['deltoids'],
@@ -40,8 +40,8 @@ const mapMusclesToSlugs = (groups: string[]): { slug: string; intensity: number 
     const arr = map[g.toLowerCase()];
     if (arr) arr.forEach(s => slugs.add(s));
   });
-  
-  return Array.from(slugs).map(slug => ({ slug, intensity: 1 }));
+
+  return Array.from(slugs).map(slug => ({ slug: slug as any, intensity: 1 }));
 };
 
 interface ExerciseLibraryProps {
@@ -65,7 +65,7 @@ export function ExerciseLibrary({ exercises, isLoading }: ExerciseLibraryProps) 
               <X size={24} color={T.colors.t1} />
             </TouchableOpacity>
           </View>
-          
+
           <Text style={s.modalSub}>
             {selectedEx.muscleGroups.join(', ')} • {selectedEx.equipment}
           </Text>
@@ -100,10 +100,22 @@ export function ExerciseLibrary({ exercises, isLoading }: ExerciseLibraryProps) 
   };
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
+      <View style={{ paddingHorizontal: T.spacing.page, paddingTop: 16, paddingBottom: 8 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+          {['All', 'Push', 'Pull', 'Legs', 'Chest', 'Back', 'Arms', 'Core'].map(cat => (
+            <TouchableOpacity
+              key={cat}
+              style={[s.filterChip, cat === 'All' && s.filterChipActive]}
+            >
+              <Text style={[s.filterChipText, cat === 'All' && { color: '#000' }]}>{cat}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
       <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
         {isLoading ? (
-           <SkeletonLibrary />
+          <SkeletonLibrary />
         ) : exercises?.length === 0 ? (
           <View style={s.emptyState}>
             <Text style={s.emptyText} maxFontSizeMultiplier={1.2}>
@@ -122,11 +134,15 @@ export function ExerciseLibrary({ exercises, isLoading }: ExerciseLibraryProps) 
         )}
       </ScrollView>
       {renderBodyModal()}
-    </>
+    </View>
   );
 }
 
 const s = StyleSheet.create({
+  filterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: T.colors.bg1, borderWidth: 1, borderColor: T.colors.b1 },
+  filterChipActive: { backgroundColor: T.colors.forge, borderColor: T.colors.forge },
+  filterChipText: { color: T.colors.t2, fontSize: 13, fontWeight: '600' },
+
   list: { padding: T.spacing.page, paddingBottom: 100 },
   card: {
     backgroundColor: T.colors.bg1, padding: T.spacing.px4,
@@ -143,7 +159,7 @@ const s = StyleSheet.create({
     textAlign: 'center', color: T.colors.t3, fontWeight: '500',
     fontSize: T.typography.sizes.bodyS, lineHeight: T.typography.sizes.bodyS * 1.5,
   },
-  
+
   modalContainer: { flex: 1, backgroundColor: T.colors.bg0 },
   modalHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',

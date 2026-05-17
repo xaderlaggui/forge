@@ -66,6 +66,8 @@ export default function RootLayout() {
   return <RootLayoutNav />;
 }
 
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 function RootLayoutNav() {
   const { user, isLoading } = useAuthStore();
   const segments = useSegments();
@@ -93,18 +95,21 @@ function RootLayoutNav() {
   }, [user, isLoading, segments]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="splash" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(onboarding)" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="+not-found" />
-        <Stack.Screen name="addMeal"      options={{ presentation: 'modal' }} />
-        <Stack.Screen name="measurements" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="chat"         options={{ presentation: 'modal' }} />
-        <Stack.Screen name="activeWorkout" />
-      </Stack>
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={queryClient}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="splash" />
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(onboarding)" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="+not-found" />
+          <Stack.Screen name="addMeal"      options={{ presentation: 'modal' }} />
+          <Stack.Screen name="measurements" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="chat"         options={{ presentation: 'modal' }} />
+          <Stack.Screen name="activeWorkout" />
+          <Stack.Screen name="workoutHistory" />
+        </Stack>
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }

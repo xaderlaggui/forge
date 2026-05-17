@@ -26,7 +26,7 @@ interface GroqResponse {
  */
 export async function groqComplete(
   messages: GroqMessage[],
-  options?: { model?: string; max_tokens?: number; temperature?: number }
+  options?: { model?: string; max_tokens?: number; temperature?: number; response_format?: { type: string } }
 ): Promise<string> {
   const apiKey = process.env.EXPO_PUBLIC_GROQ_API_KEY;
   if (!apiKey) {
@@ -44,6 +44,7 @@ export async function groqComplete(
       messages,
       max_tokens: options?.max_tokens ?? 256,
       temperature: options?.temperature ?? 0.8,
+      ...(options?.response_format ? { response_format: options.response_format } : {}),
     }),
   });
 

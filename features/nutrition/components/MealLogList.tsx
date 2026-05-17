@@ -58,9 +58,30 @@ export function MealLogList({ meals, expandedMeal, setExpandedMeal }: MealLogLis
               />
             </TouchableOpacity>
 
-            {/* Expanded Macro Detail */}
+            {/* Expanded Macro Detail & Food Items */}
             {isExpanded && !isEmpty && (
               <View style={s.mealDetail}>
+                {meal.items && meal.items.length > 0 ? (
+                  <View style={s.foodList}>
+                    {meal.items.map((item: any, i: number) => (
+                      <View key={i} style={[s.foodRow, i === meal.items.length - 1 && { borderBottomWidth: 0 }]}>
+                        <View style={{ flex: 1, paddingRight: 8 }}>
+                          <Text style={s.foodName}>{item.name}</Text>
+                          {item.serving && <Text style={s.foodServing}>{item.serving}</Text>}
+                        </View>
+                        <View style={s.foodMacros}>
+                          <Text style={s.foodCal}>{item.calories} kcal</Text>
+                          <Text style={s.foodPfc}>P {item.protein}g · C {item.carbs}g · F {item.fat}g</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                ) : (
+                  <View style={[s.foodRow, { borderBottomWidth: 0, justifyContent: 'center' }]}>
+                    <Text style={{ color: T.colors.t3, fontSize: 12 }}>Aggregated macros only</Text>
+                  </View>
+                )}
+
                 <View style={s.mealDetailRow}>
                   {[
                     { label: 'Protein', value: meal.protein || 0, color: T.colors.green },
@@ -70,7 +91,7 @@ export function MealLogList({ meals, expandedMeal, setExpandedMeal }: MealLogLis
                     { label: 'Sugar',   value: meal.sugar || 0,   color: T.colors.orange },
                   ].map(m => (
                     <View key={m.label} style={s.mealDetailStat}>
-                      <Text style={[s.mealDetailVal, { color: m.color }]} maxFontSizeMultiplier={1.2}>{m.value}g</Text>
+                      <Text style={[s.mealDetailVal, { color: m.color }]} maxFontSizeMultiplier={1.2}>{Math.round(m.value)}g</Text>
                       <Text style={s.mealDetailLbl} maxFontSizeMultiplier={1.2}>{m.label}</Text>
                     </View>
                   ))}
@@ -115,4 +136,11 @@ const s = StyleSheet.create({
   mealDetailStat: { alignItems: 'center' },
   mealDetailVal: { fontSize: T.typography.sizes.body, fontWeight: '700' },
   mealDetailLbl: { fontSize: T.typography.sizes.caption, color: T.colors.t3, marginTop: 2, fontWeight: '500' },
+  foodList: { marginBottom: 16, borderBottomWidth: 0.5, borderBottomColor: T.colors.b1, paddingBottom: 8 },
+  foodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10 },
+  foodName: { color: T.colors.t1, fontSize: 13, fontWeight: '500' },
+  foodServing: { color: T.colors.t3, fontSize: 11, marginTop: 2 },
+  foodMacros: { alignItems: 'flex-end' },
+  foodCal: { color: T.colors.t1, fontSize: 13, fontWeight: '600' },
+  foodPfc: { color: T.colors.t3, fontSize: 10, marginTop: 2 },
 });

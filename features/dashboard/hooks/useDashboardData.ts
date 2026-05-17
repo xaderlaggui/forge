@@ -25,7 +25,7 @@ export function useDashboardData() {
   const plannedWorkout = (user as any)?.plan?.weeklySchedule?.[todayIdx];
 
   const muscleTags: string[] = plannedWorkout && plannedWorkout.dayType !== 'Rest'
-    ? [...new Set(plannedWorkout.exercises.flatMap((ex: any) => ex.muscleGroups ?? []))].filter(Boolean)
+    ? [...new Set<string>(plannedWorkout.exercises.flatMap((ex: any) => ex.muscleGroups ?? []))].filter(Boolean)
     : [];
 
   const recentWorkouts = [...(workouts ?? [])]

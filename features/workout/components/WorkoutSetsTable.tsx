@@ -1,17 +1,31 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Check } from 'lucide-react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
+import { Check, Trash2 } from 'lucide-react-native';
 import { ForgeTheme as T } from '../../../constants/ForgeTheme';
 import { ExerciseState } from '../types';
 
 interface WorkoutSetsTableProps {
   exercises: ExerciseState[];
+  personalRecords?: Record<string, Record<string, number>>;
   onToggleSet: (exIdx: number, setIdx: number) => void;
   onAddSet: (exIdx: number) => void;
+  onRemoveSet?: (exIdx: number, setIdx: number) => void;
   onOpenNumpad: (exIdx: number, setIdx: number, field: 'weight' | 'reps') => void;
 }
 
-export function WorkoutSetsTable({ exercises, onToggleSet, onAddSet, onOpenNumpad }: WorkoutSetsTableProps) {
+export function WorkoutSetsTable({ exercises, personalRecords, onToggleSet, onAddSet, onRemoveSet, onOpenNumpad }: WorkoutSetsTableProps) {
+  const renderRightActions = (exIdx: number, setIdx: number) => {
+    return (
+      <TouchableOpacity
+        style={styles.deleteAction}
+        onPress={() => onRemoveSet?.(exIdx, setIdx)}
+      >
+        <Trash2 size={20} color="#fff" />
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View>
       {exercises.map((ex, exIdx) => (
@@ -28,15 +42,30 @@ export function WorkoutSetsTable({ exercises, onToggleSet, onAddSet, onOpenNumpa
           </View>
 
           {/* Set rows */}
-          {ex.sets.map((set, setIdx) => (
-            <View
+          {ex.sets.map((set, setIdx) => {
+            const currentWeight = Number(set.weight);
+            const currentReps = set.reps.toString();
+            const bestHistory = personalRecords?.[ex.name]?.[currentReps] || 0;
+            const isPR = set.done && currentWeight > 0 && currentWeight > bestHistory;
+
+            return (
+            <Swipeable
               key={setIdx}
-              style={[styles.row, set.done && styles.rowDone, setIdx < ex.sets.length - 1 && styles.rowBorder]}
+              renderRightActions={() => renderRightActions(exIdx, setIdx)}
+              overshootRight={false}
             >
-              <Text style={[styles.cell, { flex: 0.6, color: T.colors.t2 }]} maxFontSizeMultiplier={1.2}>{setIdx + 1}</Text>
-              <Text style={[styles.cell, { flex: 1.4, color: T.colors.t3, fontSize: T.typography.sizes.bodyS }]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
-                {set.prev}
-              </Text>
+              <View
+                style={[styles.row, set.done && styles.rowDone, setIdx < ex.sets.length - 1 && styles.rowBorder]}
+              >
+              <View style={{ flex: 0.6 }}>
+                <Text style={[styles.cell, { color: T.colors.t2 }]} maxFontSizeMultiplier={1.2}>{setIdx + 1}</Text>
+              </View>
+              <View style={{ flex: 1.4 }}>
+                {isPR && <Text style={styles.prBadge} maxFontSizeMultiplier={1.2}>NEW PR 🏆</Text>}
+                <Text style={[styles.cell, { color: T.colors.t3, fontSize: T.typography.sizes.bodyS }]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
+                  {set.prev}
+                </Text>
+              </View>
 
               <TouchableOpacity
                 style={[styles.inputCell, { flex: 1 }, set.done && styles.inputCellDone]}
@@ -61,7 +90,9 @@ export function WorkoutSetsTable({ exercises, onToggleSet, onAddSet, onOpenNumpa
                 </TouchableOpacity>
               </View>
             </View>
-          ))}
+            </Swipeable>
+            );
+          })}
 
           {/* Add set */}
           <TouchableOpacity style={styles.addSetBtn} onPress={() => onAddSet(exIdx)}>
@@ -93,6 +124,10 @@ const styles = StyleSheet.create({
   rowDone: { backgroundColor: T.colors.forgeDim },
 
   cell: { fontSize: T.typography.sizes.bodyS, fontWeight: '500', color: T.colors.t1 },
+  prBadge: {
+    fontSize: 8, fontWeight: '800', color: T.colors.forge, letterSpacing: 0.5,
+    marginBottom: 2,
+  },
 
   inputCell: {
     backgroundColor: T.colors.bg2,
@@ -122,4 +157,11 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.5, borderTopColor: T.colors.b1,
   },
   addSetText: { fontSize: T.typography.sizes.bodyS, fontWeight: '600', color: T.colors.forge },
+
+  deleteAction: {
+    backgroundColor: T.colors.red,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 60,
+  },
 });

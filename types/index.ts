@@ -53,6 +53,15 @@ export interface Workout {
   notes?: string;
 }
 
+export interface FoodItem {
+  name: string;
+  serving?: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
 export interface Meal {
   name: string;
   calories: number;
@@ -61,6 +70,7 @@ export interface Meal {
   fat: number;
   fiber?: number;
   sugar?: number;
+  items?: FoodItem[];
 }
 
 export interface NutritionLog {

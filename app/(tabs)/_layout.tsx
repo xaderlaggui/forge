@@ -1,5 +1,5 @@
 import { Tabs, useRouter } from 'expo-router';
-import { Dumbbell, Home, PieChart, Plus, Settings, TrendingUp } from 'lucide-react-native';
+import { Dumbbell, Home, PieChart, Sparkles, Settings, TrendingUp } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,15 +9,17 @@ function ForgeFAB() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   
+  const aiColor = '#BF5AF2'; // Distinct purple for AI Coach
+
   return (
     <TouchableOpacity
-      style={[styles.fab, { bottom: 85 + insets.bottom }]} // Floating above tab bar
-      onPress={() => router.push('/activeWorkout')}
+      style={[styles.fab, { bottom: 85 + insets.bottom, backgroundColor: aiColor, shadowColor: aiColor }]}
+      onPress={() => router.push('/chat')}
       activeOpacity={0.85}
-      accessibilityLabel="Start active workout"
+      accessibilityLabel="AI Coach"
       accessibilityRole="button"
     >
-      <Plus size={26} color="#fff" strokeWidth={2.5} />
+      <Sparkles size={24} color="#fff" strokeWidth={2.5} />
     </TouchableOpacity>
   );
 }

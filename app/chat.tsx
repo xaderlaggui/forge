@@ -5,7 +5,7 @@ import { Bot, Send, User as UserIcon, X } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   FlatList, KeyboardAvoidingView, Platform,
-  StyleSheet, Text, TextInput, TouchableOpacity, View,
+  StyleSheet, Text, TextInput, TouchableOpacity, View, Image,
 } from 'react-native';
 import Animated, {
   useSharedValue, useAnimatedStyle,
@@ -15,8 +15,10 @@ import { ForgeTheme as T } from '../constants/ForgeTheme';
 import { groqComplete, GroqMessage } from '../services/groq';
 import { db } from '../services/firebase';
 import { useAuthStore } from '../stores/authStore';
+import { useNutrition } from '../hooks/useNutrition';
+import { useWorkouts } from '../hooks/useWorkouts';
 
-const SYSTEM_PROMPT = `You are FORGE Coach — an energetic, supportive AI fitness coach inside a workout tracking app.
+const BASE_SYSTEM_PROMPT = `You are FORGE Coach — an energetic, supportive AI fitness coach inside a workout tracking app.
 
 BEHAVIOR RULES:
 1. Keep replies SHORT (1–3 sentences). Be punchy and motivating.
@@ -30,6 +32,8 @@ type Message = { id: string; text: string; isAi: boolean; logged?: boolean };
 export default function ChatScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const { data: nutrition } = useNutrition();
+  const { workouts } = useWorkouts();
 
   const [inputText, setInputText] = useState('');
   const [messages, setMessages]   = useState<Message[]>([
@@ -66,10 +70,14 @@ export default function ChatScreen() {
     // Build message history
     historyRef.current.push({ role: 'user', content: userMsg });
 
+    const recentWorkout = workouts?.[0];
+    const caloriesEaten = nutrition?.totalCalories ?? 0;
+    const dynamicPrompt = `${BASE_SYSTEM_PROMPT}\n\nCURRENT ATHLETE CONTEXT:\nAthlete: ${user?.displayName || 'Athlete'}\nStreak: ${(user as any)?.streak ?? 0} days\nCalories logged today: ${caloriesEaten} kcal\nLast workout: ${recentWorkout ? (recentWorkout.notes || `${recentWorkout.exercises.length} exercises on ${recentWorkout.date}`) : 'None recently'}\nUse this context to personalize your advice when relevant!`;
+
     try {
       const raw = await groqComplete(
         [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: dynamicPrompt },
           ...historyRef.current,
         ],
         { max_tokens: 200, temperature: 0.75 }
@@ -119,7 +127,7 @@ export default function ChatScreen() {
     <View style={[s.msgRow, item.isAi ? s.msgRowAi : s.msgRowUser]}>
       {item.isAi && (
         <View style={s.avatarWrap}>
-          <Bot size={15} color={T.colors.forge} />
+          <Image source={require('../assets/images/mascot_ai.png')} style={{ width: 20, height: 20, resizeMode: 'contain' }} />
         </View>
       )}
       <View style={[s.bubble, item.isAi ? s.bubbleAi : s.bubbleUser]}>
@@ -145,7 +153,7 @@ export default function ChatScreen() {
       <View style={s.header}>
         <View style={s.headerLeft}>
           <View style={s.headerAvatar}>
-            <Bot size={18} color={T.colors.forge} />
+            <Image source={require('../assets/images/mascot_ai.png')} style={{ width: 24, height: 24, resizeMode: 'contain' }} />
           </View>
           <View>
             <Text style={s.headerTitle} maxFontSizeMultiplier={1.2}>FORGE Coach</Text>
@@ -175,7 +183,7 @@ export default function ChatScreen() {
       {isTyping && (
         <View style={s.typingWrap}>
           <View style={s.avatarWrap}>
-            <Bot size={15} color={T.colors.forge} />
+            <Image source={require('../assets/images/mascot_ai.png')} style={{ width: 20, height: 20, resizeMode: 'contain' }} />
           </View>
           <View style={s.bubbleAi}>
             <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>

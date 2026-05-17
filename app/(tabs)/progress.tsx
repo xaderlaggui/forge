@@ -75,6 +75,14 @@ export default function ProgressScreen() {
         onTakePhoto={takePhoto} 
       />
 
+      {/* ── Composition: Links ── */}
+      <View style={s.section}>
+        <TouchableOpacity style={s.linkCard} onPress={() => router.push('/workoutHistory')}>
+          <Text style={s.linkTitle} maxFontSizeMultiplier={1.2}>Workout History</Text>
+          <Text style={s.linkSub} maxFontSizeMultiplier={1.2}>View your past sessions and volume</Text>
+        </TouchableOpacity>
+      </View>
+
     </ScrollView>
   );
 }
@@ -103,4 +111,14 @@ const s = StyleSheet.create({
     textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: T.spacing.px3,
   },
   measGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+
+  linkCard: {
+    backgroundColor: T.colors.bg1,
+    borderWidth: 1, borderColor: T.colors.b1,
+    borderRadius: T.radii.lg,
+    padding: T.spacing.px4,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  linkTitle: { fontSize: T.typography.sizes.body, fontWeight: '700', color: T.colors.forge, marginBottom: 4 },
+  linkSub: { fontSize: T.typography.sizes.caption, color: T.colors.t3 },
 });

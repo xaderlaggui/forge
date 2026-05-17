@@ -31,6 +31,20 @@ export function useActiveSession(id?: string | string[], date?: string | string[
   // Load initial data
   useEffect(() => {
     if (isLoaded) return;
+    
+    // Helper to find previous set stats
+    const getPrev = (exName: string, setIdx: number) => {
+      // Find the most recent workout that contains this exercise
+      const past = [...workouts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      for (const w of past) {
+        const loggedEx = w.exercises.find(e => e.name === exName);
+        if (loggedEx && loggedEx.sets[setIdx]) {
+          return `${loggedEx.sets[setIdx].weight} x ${loggedEx.sets[setIdx].reps}`;
+        }
+      }
+      return '—';
+    };
+
     if (id && typeof id === 'string') {
       const existing = workouts.find(w => w.id === id);
       if (existing) {
@@ -39,7 +53,7 @@ export function useActiveSession(id?: string | string[], date?: string | string[
           name: ex.name,
           sets: ex.sets.map((s, idx) => ({
             id: idx,
-            prev: `${s.weight} x ${s.reps}`,
+            prev: getPrev(ex.name, idx),
             weight: s.weight.toString(),
             reps: s.reps.toString(),
             done: false,
@@ -54,7 +68,7 @@ export function useActiveSession(id?: string | string[], date?: string | string[
           name: ex.name,
           sets: Array.from({ length: ex.sets }).map((_, idx) => ({
             id: idx + 1,
-            prev: '—',
+            prev: getPrev(ex.name, idx),
             weight: '',
             reps: ex.reps.toString(),
             done: false,
@@ -65,8 +79,8 @@ export function useActiveSession(id?: string | string[], date?: string | string[
       setExercises([{ 
         name: 'Bench Press (Barbell)', 
         sets: [
-          { id: 1, prev: '—', weight: '', reps: '', done: false },
-          { id: 2, prev: '—', weight: '', reps: '', done: false },
+          { id: 1, prev: getPrev('Bench Press (Barbell)', 0), weight: '', reps: '', done: false },
+          { id: 2, prev: getPrev('Bench Press (Barbell)', 1), weight: '', reps: '', done: false },
         ] 
       }]);
     }
@@ -120,6 +134,12 @@ export function useActiveSession(id?: string | string[], date?: string | string[
     setExercises(copy);
   };
 
+  const removeSet = (exIdx: number, setIdx: number) => {
+    const copy = [...exercises];
+    copy[exIdx].sets.splice(setIdx, 1);
+    setExercises(copy);
+  };
+
   const selectPreset = (exIdx: number, sets: number, reps: number) => {
     const copy = [...exercises];
     copy[exIdx].sets = Array.from({ length: sets }).map((_, i) => ({
@@ -130,6 +150,14 @@ export function useActiveSession(id?: string | string[], date?: string | string[
       done: false
     }));
     setExercises(copy);
+
+    // Feature 5: Rest Timer Auto-Duration Based on Preset
+    let duration = 90; // default hypertrophy
+    if (reps <= 5) duration = 180; // volume/heavy strength
+    else if (reps <= 8) duration = 120; // strength/power
+    
+    setRestTime(duration);
+    // Note: totalRestTime is not used as a state setter currently, we can just use restTime for the ring max
   };
 
   const openNumpad = (exIdx: number, setIdx: number, field: 'weight' | 'reps') => {
@@ -188,13 +216,44 @@ export function useActiveSession(id?: string | string[], date?: string | string[
     return exercises.every(ex => ex.sets.every(s => s.done));
   }, [exercises]);
 
+  // Feature 4: Volume Tracker
+  const volumeStats = useMemo(() => {
+    let vol = 0;
+    let completedSets = 0;
+    exercises.forEach(ex => {
+      ex.sets.forEach(s => {
+        if (s.done) {
+          completedSets++;
+          vol += (Number(s.weight) || 0) * (Number(s.reps) || 0);
+        }
+      });
+    });
+    return { volume: vol, completedSets };
+  }, [exercises]);
+
+  // Feature 1: Personal Records (PR) Mapping
+  const personalRecords = useMemo(() => {
+    const prs: Record<string, Record<string, number>> = {};
+    workouts.forEach(w => {
+      w.exercises.forEach(ex => {
+        if (!prs[ex.name]) prs[ex.name] = {};
+        ex.sets.forEach(s => {
+          if (s.weight > (prs[ex.name][s.reps.toString()] || 0)) {
+            prs[ex.name][s.reps.toString()] = s.weight;
+          }
+        });
+      });
+    });
+    return prs;
+  }, [workouts]);
+
   return {
     workoutStarted, setWorkoutStarted,
     timer, timerLabel, isResting, isPaused, restTime, totalRestTime,
     workoutTitle, exercises, numpadVisible, numpadValue, numpadLabel,
     doneExercises, totalExercises, currentExerciseIndex, setCurrentExerciseIndex,
-    allSetsComplete,
+    allSetsComplete, volumeStats, personalRecords,
     setNumpadValue, setNumpadVisible, setIsResting, setRestTime, setIsPaused,
-    toggleSet, addSet, selectPreset, openNumpad, commitNumpad, finishWorkout
+    toggleSet, addSet, removeSet, selectPreset, openNumpad, commitNumpad, finishWorkout
   };
 }

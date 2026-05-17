@@ -117,6 +117,16 @@ export default function SignupScreen() {
             <Text style={s.backText}>← Back to Login</Text>
           </TouchableOpacity>
 
+import { MascotImage } from '../../components/common/MascotImage';
+
+          <MascotImage
+            mascot="welcome"
+            width={150}
+            height={150}
+            animation="slideUp"
+            accessibilityLabel="Forge the bear welcoming you to FORGE"
+            style={{ alignSelf: 'center', marginBottom: 8 }}
+          />
           {/* Brand */}
           <Text style={s.wordmark}>FORGE</Text>
           <Text style={s.title}>Create your account</Text>

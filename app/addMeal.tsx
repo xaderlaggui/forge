@@ -1,10 +1,11 @@
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Save, Sparkles, X } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator, ScrollView } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useNutrition } from '../hooks/useNutrition';
-import type { Meal } from '../types';
-import { Sparkles, Save, X } from 'lucide-react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ForgeTheme as T } from '../constants/ForgeTheme';
+import { useNutrition } from '../hooks/useNutrition';
+import { groqComplete } from '../services/groq';
+import type { Meal } from '../types';
 
 export default function AddMealScreen() {
   const router = useRouter();
@@ -33,21 +34,10 @@ export default function AddMealScreen() {
 
     setIsAnalyzing(true);
     try {
-      const apiKey = process.env.EXPO_PUBLIC_GROQ_API_KEY;
-      if (!apiKey) throw new Error('API key missing');
-
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'llama-3.1-8b-instant',
-          messages: [
-            {
-              role: 'system',
-              content: `You are a world-class sports nutritionist. The user will describe a meal. 
+      const content = await groqComplete([
+        {
+          role: 'system',
+          content: `You are a world-class sports nutritionist. The user will describe a meal. 
 Estimate the nutritional content. If no portion is provided, estimate based on a standard serving and specify it.
 Respond ONLY with a valid, parsable JSON object containing exactly these keys: 
 "foodName" (string, short summary of meal),
@@ -59,24 +49,18 @@ Respond ONLY with a valid, parsable JSON object containing exactly these keys:
 "fiber" (number, in grams),
 "sugar" (number, in grams).
 No markdown formatting, no backticks, just raw JSON.`
-            },
-            {
-              role: 'user',
-              content: description
-            }
-          ],
-          temperature: 0.2,
-          response_format: { type: "json_object" }
-        })
+        },
+        {
+          role: 'user',
+          content: description
+        }
+      ], {
+        model: 'llama-3.1-8b-instant',
+        temperature: 0.2,
+        max_tokens: 500,
+        response_format: { type: "json_object" }
       });
 
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`API Error: ${response.status} ${errText}`);
-      }
-      
-      const data = await response.json();
-      const content = data.choices[0].message.content;
       const parsed = JSON.parse(content);
 
       setFoodName(parsed.foodName || description);
@@ -87,7 +71,7 @@ No markdown formatting, no backticks, just raw JSON.`
       setFat(String(parsed.fat || 0));
       setFiber(String(parsed.fiber || 0));
       setSugar(String(parsed.sugar || 0));
-      
+
       setAnalyzed(true);
     } catch (e) {
       console.error(e);
@@ -107,12 +91,12 @@ No markdown formatting, no backticks, just raw JSON.`
     try {
       const targetMealName = (mealName as string) || 'Snack';
       const existingMeals = nutrition?.meals || [];
-      
+
       const mealIdx = existingMeals.findIndex(m => m.name === targetMealName);
       let updatedMeals = [...existingMeals];
-      
+
       const finalName = portion ? `${foodName} (${portion})` : foodName;
-      
+
       const newMealData: Meal = {
         name: targetMealName,
         calories: Number(cals),
@@ -121,6 +105,15 @@ No markdown formatting, no backticks, just raw JSON.`
         fat: Number(fat) || 0,
         fiber: Number(fiber) || 0,
         sugar: Number(sugar) || 0,
+      };
+
+      const newItem = {
+        name: foodName,
+        serving: portion || '1 serving',
+        calories: Number(cals),
+        protein: Number(pro) || 0,
+        carbs: Number(carbs) || 0,
+        fat: Number(fat) || 0,
       };
 
       if (mealIdx >= 0) {
@@ -133,14 +126,15 @@ No markdown formatting, no backticks, just raw JSON.`
           fat: updatedMeals[mealIdx].fat + newMealData.fat,
           fiber: (updatedMeals[mealIdx].fiber || 0) + (newMealData.fiber || 0),
           sugar: (updatedMeals[mealIdx].sugar || 0) + (newMealData.sugar || 0),
+          items: [...(updatedMeals[mealIdx].items || []), newItem]
         };
       } else {
-        updatedMeals.push(newMealData);
+        updatedMeals.push({ ...newMealData, items: [newItem] });
       }
 
-      await updateNutrition({ 
-        meals: updatedMeals, 
-        totalCalories: (nutrition?.totalCalories || 0) + newMealData.calories 
+      await updateNutrition({
+        meals: updatedMeals,
+        totalCalories: (nutrition?.totalCalories || 0) + newMealData.calories
       });
 
       router.back();
@@ -172,8 +166,8 @@ No markdown formatting, no backticks, just raw JSON.`
               value={description}
               onChangeText={setDescription}
             />
-            <TouchableOpacity 
-              style={[s.aiBtn, isAnalyzing && { opacity: 0.7 }]} 
+            <TouchableOpacity
+              style={[s.aiBtn, isAnalyzing && { opacity: 0.7 }]}
               onPress={analyzeMeal}
               disabled={isAnalyzing}
             >
@@ -186,7 +180,7 @@ No markdown formatting, no backticks, just raw JSON.`
                 </>
               )}
             </TouchableOpacity>
-            
+
             <TouchableOpacity onPress={() => setAnalyzed(true)} style={{ marginTop: 24, padding: 12 }}>
               <Text style={{ color: T.colors.t3, textAlign: 'center', fontSize: 14, fontWeight: '600' }}>Or enter manually</Text>
             </TouchableOpacity>
@@ -254,7 +248,7 @@ const s = StyleSheet.create({
   iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 20, fontWeight: '900', color: T.colors.t1, letterSpacing: 1 },
   scroll: { padding: T.spacing.page, paddingBottom: 60 },
-  
+
   analyzeWrap: { marginTop: 40 },
   aiPrompt: { fontSize: 28, fontWeight: '700', color: T.colors.t1, marginBottom: 20 },
   aiInput: {

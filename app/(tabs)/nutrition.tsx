@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Plus } from 'lucide-react-native';
 import { ForgeTheme as T } from '../../constants/ForgeTheme';
@@ -34,11 +34,14 @@ export default function NutritionScreen() {
     >
       {/* ── Composition: Header ── */}
       <View style={s.header}>
-        <View>
-          <Text style={s.headerSub} maxFontSizeMultiplier={1.2}>
-            Today · {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-          </Text>
-          <Text style={s.headerTitle} maxFontSizeMultiplier={1.2}>Nutrition</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <Image source={require('../../assets/images/mascot_meal.png')} style={{ width: 48, height: 48, resizeMode: 'contain' }} />
+          <View>
+            <Text style={s.headerSub} maxFontSizeMultiplier={1.2}>
+              Today · {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+            </Text>
+            <Text style={s.headerTitle} maxFontSizeMultiplier={1.2}>Nutrition</Text>
+          </View>
         </View>
         <TouchableOpacity
           style={s.addBtn}

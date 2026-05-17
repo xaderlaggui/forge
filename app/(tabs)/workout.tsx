@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Text } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, Image } from 'react-native';
 import { ForgeSegment } from '../../components/forge/ForgeSegment';
 import { ForgeTheme as T } from '../../constants/ForgeTheme';
 
@@ -23,7 +23,10 @@ export default function WorkoutScreen() {
     <View style={s.container}>
       {/* ── Composition: Header ── */}
       <View style={s.header}>
-        <Text style={s.title} maxFontSizeMultiplier={1.2}>Workout Planner</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: T.spacing.px4 }}>
+          <Image source={require('../../assets/images/mascot_workout.png')} style={{ width: 48, height: 48, resizeMode: 'contain' }} />
+          <Text style={s.title} maxFontSizeMultiplier={1.2}>Workout Planner</Text>
+        </View>
         <ForgeSegment
           options={['Planner', 'Routines', 'Library']}
           value={activeTab}
@@ -65,6 +68,6 @@ const s = StyleSheet.create({
     paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: T.spacing.px4,
     backgroundColor: T.colors.bg0, borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
   },
-  title: { fontSize: T.typography.sizes.h1, fontWeight: '700', color: T.colors.t1, marginBottom: T.spacing.px4 },
+  title: { fontSize: T.typography.sizes.h1, fontWeight: '700', color: T.colors.t1 },
   plannerContainer: { padding: T.spacing.page, paddingBottom: 100 },
 });

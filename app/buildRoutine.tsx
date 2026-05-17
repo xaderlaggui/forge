@@ -13,7 +13,7 @@ const SPLITS = {
   push: { label: 'PUSH', cls: 'push', icon: ArrowUpCircle, color: '#FF5C2E', hint: 'Chest · Shoulders · Triceps', categories: ['chest', 'shoulders', 'triceps'] },
   pull: { label: 'PULL', cls: 'pull', icon: ArrowDownCircle, color: '#0A84FF', hint: 'Back · Biceps · Rear Delt', categories: ['back', 'biceps'] },
   legs: { label: 'LEGS', cls: 'legs', icon: PersonStanding, color: '#30D158', hint: 'Quads · Hamstrings · Calves', categories: ['legs'] },
-  full: { label: 'FULL BODY', cls: 'full', icon: PersonStanding, color: '#BF5AF2', hint: 'All muscle groups', categories: [] }
+  full: { label: 'FULL BODY', cls: 'full', icon: PersonStanding, color: '#BF5AF2', hint: 'All muscle groups', categories: [] as string[] }
 };
 
 const PRESETS = ['3×8', '3×10', '3×12', '4×8', '5×5'];
