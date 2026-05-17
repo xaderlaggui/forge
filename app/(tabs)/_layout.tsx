@@ -1,21 +1,21 @@
+import { Tabs, useRouter } from 'expo-router';
+import { Dumbbell, Home, PieChart, Plus, Settings, TrendingUp } from 'lucide-react-native';
 import React from 'react';
-import { Tabs } from 'expo-router';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { Home, Dumbbell, PieChart, TrendingUp, Settings, Plus } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
-import { ForgeTheme } from '../../constants/ForgeTheme';
-
-function TabIcon({ icon, color }: { icon: React.ReactNode; color: string }) {
-  return <View style={{ alignItems: 'center', justifyContent: 'center' }}>{icon}</View>;
-}
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ForgeTheme as T } from '../../constants/ForgeTheme';
 
 function ForgeFAB() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  
   return (
     <TouchableOpacity
-      style={styles.fab}
+      style={[styles.fab, { bottom: 85 + insets.bottom }]} // Floating above tab bar
       onPress={() => router.push('/activeWorkout')}
       activeOpacity={0.85}
+      accessibilityLabel="Start active workout"
+      accessibilityRole="button"
     >
       <Plus size={26} color="#fff" strokeWidth={2.5} />
     </TouchableOpacity>
@@ -24,93 +24,89 @@ function ForgeFAB() {
 
 export default function TabLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: ForgeTheme.colors.forge,
-        tabBarInactiveTintColor: ForgeTheme.colors.t3,
-        tabBarStyle: {
-          backgroundColor: 'rgba(10,10,11,0.95)',
-          borderTopWidth: 0.5,
-          borderTopColor: ForgeTheme.colors.b1,
-          height: 80,
-          paddingBottom: 20,
-          paddingTop: 12,
-        },
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '500',
-          marginTop: 2,
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <Home size={22} color={color} />,
+    <View style={{ flex: 1, backgroundColor: T.colors.bg0 }}>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: T.colors.forge,
+          tabBarInactiveTintColor: T.colors.t3,
+          tabBarStyle: {
+            backgroundColor: 'rgba(10,10,12,0.95)', // bg0 with slight transparency for blur effect
+            borderTopWidth: 0.5,
+            borderTopColor: T.colors.b1,
+            height: 85,
+            paddingBottom: 24,
+            paddingTop: 12,
+            position: 'absolute', // Allows content to flow underneath if needed
+            bottom: 0,
+            left: 0,
+            right: 0,
+          },
+          tabBarLabelStyle: {
+            fontSize: 10,
+            fontWeight: '600',
+            marginTop: 4,
+          },
         }}
-      />
-      <Tabs.Screen
-        name="workout"
-        options={{
-          title: 'Workout',
-          tabBarIcon: ({ color }) => <Dumbbell size={22} color={color} />,
-        }}
-      />
-
-      {/* Center FAB placeholder tab */}
-      <Tabs.Screen
-        name="nutrition"
-        options={{
-          title: 'Nutrition',
-          tabBarIcon: ({ color }) => <PieChart size={22} color={color} />,
-          tabBarButton: (props) => (
-            <View style={{ flex: 1, alignItems: 'center' }}>
-              {/* FAB floats above */}
-              <ForgeFAB />
-              {/* invisible touch area keeps tab layout balanced */}
-              <View style={{ height: 80 }} />
-            </View>
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="progress"
-        options={{
-          title: 'Progress',
-          tabBarIcon: ({ color }) => <TrendingUp size={22} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-          tabBarIcon: ({ color }) => <Settings size={22} color={color} />,
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Home',
+            tabBarIcon: ({ color }) => <Home size={22} color={color} strokeWidth={2.5} />,
+          }}
+        />
+        <Tabs.Screen
+          name="workout"
+          options={{
+            title: 'Workout',
+            tabBarIcon: ({ color }) => <Dumbbell size={22} color={color} strokeWidth={2.5} />,
+          }}
+        />
+        <Tabs.Screen
+          name="nutrition"
+          options={{
+            title: 'Nutrition',
+            tabBarIcon: ({ color }) => <PieChart size={22} color={color} strokeWidth={2.5} />,
+          }}
+        />
+        <Tabs.Screen
+          name="progress"
+          options={{
+            title: 'Progress',
+            tabBarIcon: ({ color }) => <TrendingUp size={22} color={color} strokeWidth={2.5} />,
+          }}
+        />
+        <Tabs.Screen
+          name="settings"
+          options={{
+            title: 'Settings',
+            tabBarIcon: ({ color }) => <Settings size={22} color={color} strokeWidth={2.5} />,
+          }}
+        />
+      </Tabs>
+      
+      {/* Floating Action Button (Global) */}
+      <ForgeFAB />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
-    top: -26,
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: ForgeTheme.colors.forge,
+    right: T.spacing.page,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: T.colors.forge,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: ForgeTheme.colors.bg0,
-    shadowColor: ForgeTheme.colors.forge,
-    shadowOffset: { width: 0, height: 0 },
+    shadowColor: T.colors.forge,
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
-    shadowRadius: 20,
-    elevation: 12,
+    shadowRadius: 12,
+    elevation: 8,
     zIndex: 100,
   },
 });

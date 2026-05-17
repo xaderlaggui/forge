@@ -9,7 +9,8 @@ import dayjs from 'dayjs';
 import { useWorkouts } from '../hooks/useWorkouts';
 import { RestTimerWidget } from '../components/forge/WorkoutWidgets';
 import { NumpadBottomSheet } from '../components/forge/WorkoutWidgets';
-import { ForgeTheme } from '../constants/ForgeTheme';
+import { ForgeTheme as T } from '../constants/ForgeTheme';
+import { ForgeButton } from '../components/forge/ForgeButton';
 
 interface SetRow {
   id: number;
@@ -183,7 +184,7 @@ export default function ActiveWorkoutScreen() {
       {/* ── Sticky Header ── */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <ChevronLeft size={20} color={ForgeTheme.colors.t2} />
+          <ChevronLeft size={20} color={T.colors.t2} />
         </TouchableOpacity>
 
         {/* Exercise progress pips */}
@@ -202,26 +203,26 @@ export default function ActiveWorkoutScreen() {
         {/* Live timer */}
         <View style={styles.timerBadge}>
           <View style={styles.timerDot} />
-          <Text style={styles.timerText}>{timerLabel}</Text>
+          <Text style={styles.timerText} maxFontSizeMultiplier={1.2}>{timerLabel}</Text>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* ── Exercise title ── */}
-        <Text style={styles.exerciseTitle}>{workoutTitle}</Text>
+        <Text style={styles.exerciseTitle} maxFontSizeMultiplier={1.2}>{workoutTitle}</Text>
 
         {/* ── Sets table per exercise ── */}
         {exercises.map((ex, exIdx) => (
           <View key={exIdx} style={styles.exerciseBlock}>
-            <Text style={styles.exName}>{ex.name}</Text>
+            <Text style={styles.exName} maxFontSizeMultiplier={1.2}>{ex.name}</Text>
 
             {/* Table header */}
             <View style={styles.tableHeader}>
-              <Text style={[styles.colHead, { flex: 0.6 }]}>SET</Text>
-              <Text style={[styles.colHead, { flex: 1.4 }]}>PREVIOUS</Text>
-              <Text style={[styles.colHead, { flex: 1 }]}>LBS</Text>
-              <Text style={[styles.colHead, { flex: 1 }]}>REPS</Text>
-              <Text style={[styles.colHead, { flex: 0.6, textAlign: 'center' }]}>✓</Text>
+              <Text style={[styles.colHead, { flex: 0.6 }]} maxFontSizeMultiplier={1.2}>SET</Text>
+              <Text style={[styles.colHead, { flex: 1.4 }]} maxFontSizeMultiplier={1.2}>PREVIOUS</Text>
+              <Text style={[styles.colHead, { flex: 1 }]} maxFontSizeMultiplier={1.2}>LBS</Text>
+              <Text style={[styles.colHead, { flex: 1 }]} maxFontSizeMultiplier={1.2}>REPS</Text>
+              <Text style={[styles.colHead, { flex: 0.6, textAlign: 'center' }]} maxFontSizeMultiplier={1.2}>✓</Text>
             </View>
 
             {/* Set rows */}
@@ -230,21 +231,21 @@ export default function ActiveWorkoutScreen() {
                 key={setIdx}
                 style={[styles.row, set.done && styles.rowDone, setIdx < ex.sets.length - 1 && styles.rowBorder]}
               >
-                <Text style={[styles.cell, { flex: 0.6, color: ForgeTheme.colors.t2 }]}>{setIdx + 1}</Text>
-                <Text style={[styles.cell, { flex: 1.4, color: ForgeTheme.colors.t3, fontSize: 12 }]} numberOfLines={1}>{set.prev}</Text>
+                <Text style={[styles.cell, { flex: 0.6, color: T.colors.t2 }]} maxFontSizeMultiplier={1.2}>{setIdx + 1}</Text>
+                <Text style={[styles.cell, { flex: 1.4, color: T.colors.t3, fontSize: T.typography.sizes.bodyS }]} numberOfLines={1} maxFontSizeMultiplier={1.2}>{set.prev}</Text>
 
                 <TouchableOpacity
                   style={[styles.inputCell, { flex: 1 }, set.done && styles.inputCellDone]}
                   onPress={() => openNumpad(exIdx, setIdx, 'weight')}
                 >
-                  <Text style={styles.inputCellText}>{set.weight || '—'}</Text>
+                  <Text style={styles.inputCellText} maxFontSizeMultiplier={1.2}>{set.weight || '—'}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[styles.inputCell, { flex: 1 }, set.done && styles.inputCellDone]}
                   onPress={() => openNumpad(exIdx, setIdx, 'reps')}
                 >
-                  <Text style={styles.inputCellText}>{set.reps || '—'}</Text>
+                  <Text style={styles.inputCellText} maxFontSizeMultiplier={1.2}>{set.reps || '—'}</Text>
                 </TouchableOpacity>
 
                 <View style={[{ flex: 0.6, alignItems: 'center' }]}>
@@ -260,7 +261,7 @@ export default function ActiveWorkoutScreen() {
 
             {/* Add set */}
             <TouchableOpacity style={styles.addSetBtn} onPress={() => addSet(exIdx)}>
-              <Text style={styles.addSetText}>+ Add Set</Text>
+              <Text style={styles.addSetText} maxFontSizeMultiplier={1.2}>+ Add Set</Text>
             </TouchableOpacity>
           </View>
         ))}
@@ -284,9 +285,12 @@ export default function ActiveWorkoutScreen() {
 
       {/* ── Finish Button ── */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.finishBtn} onPress={finishWorkout} activeOpacity={0.85}>
-          <Text style={styles.finishText}>FINISH WORKOUT</Text>
-        </TouchableOpacity>
+        <ForgeButton
+          label="FINISH WORKOUT"
+          onPress={finishWorkout}
+          size="lg"
+          pulse
+        />
       </View>
 
       {/* ── Numpad Bottom Sheet ── */}
@@ -303,108 +307,100 @@ export default function ActiveWorkoutScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: ForgeTheme.colors.bg0 },
+  container: { flex: 1, backgroundColor: T.colors.bg0 },
 
   // Header
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingTop: 60, paddingBottom: 12, paddingHorizontal: 20,
-    backgroundColor: 'rgba(10,10,11,0.95)',
-    borderBottomWidth: 0.5, borderBottomColor: ForgeTheme.colors.b1,
+    paddingTop: 60, paddingBottom: T.spacing.px3, paddingHorizontal: T.spacing.page,
+    backgroundColor: 'rgba(10,10,12,0.95)',
+    borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
   },
   backBtn: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: ForgeTheme.colors.bg2,
+    width: 36, height: 36, borderRadius: T.radii.full,
+    backgroundColor: T.colors.bg2,
     alignItems: 'center', justifyContent: 'center',
   },
   pips: { flexDirection: 'row', gap: 5, alignItems: 'center' },
-  pip: { height: 5, borderRadius: 3 },
-  pipInactive: { width: 14, backgroundColor: ForgeTheme.colors.bg3 },
-  pipActive: { width: 22, backgroundColor: ForgeTheme.colors.forge },
-  pipDone: { width: 14, backgroundColor: ForgeTheme.colors.forge, opacity: 0.5 },
+  pip: { height: 5, borderRadius: T.radii.full },
+  pipInactive: { width: 14, backgroundColor: T.colors.bg3 },
+  pipActive: { width: 22, backgroundColor: T.colors.forge },
+  pipDone: { width: 14, backgroundColor: T.colors.forgeDim },
   timerBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 12, paddingVertical: 6,
-    backgroundColor: 'rgba(255,92,46,0.1)',
-    borderRadius: 20,
+    paddingHorizontal: T.spacing.px3, paddingVertical: 6,
+    backgroundColor: T.colors.forgeDim,
+    borderRadius: T.radii.xl,
   },
-  timerDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: ForgeTheme.colors.forge },
-  timerText: { fontSize: 13, fontWeight: '700', color: ForgeTheme.colors.forge },
+  timerDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.colors.forge },
+  timerText: { fontSize: T.typography.sizes.bodyS, fontWeight: '700', color: T.colors.forge, fontFamily: T.typography.families.mono },
 
-  content: { padding: 20 },
-  exerciseTitle: { fontSize: 24, fontWeight: '700', color: ForgeTheme.colors.t1, marginBottom: 20 },
+  content: { padding: T.spacing.page },
+  exerciseTitle: { fontSize: T.typography.sizes.h1, fontWeight: '700', color: T.colors.t1, marginBottom: T.spacing.px5 },
 
   // Exercise block
   exerciseBlock: {
-    backgroundColor: ForgeTheme.colors.bg1,
-    borderRadius: 20, borderWidth: 0.5, borderColor: ForgeTheme.colors.b1,
-    overflow: 'hidden', marginBottom: 20,
+    backgroundColor: T.colors.bg1,
+    borderRadius: T.radii.xl, borderWidth: 0.5, borderColor: T.colors.b1,
+    overflow: 'hidden', marginBottom: T.spacing.px5,
   },
-  exName: { fontSize: 15, fontWeight: '700', color: ForgeTheme.colors.t1, padding: 16, paddingBottom: 12 },
+  exName: { fontSize: T.typography.sizes.body, fontWeight: '700', color: T.colors.t1, padding: T.spacing.px4, paddingBottom: T.spacing.px3 },
 
   // Table
   tableHeader: {
     flexDirection: 'row', paddingHorizontal: 14, paddingVertical: 10,
-    borderBottomWidth: 0.5, borderBottomColor: ForgeTheme.colors.b1,
-    backgroundColor: 'rgba(10,10,11,0.4)',
+    borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
+    backgroundColor: 'rgba(10,10,12,0.4)',
   },
-  colHead: { fontSize: 10, fontWeight: '600', color: ForgeTheme.colors.t3, textTransform: 'uppercase', letterSpacing: 0.6 },
+  colHead: { fontSize: T.typography.sizes.caption, fontWeight: '600', color: T.colors.t3, textTransform: 'uppercase', letterSpacing: 0.6 },
 
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10 },
-  rowBorder: { borderBottomWidth: 0.5, borderBottomColor: ForgeTheme.colors.b1 },
-  rowDone: { backgroundColor: 'rgba(255,92,46,0.04)' },
+  rowBorder: { borderBottomWidth: 0.5, borderBottomColor: T.colors.b1 },
+  rowDone: { backgroundColor: T.colors.forgeDim },
 
-  cell: { fontSize: 13, fontWeight: '500', color: ForgeTheme.colors.t1 },
+  cell: { fontSize: T.typography.sizes.bodyS, fontWeight: '500', color: T.colors.t1 },
 
   inputCell: {
-    backgroundColor: ForgeTheme.colors.bg2,
-    borderRadius: 10, height: 34,
+    backgroundColor: T.colors.bg2,
+    borderRadius: T.radii.sm, height: 34,
     alignItems: 'center', justifyContent: 'center',
     marginHorizontal: 3,
     borderWidth: 1, borderColor: 'transparent',
   },
   inputCellDone: { borderColor: 'rgba(255,92,46,0.3)' },
-  inputCellText: { fontSize: 14, fontWeight: '600', color: ForgeTheme.colors.t1 },
+  inputCellText: { fontSize: T.typography.sizes.body, fontWeight: '600', color: T.colors.t1 },
 
   checkBtn: {
-    width: 28, height: 28, borderRadius: 14,
-    backgroundColor: ForgeTheme.colors.bg3,
-    borderWidth: 1.5, borderColor: ForgeTheme.colors.b1,
+    width: 28, height: 28, borderRadius: T.radii.full,
+    backgroundColor: T.colors.bg3,
+    borderWidth: 1.5, borderColor: T.colors.b1,
     alignItems: 'center', justifyContent: 'center',
   },
   checkBtnDone: {
-    backgroundColor: ForgeTheme.colors.forge,
-    borderColor: ForgeTheme.colors.forge,
-    shadowColor: ForgeTheme.colors.forge,
+    backgroundColor: T.colors.forge,
+    borderColor: T.colors.forge,
+    shadowColor: T.colors.forge,
     shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 8, elevation: 4,
   },
 
   addSetBtn: {
     paddingVertical: 14, alignItems: 'center',
-    borderTopWidth: 0.5, borderTopColor: ForgeTheme.colors.b1,
+    borderTopWidth: 0.5, borderTopColor: T.colors.b1,
   },
-  addSetText: { fontSize: 13, fontWeight: '600', color: 'rgba(255,92,46,0.8)' },
+  addSetText: { fontSize: T.typography.sizes.bodyS, fontWeight: '600', color: T.colors.forge },
 
   // Rest Timer
   restTimerFloat: {
     position: 'absolute',
-    bottom: 100, left: 16, right: 16,
+    bottom: 100, left: T.spacing.px4, right: T.spacing.px4,
     zIndex: 20,
   },
 
   // Footer
   footer: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    padding: 20, paddingBottom: 36,
-    backgroundColor: ForgeTheme.colors.bg0,
-    borderTopWidth: 0.5, borderTopColor: ForgeTheme.colors.b1,
+    padding: T.spacing.page, paddingBottom: 36,
+    backgroundColor: T.colors.bg0,
+    borderTopWidth: 0.5, borderTopColor: T.colors.b1,
   },
-  finishBtn: {
-    backgroundColor: ForgeTheme.colors.forge,
-    borderRadius: 16, paddingVertical: 16,
-    alignItems: 'center',
-    shadowColor: ForgeTheme.colors.forge,
-    shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 15, elevation: 6,
-  },
-  finishText: { color: '#fff', fontSize: 15, fontWeight: '700', letterSpacing: 0.5 },
 });

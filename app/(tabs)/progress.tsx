@@ -1,19 +1,25 @@
+import * as FileSystem from 'expo-file-system';
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
+import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { Camera, ChevronRight, Minus, TrendingDown, TrendingUp } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Image, ActivityIndicator,
+  ActivityIndicator,
   Dimensions,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
-import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { useRouter } from 'expo-router';
-import { db, storage } from '../../services/firebase';
-import { Camera, TrendingDown, TrendingUp, Minus, ChevronRight } from 'lucide-react-native';
-import { useAuthStore } from '../../stores/authStore';
+import { ForgeButton } from '../../components/forge/ForgeButton';
 import { ForgeTheme as T } from '../../constants/ForgeTheme';
+import { db, storage } from '../../services/firebase';
+import { useAuthStore } from '../../stores/authStore';
 
 const SCREEN_W = Dimensions.get('window').width;
 
@@ -30,15 +36,15 @@ function StatCard({ label, value, unit, delta, onPress }: StatCardProps) {
   const isUp   = delta !== undefined && delta > 0;
   return (
     <TouchableOpacity style={sc.card} onPress={onPress} activeOpacity={0.75}>
-      <Text style={sc.label}>{label}</Text>
+      <Text style={sc.label} maxFontSizeMultiplier={1.2}>{label}</Text>
       <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3, marginTop: 6 }}>
-        <Text style={sc.value}>{value}</Text>
-        {unit && <Text style={sc.unit}>{unit}</Text>}
+        <Text style={sc.value} maxFontSizeMultiplier={1.2}>{value}</Text>
+        {unit && <Text style={sc.unit} maxFontSizeMultiplier={1.2}>{unit}</Text>}
       </View>
       {delta !== undefined && (
         <View style={[sc.badge, isDown && sc.badgeDown, isUp && sc.badgeUp]}>
-          {isDown ? <TrendingDown size={10} color={T.colors.green} /> : isUp ? <TrendingUp size={10} color="#FF453A" /> : <Minus size={10} color={T.colors.t3} />}
-          <Text style={[sc.badgeText, isDown && { color: T.colors.green }, isUp && { color: '#FF453A' }]}>
+          {isDown ? <TrendingDown size={10} color={T.colors.green} /> : isUp ? <TrendingUp size={10} color={T.colors.red} /> : <Minus size={10} color={T.colors.t3} />}
+          <Text style={[sc.badgeText, isDown && { color: T.colors.green }, isUp && { color: T.colors.red }]} maxFontSizeMultiplier={1.2}>
             {Math.abs(delta)} lbs
           </Text>
         </View>
@@ -50,20 +56,20 @@ function StatCard({ label, value, unit, delta, onPress }: StatCardProps) {
 const sc = StyleSheet.create({
   card: {
     flex: 1, backgroundColor: T.colors.bg1,
-    borderRadius: 16, borderWidth: 0.5, borderColor: T.colors.b1, padding: 14,
+    borderRadius: T.radii.lg, borderWidth: 0.5, borderColor: T.colors.b1, padding: 14,
   },
-  label: { fontSize: 10, fontWeight: '600', color: T.colors.t3, textTransform: 'uppercase', letterSpacing: 0.7 },
+  label: { fontSize: T.typography.sizes.caption, fontWeight: '600', color: T.colors.t3, textTransform: 'uppercase', letterSpacing: 0.7 },
   value: { fontSize: 22, fontWeight: '800', color: T.colors.t1 },
-  unit: { fontSize: 12, color: T.colors.t2, fontWeight: '500' },
+  unit: { fontSize: T.typography.sizes.bodyS, color: T.colors.t2, fontWeight: '500' },
   badge: {
     flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 6,
     alignSelf: 'flex-start',
-    paddingHorizontal: 7, paddingVertical: 3, borderRadius: 100,
+    paddingHorizontal: 7, paddingVertical: 3, borderRadius: T.radii.full,
     backgroundColor: T.colors.bg2,
   },
-  badgeDown: { backgroundColor: 'rgba(52,199,89,0.12)' },
-  badgeUp:   { backgroundColor: 'rgba(255,69,58,0.12)'  },
-  badgeText: { fontSize: 10, fontWeight: '600', color: T.colors.t3 },
+  badgeDown: { backgroundColor: T.colors.greenDim },
+  badgeUp:   { backgroundColor: T.colors.redDim  },
+  badgeText: { fontSize: T.typography.sizes.caption, fontWeight: '600', color: T.colors.t3 },
 });
 
 // ─── Measurement Card ───────────────────────────────────────
@@ -73,18 +79,18 @@ function MeasCard({ label, value, prevValue, onPress }: MeasCardProps) {
   const delta = value && prevValue ? +(value - prevValue).toFixed(1) : undefined;
   return (
     <TouchableOpacity style={measS.card} onPress={onPress} activeOpacity={0.75}>
-      <Text style={measS.label}>{label}</Text>
-      <Text style={measS.val}>{value ?? '—'}</Text>
-      <Text style={measS.unit}>inches</Text>
+      <Text style={measS.label} maxFontSizeMultiplier={1.2}>{label}</Text>
+      <Text style={measS.val} maxFontSizeMultiplier={1.2}>{value ?? '—'}</Text>
+      <Text style={measS.unit} maxFontSizeMultiplier={1.2}>inches</Text>
       {delta !== undefined && (
         <View style={[measS.badge, delta < 0 && measS.badgeDown, delta > 0 && measS.badgeUp]}>
-          <Text style={[measS.badgeText, delta < 0 && { color: T.colors.green }, delta > 0 && { color: '#FF453A' }]}>
+          <Text style={[measS.badgeText, delta < 0 && { color: T.colors.green }, delta > 0 && { color: T.colors.red }]} maxFontSizeMultiplier={1.2}>
             {delta > 0 ? '+' : ''}{delta} in
           </Text>
         </View>
       )}
       <View style={measS.row}>
-        <Text style={measS.updateText}>Update</Text>
+        <Text style={measS.updateText} maxFontSizeMultiplier={1.2}>Update</Text>
         <ChevronRight size={12} color={T.colors.forge} />
       </View>
     </TouchableOpacity>
@@ -94,21 +100,21 @@ function MeasCard({ label, value, prevValue, onPress }: MeasCardProps) {
 const measS = StyleSheet.create({
   card: {
     width: '48%', backgroundColor: T.colors.bg1,
-    borderRadius: 16, borderWidth: 0.5, borderColor: T.colors.b1, padding: 14,
+    borderRadius: T.radii.lg, borderWidth: 0.5, borderColor: T.colors.b1, padding: 14,
   },
-  label: { fontSize: 10, fontWeight: '600', color: T.colors.t3, textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 6 },
+  label: { fontSize: T.typography.sizes.caption, fontWeight: '600', color: T.colors.t3, textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 6 },
   val: { fontSize: 24, fontWeight: '800', color: T.colors.t1 },
-  unit: { fontSize: 11, color: T.colors.t2, marginTop: 2 },
+  unit: { fontSize: T.typography.sizes.label, color: T.colors.t2, marginTop: 2 },
   badge: {
     alignSelf: 'flex-start', marginTop: 4,
-    paddingHorizontal: 6, paddingVertical: 2, borderRadius: 100,
+    paddingHorizontal: 6, paddingVertical: 2, borderRadius: T.radii.full,
     backgroundColor: T.colors.bg2,
   },
-  badgeDown: { backgroundColor: 'rgba(52,199,89,0.12)' },
-  badgeUp:   { backgroundColor: 'rgba(255,69,58,0.12)'  },
+  badgeDown: { backgroundColor: T.colors.greenDim },
+  badgeUp:   { backgroundColor: T.colors.redDim  },
   badgeText: { fontSize: 9, fontWeight: '700', color: T.colors.t3 },
   row: { flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 2 },
-  updateText: { fontSize: 11, color: T.colors.forge, fontWeight: '600' },
+  updateText: { fontSize: T.typography.sizes.label, color: T.colors.forge, fontWeight: '600' },
 });
 
 // ─── Main Screen ───────────────────────────────────────────
@@ -205,8 +211,8 @@ export default function ProgressScreen() {
       {/* ── Header ── */}
       <View style={s.header}>
         <View>
-          <Text style={s.headerSub}>Your Journey</Text>
-          <Text style={s.headerTitle}>Progress</Text>
+          <Text style={s.headerSub} maxFontSizeMultiplier={1.2}>Your Journey</Text>
+          <Text style={s.headerTitle} maxFontSizeMultiplier={1.2}>Progress</Text>
         </View>
         <TouchableOpacity style={s.cameraBtn} onPress={takePhoto} disabled={isUploading}>
           {isUploading
@@ -232,17 +238,17 @@ export default function ProgressScreen() {
               style={[s.tfPill, timeframe === tf && s.tfPillActive]}
               onPress={() => setTimeframe(tf)}
             >
-              <Text style={[s.tfText, timeframe === tf && s.tfTextActive]}>{tf}</Text>
+              <Text style={[s.tfText, timeframe === tf && s.tfTextActive]} maxFontSizeMultiplier={1.2}>{tf}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
         <View style={s.chartCard}>
           <View style={s.chartHeader}>
-            <Text style={s.chartTitle}>Weight Trend</Text>
+            <Text style={s.chartTitle} maxFontSizeMultiplier={1.2}>Weight Trend</Text>
             <View style={[s.deltaBadge, weightDiff <= 0 ? s.deltaBadgeDown : s.deltaBadgeUp]}>
-              {weightDiff <= 0 ? <TrendingDown size={12} color={T.colors.green} /> : <TrendingUp size={12} color="#FF453A" />}
-              <Text style={[s.deltaBadgeText, weightDiff <= 0 ? { color: T.colors.green } : { color: '#FF453A' }]}>
+              {weightDiff <= 0 ? <TrendingDown size={12} color={T.colors.green} /> : <TrendingUp size={12} color={T.colors.red} />}
+              <Text style={[s.deltaBadgeText, weightDiff <= 0 ? { color: T.colors.green } : { color: T.colors.red }]} maxFontSizeMultiplier={1.2}>
                 {weightDiff > 0 ? '+' : ''}{weightDiff} lbs
               </Text>
             </View>
@@ -276,7 +282,7 @@ export default function ProgressScreen() {
 
       {/* ── Body Measurements ── */}
       <View style={s.section}>
-        <Text style={s.sectionLabel}>Body Measurements</Text>
+        <Text style={s.sectionLabel} maxFontSizeMultiplier={1.2}>Body Measurements</Text>
         <View style={s.measGrid}>
           <MeasCard label="Chest"  value={latest.chest}  prevValue={prev?.chest}  onPress={() => router.push('/measurements')} />
           <MeasCard label="Waist"  value={latest.waist}  prevValue={prev?.waist}  onPress={() => router.push('/measurements')} />
@@ -287,22 +293,25 @@ export default function ProgressScreen() {
 
       {/* ── Transformation Photos ── */}
       <View style={s.section}>
-        <Text style={s.sectionLabel}>Transformation</Text>
+        <Text style={s.sectionLabel} maxFontSizeMultiplier={1.2}>Transformation</Text>
         <View style={s.photoGrid}>
           {[{ photo: firstPhoto, badge: 'Before' }, { photo: lastPhoto, badge: 'Current' }].map(({ photo, badge }) => (
             <View key={badge} style={s.photoCard}>
               <Image source={{ uri: photo.url }} style={StyleSheet.absoluteFill as any} resizeMode="cover" />
               <View style={s.photoBadgeWrap}>
-                <Text style={s.photoBadgeText}>{badge}</Text>
+                <Text style={s.photoBadgeText} maxFontSizeMultiplier={1.2}>{badge}</Text>
               </View>
             </View>
           ))}
         </View>
 
-        <TouchableOpacity style={s.addPhotoBtn} onPress={takePhoto} disabled={isUploading} activeOpacity={0.8}>
-          <Camera size={15} color={T.colors.forge} />
-          <Text style={s.addPhotoBtnText}>{isUploading ? 'Saving…' : 'Take Progress Photo'}</Text>
-        </TouchableOpacity>
+        <ForgeButton
+          label={isUploading ? 'Saving…' : 'Take Progress Photo'}
+          onPress={takePhoto}
+          disabled={isUploading}
+          variant="secondary"
+          leftIcon={<Camera size={15} color={T.colors.forge} />}
+        />
       </View>
 
     </ScrollView>
@@ -317,53 +326,53 @@ const s = StyleSheet.create({
   // Header
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
-    paddingHorizontal: 20, paddingTop: 60, paddingBottom: 16,
+    paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: T.spacing.px4,
   },
-  headerSub: { fontSize: 12, color: T.colors.t2, fontWeight: '500', marginBottom: 2 },
-  headerTitle: { fontSize: 24, fontWeight: '700', color: T.colors.t1 },
+  headerSub: { fontSize: T.typography.sizes.bodyS, color: T.colors.t2, fontWeight: '500', marginBottom: 2 },
+  headerTitle: { fontSize: T.typography.sizes.h1, fontWeight: '700', color: T.colors.t1 },
   cameraBtn: {
-    width: 40, height: 40, borderRadius: 12,
-    backgroundColor: 'rgba(255,92,46,0.12)',
+    width: 40, height: 40, borderRadius: T.radii.md,
+    backgroundColor: T.colors.forgeDim,
     borderWidth: 0.5, borderColor: 'rgba(255,92,46,0.3)',
     alignItems: 'center', justifyContent: 'center',
   },
 
   // Stats row
-  statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, marginBottom: 20 },
+  statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: T.spacing.page, marginBottom: T.spacing.px5 },
 
   // Section
-  section: { marginHorizontal: 20, marginBottom: 24 },
+  section: { marginHorizontal: T.spacing.page, marginBottom: T.spacing.px6 },
   sectionLabel: {
-    fontSize: 11, fontWeight: '600', color: T.colors.t3,
-    textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 10,
+    fontSize: T.typography.sizes.label, fontWeight: '600', color: T.colors.t3,
+    textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: T.spacing.px3,
   },
 
   // Timeframe
-  tfRow: { flexDirection: 'row', gap: 6, marginBottom: 12 },
+  tfRow: { flexDirection: 'row', gap: 6, marginBottom: T.spacing.px3 },
   tfPill: {
-    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 100,
+    paddingHorizontal: 12, paddingVertical: 6, borderRadius: T.radii.full,
     backgroundColor: T.colors.bg2,
   },
   tfPillActive: { backgroundColor: T.colors.forge },
-  tfText: { fontSize: 11, fontWeight: '600', color: T.colors.t3 },
+  tfText: { fontSize: T.typography.sizes.label, fontWeight: '600', color: T.colors.t3 },
   tfTextActive: { color: '#fff' },
 
   // Chart
   chartCard: {
     backgroundColor: T.colors.bg1,
-    borderRadius: 20, borderWidth: 0.5, borderColor: T.colors.b1,
-    padding: 16, overflow: 'hidden',
+    borderRadius: T.radii.xl, borderWidth: 0.5, borderColor: T.colors.b1,
+    padding: T.spacing.px4, overflow: 'hidden',
   },
-  chartHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  chartTitle: { fontSize: 14, fontWeight: '600', color: T.colors.t1 },
+  chartHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: T.spacing.px3 },
+  chartTitle: { fontSize: T.typography.sizes.body, fontWeight: '600', color: T.colors.t1 },
   deltaBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 100,
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: T.radii.full,
     backgroundColor: T.colors.bg2,
   },
-  deltaBadgeDown: { backgroundColor: 'rgba(52,199,89,0.12)' },
-  deltaBadgeUp:   { backgroundColor: 'rgba(255,69,58,0.12)'  },
-  deltaBadgeText: { fontSize: 11, fontWeight: '700' },
+  deltaBadgeDown: { backgroundColor: T.colors.greenDim },
+  deltaBadgeUp:   { backgroundColor: T.colors.redDim  },
+  deltaBadgeText: { fontSize: T.typography.sizes.label, fontWeight: '700' },
 
   // Measurements
   measGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
@@ -373,7 +382,7 @@ const s = StyleSheet.create({
   photoCard: {
     flex: 1, aspectRatio: 0.72,
     backgroundColor: T.colors.bg2,
-    borderRadius: 16, borderWidth: 0.5, borderColor: T.colors.b1,
+    borderRadius: T.radii.lg, borderWidth: 0.5, borderColor: T.colors.b1,
     overflow: 'hidden', justifyContent: 'flex-end',
   },
   photoBadgeWrap: {
@@ -381,14 +390,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(10,10,11,0.75)',
   },
   photoBadgeText: {
-    fontSize: 10, fontWeight: '700', color: T.colors.t2,
+    fontSize: T.typography.sizes.caption, fontWeight: '700', color: T.colors.t2,
     textTransform: 'uppercase', letterSpacing: 1.2,
   },
-  addPhotoBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    paddingVertical: 12, borderRadius: 14,
-    backgroundColor: 'rgba(255,92,46,0.08)',
-    borderWidth: 0.5, borderColor: 'rgba(255,92,46,0.25)',
-  },
-  addPhotoBtnText: { fontSize: 13, fontWeight: '600', color: T.colors.forge },
 });

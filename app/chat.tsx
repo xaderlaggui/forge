@@ -11,7 +11,7 @@ import Animated, {
   useSharedValue, useAnimatedStyle,
   withRepeat, withTiming, withSequence,
 } from 'react-native-reanimated';
-import { ForgeTheme } from '../constants/ForgeTheme';
+import { ForgeTheme as T } from '../constants/ForgeTheme';
 import { groqComplete, GroqMessage } from '../services/groq';
 import { db } from '../services/firebase';
 import { useAuthStore } from '../stores/authStore';
@@ -119,18 +119,18 @@ export default function ChatScreen() {
     <View style={[s.msgRow, item.isAi ? s.msgRowAi : s.msgRowUser]}>
       {item.isAi && (
         <View style={s.avatarWrap}>
-          <Bot size={15} color={ForgeTheme.colors.forge} />
+          <Bot size={15} color={T.colors.forge} />
         </View>
       )}
       <View style={[s.bubble, item.isAi ? s.bubbleAi : s.bubbleUser]}>
-        {item.logged && <Text style={s.loggedBadge}>WORKOUT LOGGED</Text>}
-        <Text style={[s.bubbleText, item.isAi ? s.bubbleTextAi : s.bubbleTextUser]}>
+        {item.logged && <Text style={s.loggedBadge} maxFontSizeMultiplier={1.2}>WORKOUT LOGGED</Text>}
+        <Text style={[s.bubbleText, item.isAi ? s.bubbleTextAi : s.bubbleTextUser]} maxFontSizeMultiplier={1.2}>
           {item.text}
         </Text>
       </View>
       {!item.isAi && (
-        <View style={[s.avatarWrap, { backgroundColor: ForgeTheme.colors.bg3 }]}>
-          <UserIcon size={15} color={ForgeTheme.colors.t1} />
+        <View style={[s.avatarWrap, { backgroundColor: T.colors.bg3 }]}>
+          <UserIcon size={15} color={T.colors.t1} />
         </View>
       )}
     </View>
@@ -145,18 +145,18 @@ export default function ChatScreen() {
       <View style={s.header}>
         <View style={s.headerLeft}>
           <View style={s.headerAvatar}>
-            <Bot size={18} color={ForgeTheme.colors.forge} />
+            <Bot size={18} color={T.colors.forge} />
           </View>
           <View>
-            <Text style={s.headerTitle}>FORGE Coach</Text>
+            <Text style={s.headerTitle} maxFontSizeMultiplier={1.2}>FORGE Coach</Text>
             <View style={s.onlineDot}>
               <View style={s.onlineDotCircle} />
-              <Text style={s.onlineText}>Online · Groq AI (Llama 3.3)</Text>
+              <Text style={s.onlineText} maxFontSizeMultiplier={1.2}>Online · Groq AI (Llama 3.3)</Text>
             </View>
           </View>
         </View>
         <TouchableOpacity onPress={() => router.back()} style={s.closeBtn}>
-          <X size={18} color={ForgeTheme.colors.t2} />
+          <X size={18} color={T.colors.t2} />
         </TouchableOpacity>
       </View>
 
@@ -175,7 +175,7 @@ export default function ChatScreen() {
       {isTyping && (
         <View style={s.typingWrap}>
           <View style={s.avatarWrap}>
-            <Bot size={15} color={ForgeTheme.colors.forge} />
+            <Bot size={15} color={T.colors.forge} />
           </View>
           <View style={s.bubbleAi}>
             <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
@@ -192,12 +192,13 @@ export default function ChatScreen() {
         <TextInput
           style={s.input}
           placeholder="Tell me what you did today..."
-          placeholderTextColor={ForgeTheme.colors.t3}
+          placeholderTextColor={T.colors.t3}
           value={inputText}
           onChangeText={setInputText}
           returnKeyType="send"
           onSubmitEditing={handleSend}
           multiline
+          maxFontSizeMultiplier={1.2}
         />
         <TouchableOpacity
           style={[s.sendBtn, !inputText.trim() && { opacity: 0.4 }]}
@@ -212,34 +213,34 @@ export default function ChatScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: ForgeTheme.colors.bg0 },
+  container: { flex: 1, backgroundColor: T.colors.bg0 },
 
   // Header
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingTop: 60, paddingBottom: 14, paddingHorizontal: 20,
-    borderBottomWidth: 0.5, borderBottomColor: ForgeTheme.colors.b1,
-    backgroundColor: ForgeTheme.colors.bg1,
+    paddingTop: 60, paddingBottom: T.spacing.px3, paddingHorizontal: T.spacing.page,
+    borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
+    backgroundColor: T.colors.bg1,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   headerAvatar: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: 'rgba(255,92,46,0.12)',
+    width: 40, height: 40, borderRadius: T.radii.full,
+    backgroundColor: T.colors.forgeDim,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: 'rgba(255,92,46,0.25)',
   },
-  headerTitle: { fontSize: 15, fontWeight: '700', color: ForgeTheme.colors.t1 },
+  headerTitle: { fontSize: T.typography.sizes.body, fontWeight: '700', color: T.colors.t1 },
   onlineDot: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
-  onlineDotCircle: { width: 6, height: 6, borderRadius: 3, backgroundColor: ForgeTheme.colors.green },
-  onlineText: { fontSize: 11, color: ForgeTheme.colors.t3, fontWeight: '500' },
+  onlineDotCircle: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.colors.green },
+  onlineText: { fontSize: T.typography.sizes.caption, color: T.colors.t3, fontWeight: '500' },
   closeBtn: {
     width: 34, height: 34, borderRadius: 17,
-    backgroundColor: ForgeTheme.colors.bg2,
+    backgroundColor: T.colors.bg2,
     alignItems: 'center', justifyContent: 'center',
   },
 
   // List
-  list: { padding: 16, gap: 12, paddingBottom: 8 },
+  list: { padding: T.spacing.page, gap: 12, paddingBottom: T.spacing.px2 },
 
   // Bubbles
   msgRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
@@ -247,48 +248,48 @@ const s = StyleSheet.create({
   msgRowUser: { justifyContent: 'flex-end' },
   avatarWrap: {
     width: 28, height: 28, borderRadius: 14,
-    backgroundColor: 'rgba(255,92,46,0.12)',
+    backgroundColor: T.colors.forgeDim,
     alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
   },
   bubble: {
-    maxWidth: '78%', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18,
+    maxWidth: '78%', paddingHorizontal: 14, paddingVertical: 10, borderRadius: T.radii.lg,
   },
-  bubbleAi:   { backgroundColor: ForgeTheme.colors.bg1, borderBottomLeftRadius: 4, borderWidth: 0.5, borderColor: ForgeTheme.colors.b1 },
-  bubbleUser: { backgroundColor: ForgeTheme.colors.forge, borderBottomRightRadius: 4 },
-  bubbleText: { fontSize: 14, lineHeight: 21 },
-  bubbleTextAi:   { color: ForgeTheme.colors.t1 },
+  bubbleAi:   { backgroundColor: T.colors.bg1, borderBottomLeftRadius: 4, borderWidth: 0.5, borderColor: T.colors.b1 },
+  bubbleUser: { backgroundColor: T.colors.forge, borderBottomRightRadius: 4 },
+  bubbleText: { fontSize: T.typography.sizes.bodyS, lineHeight: T.typography.sizes.bodyS * 1.5 },
+  bubbleTextAi:   { color: T.colors.t1 },
   bubbleTextUser: { color: '#fff', fontWeight: '500' },
 
   loggedBadge: {
-    fontSize: 9, fontWeight: '700', color: ForgeTheme.colors.forge,
+    fontSize: 9, fontWeight: '700', color: T.colors.forge,
     letterSpacing: 0.8, marginBottom: 5,
     textTransform: 'uppercase',
   },
 
   // Typing
-  typingWrap: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
-  typingDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: ForgeTheme.colors.forge },
+  typingWrap: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, paddingHorizontal: T.spacing.page, paddingBottom: T.spacing.px2 },
+  typingDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.colors.forge },
 
   // Input bar
   inputBar: {
     flexDirection: 'row', alignItems: 'flex-end', gap: 10,
     padding: 14, paddingBottom: Platform.OS === 'ios' ? 28 : 14,
-    borderTopWidth: 0.5, borderTopColor: ForgeTheme.colors.b1,
-    backgroundColor: ForgeTheme.colors.bg1,
+    borderTopWidth: 0.5, borderTopColor: T.colors.b1,
+    backgroundColor: T.colors.bg1,
   },
   input: {
     flex: 1, minHeight: 44, maxHeight: 120,
-    backgroundColor: ForgeTheme.colors.bg2,
-    borderRadius: 22, paddingHorizontal: 16, paddingVertical: 12,
-    fontSize: 14, color: ForgeTheme.colors.t1,
-    borderWidth: 0.5, borderColor: ForgeTheme.colors.b1,
+    backgroundColor: T.colors.bg2,
+    borderRadius: T.radii.full, paddingHorizontal: T.spacing.px4, paddingVertical: 12,
+    fontSize: T.typography.sizes.bodyS, color: T.colors.t1,
+    borderWidth: 0.5, borderColor: T.colors.b1,
   },
   sendBtn: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: ForgeTheme.colors.forge,
+    backgroundColor: T.colors.forge,
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: ForgeTheme.colors.forge,
+    shadowColor: T.colors.forge,
     shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 5,
   },
 });

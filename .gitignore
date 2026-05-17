@@ -44,3 +44,12 @@ firebase-service-account.json
 # generated native folders
 /ios
 /android
+
+# Internal Documentation & Planning
+*.md
+!README.md
+/product/
+/design/
+/engineering/
+/docs/
+/ai/
