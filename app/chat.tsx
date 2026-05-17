@@ -1,206 +1,294 @@
-import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
 import { addDoc, collection } from 'firebase/firestore';
 import { Bot, Send, User as UserIcon, X } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  FlatList, KeyboardAvoidingView, Platform,
+  StyleSheet, Text, TextInput, TouchableOpacity, View,
+} from 'react-native';
+import Animated, {
+  useSharedValue, useAnimatedStyle,
+  withRepeat, withTiming, withSequence,
+} from 'react-native-reanimated';
 import { ForgeTheme } from '../constants/ForgeTheme';
+import { groqComplete, GroqMessage } from '../services/groq';
 import { db } from '../services/firebase';
 import { useAuthStore } from '../stores/authStore';
 
+const SYSTEM_PROMPT = `You are FORGE Coach — an energetic, supportive AI fitness coach inside a workout tracking app.
 
-const genAI = new GoogleGenerativeAI(process.env.EXPO_PUBLIC_GEMINI_API_KEY || '');
+BEHAVIOR RULES:
+1. Keep replies SHORT (1–3 sentences). Be punchy and motivating.
+2. If the user describes any physical activity (walking, running, gym, cycling, etc.), you MUST respond with valid JSON in this exact format — nothing else, no extra text:
+   {"action":"log_activity","activityName":"<name>","durationMinutes":<number>,"notes":"<optional notes>","message":"<your motivating reply>"}
+3. For all other messages, reply as plain conversational text (no JSON).
+4. Never use markdown. Never use asterisks.`;
 
-const logActivityDeclaration: any = {
-  name: "log_activity",
-  description: "Log a user's fitness activity like walking, running, cycling, or lifting weights to their database.",
-  parameters: {
-    type: SchemaType.OBJECT,
-    properties: {
-      activityName: {
-        type: SchemaType.STRING,
-        description: "The name of the activity, e.g. 'Walking', 'Running', 'Weightlifting'",
-      },
-      durationMinutes: {
-        type: SchemaType.INTEGER,
-        description: "Estimated duration of the activity in minutes. Make an educated guess if the user provides distance instead of time (e.g. 15km walk is roughly 150 mins).",
-      },
-      notes: {
-        type: SchemaType.STRING,
-        description: "Any extra notes about the activity, like distance, intensity, etc. (e.g. '15km').",
-      }
-    },
-    required: ["activityName", "durationMinutes"],
-  },
-};
-
-type Message = { id: string; text: string; isAi: boolean };
+type Message = { id: string; text: string; isAi: boolean; logged?: boolean };
 
 export default function ChatScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
+
   const [inputText, setInputText] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    { id: '1', text: "Hey! I'm your AI Coach. Tell me what you did today (e.g. 'I walked 15km') and I'll log it for you!", isAi: true }
+  const [messages, setMessages]   = useState<Message[]>([
+    { id: '1', text: "Hey! I'm your FORGE Coach. Tell me what you did today — like 'I ran 5km' — and I'll log it for you!", isAi: true },
   ]);
   const [isTyping, setIsTyping] = useState(false);
 
-  const chatSessionRef = useRef<any>(null);
+  // Chat history for multi-turn context
+  const historyRef = useRef<GroqMessage[]>([]);
   const flatListRef = useRef<FlatList>(null);
 
+  // ── Bouncing dots animation ──
+  const dot1 = useSharedValue(0);
+  const dot2 = useSharedValue(0);
+  const dot3 = useSharedValue(0);
   useEffect(() => {
-    // Initialize Gemini Chat Session with Tools
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      tools: [{ functionDeclarations: [logActivityDeclaration as any] }],
-      systemInstruction: "You are an energetic, supportive fitness coach. If the user tells you about an exercise or activity they did, ALWAYS call the log_activity function to save it for them. Keep your responses short, punchy, and encouraging."
-    });
-    chatSessionRef.current = model.startChat({ history: [] });
+    dot1.value = withRepeat(withSequence(withTiming(-5, { duration: 300 }), withTiming(0, { duration: 300 })), -1, true);
+    setTimeout(() => { dot2.value = withRepeat(withSequence(withTiming(-5, { duration: 300 }), withTiming(0, { duration: 300 })), -1, true); }, 100);
+    setTimeout(() => { dot3.value = withRepeat(withSequence(withTiming(-5, { duration: 300 }), withTiming(0, { duration: 300 })), -1, true); }, 200);
   }, []);
+  const dot1Style = useAnimatedStyle(() => ({ transform: [{ translateY: dot1.value }] }));
+  const dot2Style = useAnimatedStyle(() => ({ transform: [{ translateY: dot2.value }] }));
+  const dot3Style = useAnimatedStyle(() => ({ transform: [{ translateY: dot3.value }] }));
 
   const handleSend = async () => {
     if (!inputText.trim()) return;
-
     const userMsg = inputText.trim();
     setInputText('');
-    setMessages(prev => [...prev, { id: Date.now().toString(), text: userMsg, isAi: false }]);
+
+    const userBubble: Message = { id: Date.now().toString(), text: userMsg, isAi: false };
+    setMessages(prev => [...prev, userBubble]);
     setIsTyping(true);
 
+    // Build message history
+    historyRef.current.push({ role: 'user', content: userMsg });
+
     try {
-      const result = await chatSessionRef.current.sendMessage(userMsg);
-      const response = result.response;
+      const raw = await groqComplete(
+        [
+          { role: 'system', content: SYSTEM_PROMPT },
+          ...historyRef.current,
+        ],
+        { max_tokens: 200, temperature: 0.75 }
+      );
 
-      const functionCalls = response.functionCalls();
+      // Try to parse as an activity log action
+      let displayText = raw;
+      let logged = false;
 
-      if (functionCalls && functionCalls.length > 0) {
-        const call = functionCalls[0];
-
-        if (call.name === "log_activity") {
-          const { activityName, durationMinutes, notes } = call.args as any;
-
-          // Execute the function: Save to Firestore
-          const workoutRef = collection(db, `users/${user?.uid}/workouts`);
-          await addDoc(workoutRef, {
-            date: dayjs().format('YYYY-MM-DD'),
-            title: activityName.toUpperCase(),
-            notes: notes || `Duration: ${durationMinutes} mins`,
-            exercises: [],
-            createdAt: new Date().toISOString()
-          });
-
-          // Inform Gemini that the tool succeeded
-          const functionResponseResult = await chatSessionRef.current.sendMessage([{
-            functionResponse: {
-              name: "log_activity",
-              response: { success: true, message: `Successfully logged ${activityName} for ${durationMinutes} minutes.` }
-            }
-          }]);
-
-          setMessages(prev => [...prev, { id: Date.now().toString(), text: functionResponseResult.response.text(), isAi: true }]);
+      try {
+        // Extract JSON if it's embedded in text
+        const jsonMatch = raw.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed.action === 'log_activity' && user?.uid) {
+            await addDoc(collection(db, `users/${user.uid}/workouts`), {
+              date: dayjs().format('YYYY-MM-DD'),
+              notes: parsed.activityName,
+              exercises: [],
+              durationMin: parsed.durationMinutes ?? 0,
+              calories: Math.round((parsed.durationMinutes ?? 0) * 5),
+              createdAt: new Date().toISOString(),
+            });
+            displayText = `✅ Logged: ${parsed.activityName}${parsed.notes ? ` (${parsed.notes})` : ''}\n\n${parsed.message}`;
+            logged = true;
+          }
         }
-      } else {
-        // Standard text response
-        setMessages(prev => [...prev, { id: Date.now().toString(), text: response.text(), isAi: true }]);
+      } catch {
+        // Not JSON — that's fine, it's a normal response
       }
-    } catch (error) {
-      console.error(error);
-      setMessages(prev => [...prev, { id: Date.now().toString(), text: "Whoops, I had a little trouble connecting. Can you try again?", isAi: true }]);
+
+      historyRef.current.push({ role: 'assistant', content: raw });
+      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), text: displayText, isAi: true, logged }]);
+
+    } catch (err: any) {
+      const errMsg = err?.message?.includes('not set')
+        ? 'Add your EXPO_PUBLIC_GROQ_API_KEY in .env to chat with your coach!'
+        : 'Sorry, I had trouble connecting. Try again in a moment!';
+      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), text: errMsg, isAi: true }]);
     } finally {
       setIsTyping(false);
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     }
   };
 
   const renderMessage = ({ item }: { item: Message }) => (
-    <View style={[styles.msgContainer, item.isAi ? styles.msgAi : styles.msgUser]}>
-      {item.isAi && <View style={styles.iconBg}><Bot size={16} color="#000" /></View>}
-      <View style={[styles.bubble, item.isAi ? styles.bubbleAi : styles.bubbleUser]}>
-        {item.text.split(/(\*.*?\*|`.*?`)/g).map((chunk: string, i: number) => {
-          if (chunk.startsWith('*') && chunk.endsWith('*')) {
-            return <Text key={i} style={[styles.msgText, item.isAi ? styles.msgTextAi : styles.msgTextUser, { fontWeight: '900' }]}>{chunk.slice(1, -1)}</Text>;
-          }
-          return <Text key={i} style={[styles.msgText, item.isAi ? styles.msgTextAi : styles.msgTextUser]}>{chunk}</Text>;
-        })}
+    <View style={[s.msgRow, item.isAi ? s.msgRowAi : s.msgRowUser]}>
+      {item.isAi && (
+        <View style={s.avatarWrap}>
+          <Bot size={15} color={ForgeTheme.colors.forge} />
+        </View>
+      )}
+      <View style={[s.bubble, item.isAi ? s.bubbleAi : s.bubbleUser]}>
+        {item.logged && <Text style={s.loggedBadge}>WORKOUT LOGGED</Text>}
+        <Text style={[s.bubbleText, item.isAi ? s.bubbleTextAi : s.bubbleTextUser]}>
+          {item.text}
+        </Text>
       </View>
-      {!item.isAi && <View style={[styles.iconBg, { backgroundColor: '#242429' }]}><UserIcon size={16} color="#FFF" /></View>}
+      {!item.isAi && (
+        <View style={[s.avatarWrap, { backgroundColor: ForgeTheme.colors.bg3 }]}>
+          <UserIcon size={15} color={ForgeTheme.colors.t1} />
+        </View>
+      )}
     </View>
   );
 
-
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Bot size={20} color={ForgeTheme.colors.forge} />
-          <Text style={styles.headerTitle}>AI Coach</Text>
+    <KeyboardAvoidingView
+      style={s.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      {/* ── Header ── */}
+      <View style={s.header}>
+        <View style={s.headerLeft}>
+          <View style={s.headerAvatar}>
+            <Bot size={18} color={ForgeTheme.colors.forge} />
+          </View>
+          <View>
+            <Text style={s.headerTitle}>FORGE Coach</Text>
+            <View style={s.onlineDot}>
+              <View style={s.onlineDotCircle} />
+              <Text style={s.onlineText}>Online · Groq AI (Llama 3.3)</Text>
+            </View>
+          </View>
         </View>
-        <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
-          <X size={20} color={ForgeTheme.colors.t2} />
+        <TouchableOpacity onPress={() => router.back()} style={s.closeBtn}>
+          <X size={18} color={ForgeTheme.colors.t2} />
         </TouchableOpacity>
       </View>
 
-      {/* Chat Area */}
+      {/* ── Messages ── */}
       <FlatList
         ref={flatListRef}
         data={messages}
-        keyExtractor={item => item.id}
+        keyExtractor={m => m.id}
         renderItem={renderMessage}
-        contentContainerStyle={styles.chatList}
+        contentContainerStyle={s.list}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+        showsVerticalScrollIndicator={false}
       />
 
+      {/* ── Typing indicator ── */}
       {isTyping && (
-        <View style={styles.typingIndicator}>
-          <ActivityIndicator size="small" color={ForgeTheme.colors.forge} />
-          <Text style={styles.typingText}>Coach is typing...</Text>
+        <View style={s.typingWrap}>
+          <View style={s.avatarWrap}>
+            <Bot size={15} color={ForgeTheme.colors.forge} />
+          </View>
+          <View style={s.bubbleAi}>
+            <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
+              <Animated.View style={[s.typingDot, dot1Style]} />
+              <Animated.View style={[s.typingDot, dot2Style]} />
+              <Animated.View style={[s.typingDot, dot3Style]} />
+            </View>
+          </View>
         </View>
       )}
 
-      {/* Input Area */}
-      <View style={styles.inputArea}>
+      {/* ── Input ── */}
+      <View style={s.inputBar}>
         <TextInput
-          style={styles.input}
-          placeholder="Message AI Coach..."
+          style={s.input}
+          placeholder="Tell me what you did today..."
           placeholderTextColor={ForgeTheme.colors.t3}
           value={inputText}
           onChangeText={setInputText}
+          returnKeyType="send"
           onSubmitEditing={handleSend}
+          multiline
         />
-        <TouchableOpacity style={styles.sendBtn} onPress={handleSend} disabled={!inputText.trim() || isTyping}>
-          <Send size={18} color="#FFF" />
+        <TouchableOpacity
+          style={[s.sendBtn, !inputText.trim() && { opacity: 0.4 }]}
+          onPress={handleSend}
+          disabled={!inputText.trim() || isTyping}
+        >
+          <Send size={18} color="#fff" />
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: ForgeTheme.colors.bg0 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, paddingTop: 60, borderBottomWidth: 0.5, borderBottomColor: ForgeTheme.colors.b1, backgroundColor: ForgeTheme.colors.bg1 },
-  headerTitle: { fontSize: 16, fontWeight: '700', color: ForgeTheme.colors.t1, letterSpacing: 0.5 },
-  closeBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: ForgeTheme.colors.bg2, alignItems: 'center', justifyContent: 'center' },
 
-  chatList: { padding: 20, paddingBottom: 40, gap: 18 },
+  // Header
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingTop: 60, paddingBottom: 14, paddingHorizontal: 20,
+    borderBottomWidth: 0.5, borderBottomColor: ForgeTheme.colors.b1,
+    backgroundColor: ForgeTheme.colors.bg1,
+  },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  headerAvatar: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: 'rgba(255,92,46,0.12)',
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: 'rgba(255,92,46,0.25)',
+  },
+  headerTitle: { fontSize: 15, fontWeight: '700', color: ForgeTheme.colors.t1 },
+  onlineDot: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
+  onlineDotCircle: { width: 6, height: 6, borderRadius: 3, backgroundColor: ForgeTheme.colors.green },
+  onlineText: { fontSize: 11, color: ForgeTheme.colors.t3, fontWeight: '500' },
+  closeBtn: {
+    width: 34, height: 34, borderRadius: 17,
+    backgroundColor: ForgeTheme.colors.bg2,
+    alignItems: 'center', justifyContent: 'center',
+  },
 
-  msgContainer: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, width: '100%', marginBottom: 16 },
-  msgAi: { justifyContent: 'flex-start' },
-  msgUser: { justifyContent: 'flex-end' },
+  // List
+  list: { padding: 16, gap: 12, paddingBottom: 8 },
 
-  iconBg: { width: 30, height: 30, borderRadius: 15, backgroundColor: ForgeTheme.colors.bg2, justifyContent: 'center', alignItems: 'center', marginTop: 2 },
-
-  bubble: { maxWidth: '80%', padding: 12, paddingHorizontal: 14, borderRadius: 16 },
-  bubbleAi: { backgroundColor: ForgeTheme.colors.bg2, borderBottomLeftRadius: 4 },
+  // Bubbles
+  msgRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
+  msgRowAi:   { justifyContent: 'flex-start' },
+  msgRowUser: { justifyContent: 'flex-end' },
+  avatarWrap: {
+    width: 28, height: 28, borderRadius: 14,
+    backgroundColor: 'rgba(255,92,46,0.12)',
+    alignItems: 'center', justifyContent: 'center',
+    flexShrink: 0,
+  },
+  bubble: {
+    maxWidth: '78%', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18,
+  },
+  bubbleAi:   { backgroundColor: ForgeTheme.colors.bg1, borderBottomLeftRadius: 4, borderWidth: 0.5, borderColor: ForgeTheme.colors.b1 },
   bubbleUser: { backgroundColor: ForgeTheme.colors.forge, borderBottomRightRadius: 4 },
+  bubbleText: { fontSize: 14, lineHeight: 21 },
+  bubbleTextAi:   { color: ForgeTheme.colors.t1 },
+  bubbleTextUser: { color: '#fff', fontWeight: '500' },
 
-  msgText: { fontSize: 14, lineHeight: 21, fontWeight: '400' },
-  msgTextAi: { color: ForgeTheme.colors.t1 },
-  msgTextUser: { color: '#FFF' },
+  loggedBadge: {
+    fontSize: 9, fontWeight: '700', color: ForgeTheme.colors.forge,
+    letterSpacing: 0.8, marginBottom: 5,
+    textTransform: 'uppercase',
+  },
 
-  typingIndicator: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, paddingBottom: 16 },
-  typingText: { color: ForgeTheme.colors.t2, fontSize: 12, fontWeight: '600' },
+  // Typing
+  typingWrap: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
+  typingDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: ForgeTheme.colors.forge },
 
-  inputArea: { flexDirection: 'row', padding: 16, paddingBottom: 32, backgroundColor: ForgeTheme.colors.bg1, borderTopWidth: 0.5, borderTopColor: ForgeTheme.colors.b1, alignItems: 'center', gap: 10 },
-  input: { flex: 1, backgroundColor: ForgeTheme.colors.bg2, borderRadius: 22, height: 44, paddingHorizontal: 16, color: ForgeTheme.colors.t1, fontSize: 14 },
-  sendBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: ForgeTheme.colors.forge, justifyContent: 'center', alignItems: 'center' }
+  // Input bar
+  inputBar: {
+    flexDirection: 'row', alignItems: 'flex-end', gap: 10,
+    padding: 14, paddingBottom: Platform.OS === 'ios' ? 28 : 14,
+    borderTopWidth: 0.5, borderTopColor: ForgeTheme.colors.b1,
+    backgroundColor: ForgeTheme.colors.bg1,
+  },
+  input: {
+    flex: 1, minHeight: 44, maxHeight: 120,
+    backgroundColor: ForgeTheme.colors.bg2,
+    borderRadius: 22, paddingHorizontal: 16, paddingVertical: 12,
+    fontSize: 14, color: ForgeTheme.colors.t1,
+    borderWidth: 0.5, borderColor: ForgeTheme.colors.b1,
+  },
+  sendBtn: {
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: ForgeTheme.colors.forge,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: ForgeTheme.colors.forge,
+    shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 5,
+  },
 });

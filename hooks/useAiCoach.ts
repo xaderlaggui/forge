@@ -1,12 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import dayjs from 'dayjs';
 import { useAuthStore } from '../stores/authStore';
 import { useNutrition } from './useNutrition';
 import { useWorkouts } from './useWorkouts';
-import dayjs from 'dayjs';
-
-// Access your API key as an environment variable
-const genAI = new GoogleGenerativeAI(process.env.EXPO_PUBLIC_GEMINI_API_KEY || '');
+import { groqComplete } from '../services/groq';
 
 export function useAiCoach() {
   const { user } = useAuthStore();
@@ -16,42 +13,43 @@ export function useAiCoach() {
   return useQuery({
     queryKey: ['aiCoachTip', user?.uid, dayjs().format('YYYY-MM-DD')],
     queryFn: async () => {
-      if (!process.env.EXPO_PUBLIC_GEMINI_API_KEY) {
-        return "Please set EXPO_PUBLIC_GEMINI_API_KEY in your .env file to enable the AI Coach.";
+      const apiKey = process.env.EXPO_PUBLIC_GROQ_API_KEY;
+      if (!apiKey) {
+        return "Set EXPO_PUBLIC_GROQ_API_KEY in your .env to enable the AI Coach.";
       }
 
-      if (!user) return "Welcome to your AI Coach! Start logging data to get personalized tips.";
+      if (!user) return "Welcome! Start logging workouts and meals to get personalized tips.";
+
+      const recentWorkout = workouts?.[0];
+      const caloriesEaten = nutrition?.totalCalories ?? 0;
+      const waterLiters   = ((nutrition?.waterMl ?? 0) / 1000).toFixed(1);
 
       try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-        // Gather context context for the AI
-        const recentWorkout = workouts?.[0];
-        const caloriesEaten = nutrition?.totalCalories || 0;
-        const waterLiters = ((nutrition?.waterMl || 0) / 1000).toFixed(1);
-
-        const prompt = `
-          You are a world-class, highly motivating personal fitness AI coach. 
-          Keep your response under 2 sentences. Make it punchy and actionable.
-          
-          User Context:
-          Name: ${user.displayName || 'Athlete'}
-          Streak: ${user.streak || 0} days
-          Today's Calories Logged: ${caloriesEaten} kcal
-          Today's Water Logged: ${waterLiters}L
-          Recent Workout: ${recentWorkout ? recentWorkout.notes || recentWorkout.exercises.length + ' exercises' : 'None recently'}
-          
-          Based on this data, give them a highly personalized, energetic tip for today. Focus on either nutrition, hydration, or training depending on what they might need most right now.
-        `;
-
-        const result = await model.generateContent(prompt);
-        return result.response.text();
-      } catch (error) {
-        console.error("AI Coach Error:", error);
-        return "Keep pushing! Log your meals and workouts to stay on track today.";
+        return await groqComplete([
+          {
+            role: 'system',
+            content:
+              'You are an elite, highly motivating personal fitness coach. ' +
+              'Reply in 1–2 short punchy sentences. No markdown. No emojis. ' +
+              'Be specific to the data provided — reference the athlete\'s name, streak, or stats directly.',
+          },
+          {
+            role: 'user',
+            content:
+              `Athlete: ${user.displayName || 'Athlete'}\n` +
+              `Streak: ${(user as any).streak ?? 0} days\n` +
+              `Calories logged today: ${caloriesEaten} kcal\n` +
+              `Water logged today: ${waterLiters} L\n` +
+              `Last workout: ${recentWorkout ? (recentWorkout.notes || `${recentWorkout.exercises.length} exercises`) : 'None recently'}\n\n` +
+              `Give them one personalized, energetic coaching tip for today based on this data.`,
+          },
+        ], { max_tokens: 80, temperature: 0.85 });
+      } catch (err: any) {
+        console.error('AI Coach Error:', err?.message);
+        return "Keep pushing! Every rep counts. Log your meals and workouts to stay on track.";
       }
     },
-    // Only refetch once per day ideally, or when data changes significantly
-    staleTime: 1000 * 60 * 60 * 4, // 4 hours
+    staleTime: 1000 * 60 * 60 * 4, // Cache tip for 4 hours
+    retry: false,
   });
 }

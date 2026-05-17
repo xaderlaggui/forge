@@ -1,38 +1,62 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View, Text, TextInput, TouchableOpacity,
+  StyleSheet, ActivityIndicator, Alert,
+  KeyboardAvoidingView, Platform, ScrollView,
+} from 'react-native';
+import Animated, {
+  useSharedValue, useAnimatedStyle,
+  withTiming, withDelay, Easing,
+} from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { Mail, Lock, User } from 'lucide-react-native';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
+import { ForgeTheme as T } from '../../constants/ForgeTheme';
 
 export default function SignupScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName]                     = useState('');
+  const [email, setEmail]                   = useState('');
+  const [password, setPassword]             = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading]               = useState(false);
+  const [focusedField, setFocusedField]     = useState<string | null>(null);
+
+  // Entrance animation
+  const opacity    = useSharedValue(0);
+  const translateY = useSharedValue(24);
+  React.useEffect(() => {
+    opacity.value    = withDelay(100, withTiming(1, { duration: 600, easing: Easing.out(Easing.exp) }));
+    translateY.value = withDelay(100, withTiming(0, { duration: 600, easing: Easing.out(Easing.exp) }));
+  }, []);
+  const animStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateY: translateY.value }],
+  }));
 
   const handleSignup = async () => {
-    if (!email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
+    if (!name.trim() || !email.trim() || !password || !confirmPassword) {
+      Alert.alert('Missing fields', 'Please fill in all fields.');
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      Alert.alert('Password mismatch', 'Passwords do not match.');
       return;
     }
-
+    if (password.length < 6) {
+      Alert.alert('Weak password', 'Password must be at least 6 characters.');
+      return;
+    }
     try {
       setLoading(true);
-      // 1. Create the user in Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // 2. Create the initial Firestore document for this user
+      const { user } = await createUserWithEmailAndPassword(auth, email.trim(), password);
+      await updateProfile(user, { displayName: name.trim() });
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
         email: user.email,
-        displayName: '',
+        displayName: name.trim(),
         createdAt: new Date().toISOString(),
         streak: 0,
         bmi: 0,
@@ -40,99 +64,187 @@ export default function SignupScreen() {
         weight: 0,
         age: 0,
       });
-
-      // After this, the auth state listener in _layout.tsx will route them
-      // In the future, we'll route them to the (onboarding) flow here!
+      // Auth listener handles redirect to onboarding/tabs
     } catch (error: any) {
-      Alert.alert('Signup Failed', error.message);
+      Alert.alert('Sign Up Failed', error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-      style={styles.container}
-    >
-      <View style={styles.content}>
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>Start tracking your progress today</Text>
-
+  function InputField({
+    icon, placeholder, value, onChangeText,
+    fieldKey, secureTextEntry = false,
+    keyboardType = 'default', returnKeyType = 'next',
+  }: any) {
+    return (
+      <View style={[s.inputWrap, focusedField === fieldKey && s.inputWrapFocused]}>
+        {React.cloneElement(icon, {
+          color: focusedField === fieldKey ? T.colors.forge : T.colors.t3,
+          size: 18,
+        })}
         <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#999"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
+          style={s.input}
+          placeholder={placeholder}
+          placeholderTextColor={T.colors.t3}
+          value={value}
+          onChangeText={onChangeText}
+          secureTextEntry={secureTextEntry}
+          autoCapitalize={fieldKey === 'email' ? 'none' : 'words'}
+          keyboardType={keyboardType}
+          returnKeyType={returnKeyType}
+          onFocus={() => setFocusedField(fieldKey)}
+          onBlur={() => setFocusedField(null)}
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#999"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm Password"
-          placeholderTextColor="#999"
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
-
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={handleSignup}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Sign Up</Text>
-          )}
-        </TouchableOpacity>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.linkText}>Log In</Text>
-          </TouchableOpacity>
-        </View>
       </View>
+    );
+  }
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={s.container}
+    >
+      <ScrollView
+        contentContainerStyle={s.scroll}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <Animated.View style={[s.inner, animStyle]}>
+
+          {/* Back to login */}
+          <TouchableOpacity style={s.backRow} onPress={() => router.back()}>
+            <Text style={s.backText}>← Back to Login</Text>
+          </TouchableOpacity>
+
+          {/* Brand */}
+          <Text style={s.wordmark}>FORGE</Text>
+          <Text style={s.title}>Create your account</Text>
+          <Text style={s.subtitle}>Start building your best self today.</Text>
+
+          {/* Fields */}
+          <InputField
+            fieldKey="name"
+            icon={<User />}
+            placeholder="Full name"
+            value={name}
+            onChangeText={setName}
+            keyboardType="default"
+          />
+          <InputField
+            fieldKey="email"
+            icon={<Mail />}
+            placeholder="Email address"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
+          <InputField
+            fieldKey="password"
+            icon={<Lock />}
+            placeholder="Password (min. 6 characters)"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+          <InputField
+            fieldKey="confirm"
+            icon={<Lock />}
+            placeholder="Confirm password"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+            returnKeyType="done"
+          />
+
+          {/* CTA */}
+          <TouchableOpacity
+            style={[s.btn, loading && { opacity: 0.7 }]}
+            onPress={handleSignup}
+            disabled={loading}
+            activeOpacity={0.85}
+          >
+            {loading
+              ? <ActivityIndicator color="#fff" />
+              : <Text style={s.btnText}>Create Account</Text>
+            }
+          </TouchableOpacity>
+
+          {/* Terms */}
+          <Text style={s.terms}>
+            By signing up, you agree to our{' '}
+            <Text style={{ color: T.colors.forge }}>Terms of Service</Text>
+            {' '}and{' '}
+            <Text style={{ color: T.colors.forge }}>Privacy Policy</Text>.
+          </Text>
+
+          {/* Footer */}
+          <View style={s.footer}>
+            <Text style={s.footerText}>Already have an account? </Text>
+            <TouchableOpacity onPress={() => router.back()}>
+              <Text style={s.footerLink}>Log in</Text>
+            </TouchableOpacity>
+          </View>
+
+        </Animated.View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  content: { flex: 1, justifyContent: 'center', padding: 24 },
-  title: { fontSize: 32, fontWeight: 'bold', color: '#1A1A1A', marginBottom: 8 },
-  subtitle: { fontSize: 16, color: '#666', marginBottom: 32 },
-  input: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    fontSize: 16,
-  },
-  button: {
-    backgroundColor: '#C15A28', // Our primary color
-    borderRadius: 12,
-    padding: 16,
+const s = StyleSheet.create({
+  container: { flex: 1, backgroundColor: T.colors.bg0 },
+  scroll: { flexGrow: 1 },
+  inner: {
+    flex: 1, paddingHorizontal: 24,
+    paddingTop: 64, paddingBottom: 48,
     alignItems: 'center',
+  },
+
+  backRow: { alignSelf: 'flex-start', marginBottom: 28 },
+  backText: { fontSize: 13, color: T.colors.t3, fontWeight: '500' },
+
+  wordmark: {
+    fontSize: 28, fontWeight: '800', letterSpacing: 4,
+    color: T.colors.forge, marginBottom: 16,
+    textShadowColor: 'rgba(255,92,46,0.35)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 14,
+  },
+  title: { fontSize: 22, fontWeight: '700', color: T.colors.t1, marginBottom: 6, textAlign: 'center' },
+  subtitle: { fontSize: 13, color: T.colors.t2, textAlign: 'center', marginBottom: 32 },
+
+  // Inputs
+  inputWrap: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    width: '100%', height: 56,
+    backgroundColor: T.colors.bg2,
+    borderRadius: 16, paddingHorizontal: 16,
+    marginBottom: 12,
+    borderWidth: 1, borderColor: 'transparent',
+  },
+  inputWrapFocused: {
+    borderColor: T.colors.forge,
+    backgroundColor: T.colors.bg1,
+  },
+  input: { flex: 1, fontSize: 15, color: T.colors.t1 },
+
+  // Button
+  btn: {
+    width: '100%', height: 56,
+    backgroundColor: T.colors.forge,
+    borderRadius: 16, alignItems: 'center', justifyContent: 'center',
     marginTop: 8,
+    shadowColor: T.colors.forge,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3, shadowRadius: 16, elevation: 8,
   },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 24,
-  },
-  footerText: { color: '#666', fontSize: 14 },
-  linkText: { color: '#C15A28', fontSize: 14, fontWeight: 'bold' },
+  btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+
+  terms: { fontSize: 11, color: T.colors.t3, textAlign: 'center', marginTop: 16, lineHeight: 18 },
+
+  // Footer
+  footer: { flexDirection: 'row', alignItems: 'center', marginTop: 28 },
+  footerText: { fontSize: 13, color: T.colors.t3 },
+  footerLink: { fontSize: 13, color: T.colors.forge, fontWeight: '600' },
 });

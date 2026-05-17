@@ -1,11 +1,9 @@
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getAuth, initializeAuth, inMemoryPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// 🔧 Replace these values with your Firebase project config
-// Firebase Console → Project Settings → Your apps → SDK setup
+// Firebase project config from environment variables
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -16,15 +14,16 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Prevent re-initialization during hot reload
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+// Initialize Firebase app (guard against hot-reload re-init)
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Handle auth with persistent storage (Initialize only if app was just created)
-export const auth = getApps().length === 0 ? initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage)
-}) : getAuth(app);
+// Initialize Auth — use inMemoryPersistence (Firebase 12.x removed getReactNativePersistence).
+// Auth state is kept alive by the onAuthStateChanged listener in _layout.tsx.
+// For cross-session persistence, the auth store writes to AsyncStorage separately.
+export const auth = getApps().length === 1
+  ? initializeAuth(app, { persistence: inMemoryPersistence })
+  : getAuth(app);
 
-export const db = getFirestore(app);
+export const db      = getFirestore(app);
 export const storage = getStorage(app);
-
 export default app;

@@ -1,16 +1,25 @@
 import dayjs from 'dayjs';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { Flame } from 'lucide-react-native';
 import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming } from 'react-native-reanimated';
-import Svg, { Circle, Path } from 'react-native-svg';
+import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import { AiCoachCard } from '../../components/forge/AiCoachCard';
+import { MacroDonutRing } from '../../components/forge/MacroDonutRing';
+import { StreakWidget } from '../../components/forge/StreakWidget';
+import { MuscleTagChip, WorkoutListItem } from '../../components/forge/WorkoutAtoms';
 import { ForgeTheme } from '../../constants/ForgeTheme';
 import { useAiCoach } from '../../hooks/useAiCoach';
 import { useNutrition } from '../../hooks/useNutrition';
 import { useWorkouts } from '../../hooks/useWorkouts';
 import { useAuthStore } from '../../stores/authStore';
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 18) return 'Good afternoon';
+  return 'Good evening';
+}
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -19,14 +28,12 @@ export default function HomeScreen() {
   const { workouts } = useWorkouts();
   const { data: aiTip, isLoading: isAiLoading } = useAiCoach();
 
+  // CTA pulse
   const pulse = useSharedValue(1);
   React.useEffect(() => {
     pulse.value = withRepeat(withTiming(1.05, { duration: 1500 }), -1, true);
   }, []);
-
-  const pulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pulse.value }],
-  }));
+  const pulseStyle = useAnimatedStyle(() => ({ transform: [{ scale: pulse.value }] }));
 
   if (isLoading) {
     return (
@@ -36,171 +43,207 @@ export default function HomeScreen() {
     );
   }
 
-  const waterLiters = ((nutrition?.waterMl || 0) / 1000).toFixed(1);
+  const waterLiters = (nutrition?.waterMl || 0) / 1000;
   const activeCals = nutrition?.totalCalories || 0;
-
   const waterGoal = 2.4;
   const calGoal = 2500;
 
-  // SVG Ring Calculations
-  const r = 44;
-  const c = 2 * Math.PI * r;
-  const waterPercent = Math.min(parseFloat(waterLiters) / waterGoal, 1);
-  const calPercent = Math.min(activeCals / calGoal, 1);
-
-  const waterOffset = c - (waterPercent * c);
-
-  const r2 = 32;
-  const c2 = 2 * Math.PI * r2;
-  const calOffset = c2 - (calPercent * c2);
-
-  // Get today's scheduled workout if any
+  // Today's scheduled workout
   const todayDate = dayjs().format('YYYY-MM-DD');
   const todayWorkout = workouts?.find(w => w.date === todayDate);
 
+  // Muscle group chips from today's workout
+  const muscleTags: string[] = todayWorkout
+    ? [...new Set(todayWorkout.exercises.flatMap(ex => (ex as any).muscleGroups || []))]
+    : [];
+
+  // Recent workouts (last 2)
+  const recentWorkouts = [...(workouts || [])]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 2);
+
+  // Weekly activity (Mon–Sun: did user work out on each day this week?)
+  const startOfWeek = dayjs().startOf('week').add(1, 'day');
+  const weekActivity = Array.from({ length: 7 }).map((_, i) => {
+    const d = startOfWeek.add(i, 'day').format('YYYY-MM-DD');
+    return !!(workouts || []).find(w => w.date === d);
+  });
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      {/* Top Bar */}
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+
+      {/* ── Top Bar ── */}
       <View style={styles.topBar}>
         <Text style={styles.wordmark}>FORGE</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <Svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke={ForgeTheme.colors.t2} strokeWidth="1.8" strokeLinecap="round">
-            <Path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><Path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </Svg>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{user?.displayName?.charAt(0) || 'A'}</Text>
-          </View>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{user?.displayName?.charAt(0)?.toUpperCase() || 'A'}</Text>
         </View>
       </View>
 
-      {/* Greeting */}
+      {/* ── Greeting ── */}
       <View style={styles.px}>
-        <Text style={styles.greetingSub}>Good morning · {dayjs().format('dddd')}</Text>
+        <Text style={styles.greetingSub}>{getGreeting()} · {dayjs().format('dddd')}</Text>
         <Text style={styles.greetingName}>{user?.displayName || 'Athlete'}</Text>
       </View>
 
-      {/* Today Card */}
+      {/* ── Today's Plan Card ── */}
       <View style={styles.todayCard}>
-        <LinearGradient colors={['#1C1C20', '#0A0A0B']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFillObject} />
-        <View style={styles.todayCardContent}>
-          <Text style={styles.todayTag}>📅 TODAY'S PLAN</Text>
-          <Text style={styles.todayWorkout}>{todayWorkout ? (todayWorkout.notes || 'Custom Workout') : 'Rest Day'}</Text>
-          <Text style={styles.todayMeta}>{todayWorkout ? `${todayWorkout.exercises.length} exercises · Ready to train?` : 'Time to recover and hydrate.'}</Text>
+        <LinearGradient
+          colors={['#1C1C20', '#0A0A0B']}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+        {/* Decorative blob */}
+        <View style={styles.blobDecor} />
 
-          <Animated.View style={[{ borderRadius: 100, backgroundColor: 'rgba(255, 92, 46, 0.4)' }, pulseStyle]}>
+        <View style={styles.todayCardContent}>
+          <Text style={styles.todayTag}>📅 Today's Plan</Text>
+          <Text style={styles.todayWorkout}>
+            {todayWorkout ? (todayWorkout.notes || 'Custom Workout') : 'Rest Day'}
+          </Text>
+          <Text style={styles.todayMeta}>
+            {todayWorkout
+              ? `${todayWorkout.exercises.length} exercises · Ready to train?`
+              : 'Time to recover and hydrate.'}
+          </Text>
+
+          {/* Muscle tag chips */}
+          {muscleTags.length > 0 && (
+            <View style={styles.chipRow}>
+              {muscleTags.slice(0, 4).map(tag => (
+                <MuscleTagChip key={tag} label={tag} />
+              ))}
+            </View>
+          )}
+
+          {/* CTA Button with pulse */}
+          <Animated.View style={[{ borderRadius: 14, backgroundColor: 'rgba(255,92,46,0.25)' }, pulseStyle]}>
             <TouchableOpacity
               style={styles.btnPrimary}
               onPress={() => router.push(todayWorkout ? '/activeWorkout' : '/(tabs)/workout')}
+              activeOpacity={0.85}
             >
-              <Text style={styles.btnPrimaryText}>{todayWorkout ? '▶ Start Workout' : '+ Add Workout'}</Text>
+              <Text style={styles.btnPrimaryText}>
+                {todayWorkout ? '▶  Start Workout' : '+  Add Workout'}
+              </Text>
             </TouchableOpacity>
           </Animated.View>
         </View>
       </View>
 
-      {/* Rings & Streak */}
+      {/* ── Rings & Streak Row ── */}
       <View style={styles.ringsRow}>
-        <View style={styles.cardRings}>
-          <View style={{ position: 'relative', width: 96, height: 96, alignItems: 'center', justifyContent: 'center' }}>
-            <Svg width="96" height="96" viewBox="0 0 100 100" style={{ transform: [{ rotate: '-90deg' }] }}>
-              <Circle cx="50" cy="50" r="44" stroke="#1A2035" strokeWidth="8" fill="none" />
-              <Circle cx="50" cy="50" r="32" stroke="#251614" strokeWidth="8" fill="none" />
-              <Circle cx="50" cy="50" r="44" stroke={ForgeTheme.colors.blue} strokeWidth="8" fill="none" strokeDasharray={c} strokeDashoffset={waterOffset} strokeLinecap="round" />
-              <Circle cx="50" cy="50" r="32" stroke={ForgeTheme.colors.forge} strokeWidth="8" fill="none" strokeDasharray={c2} strokeDashoffset={calOffset} strokeLinecap="round" />
-            </Svg>
-            <View style={{ position: 'absolute' }}>
-              <Text style={{ fontSize: 10, color: ForgeTheme.colors.t2, fontWeight: '600' }}>{Math.round(calPercent * 100)}%</Text>
-            </View>
-          </View>
-          <View style={{ flexDirection: 'row', gap: 12, marginTop: 12 }}>
-            <View style={{ alignItems: 'center' }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: ForgeTheme.colors.forge, marginBottom: 4 }} />
-              <Text style={{ fontSize: 10, color: ForgeTheme.colors.t2 }}>{activeCals} cal</Text>
-            </View>
-            <View style={{ alignItems: 'center' }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: ForgeTheme.colors.blue, marginBottom: 4 }} />
-              <Text style={{ fontSize: 10, color: ForgeTheme.colors.t2 }}>{waterLiters} L</Text>
-            </View>
-          </View>
+        <View style={styles.card}>
+          <MacroDonutRing
+            calories={activeCals}
+            calorieGoal={calGoal}
+            waterLiters={waterLiters}
+            waterGoal={waterGoal}
+          />
         </View>
-
-        <View style={styles.cardStreak}>
-          <View style={styles.flameWrap}>
-            <Flame size={24} color={ForgeTheme.colors.forge} />
-          </View>
-          <Text style={styles.streakNum}>{user?.streak || 0}</Text>
-          <Text style={{ fontSize: 10, color: ForgeTheme.colors.t2, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2, fontWeight: '600' }}>Day Streak</Text>
+        <View style={styles.card}>
+          <StreakWidget streak={(user as any)?.streak || 0} weekActivity={weekActivity} />
         </View>
       </View>
 
-      {/* AI Coach Card */}
-      <View style={styles.coachWrap}>
-        <View style={[styles.card, styles.leftAccent, styles.halo]}>
-          <View style={{ padding: 16, flexDirection: 'row', gap: 12 }}>
-            <View style={styles.coachAvatar}>
-              <Bot size={18} color={ForgeTheme.colors.forge} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 10, fontWeight: '700', color: ForgeTheme.colors.forge, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 }}>Personalized</Text>
+      {/* ── AI Coach Card ── */}
+      <View style={styles.px}>
+        <AiCoachCard
+          tip={aiTip}
+          isLoading={isAiLoading}
+          onChatPress={() => router.push('/chat')}
+        />
+      </View>
 
-              {isAiLoading ? (
-                <ActivityIndicator size="small" color={ForgeTheme.colors.forge} style={{ alignSelf: 'flex-start' }} />
-              ) : (
-                <Text style={{ fontSize: 13, color: ForgeTheme.colors.t1, lineHeight: 20 }}>
-                  {aiTip?.split(/(\*.*?\*|`.*?`)/g).map((chunk: string, i: number) => {
-                    if (chunk.startsWith('*') && chunk.endsWith('*')) {
-                      return <Text key={i} style={{ color: '#fff', fontWeight: 'bold' }}>{chunk.slice(1, -1)}</Text>;
-                    }
-                    return chunk;
-                  })}
-                </Text>
-              )}
-
-              <TouchableOpacity style={styles.chatBtn} onPress={() => router.push('/chat')}>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: ForgeTheme.colors.forge }}>Chat with Coach ↗</Text>
-              </TouchableOpacity>
+      {/* ── Recent Workouts ── */}
+      <View style={styles.px}>
+        <Text style={styles.sectionLabel}>Recent Workouts</Text>
+        <View style={styles.card}>
+          {recentWorkouts.length === 0 ? (
+            <View style={{ padding: 24, alignItems: 'center' }}>
+              <Text style={{ color: ForgeTheme.colors.t3, fontSize: 13 }}>No workouts logged yet.</Text>
             </View>
-          </View>
+          ) : (
+            recentWorkouts.map((workout, idx) => (
+              <WorkoutListItem
+                key={workout.id ?? `workout-${idx}`}
+                title={workout.notes || 'Custom Workout'}
+                date={dayjs().diff(dayjs(workout.date), 'day') === 0 ? 'Today' : dayjs().diff(dayjs(workout.date), 'day') === 1 ? 'Yesterday' : dayjs(workout.date).format('ddd, MMM D')}
+                icon={idx === 0 ? '🦵' : '🔥'}
+                stat={workout.exercises.length > 3 ? `${workout.exercises.length} exercises` : undefined}
+                isLast={idx === recentWorkouts.length - 1}
+                onPress={() => router.push({ pathname: '/activeWorkout', params: { id: workout.id } })}
+              />
+            ))
+          )}
         </View>
       </View>
+
     </ScrollView>
   );
 }
 
-import { Bot } from 'lucide-react-native';
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: ForgeTheme.colors.bg0 },
-  scrollContent: { paddingBottom: 100 },
-  px: { paddingHorizontal: 20, marginBottom: 16 },
+  scrollContent: { paddingBottom: 110 },
+  px: { paddingHorizontal: 20, marginBottom: 20 },
 
-  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 60, paddingBottom: 16 },
-  wordmark: { fontSize: 18, fontWeight: '800', letterSpacing: 1, color: ForgeTheme.colors.forge },
-  avatar: { width: 32, height: 32, borderRadius: 16, backgroundColor: ForgeTheme.colors.forge, alignItems: 'center', justifyContent: 'center' },
+  topBar: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 20, paddingTop: 60, paddingBottom: 16,
+  },
+  wordmark: { fontSize: 18, fontWeight: '800', letterSpacing: 2, color: ForgeTheme.colors.forge },
+  avatar: {
+    width: 32, height: 32, borderRadius: 16,
+    backgroundColor: ForgeTheme.colors.forge,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: ForgeTheme.colors.forge,
+    shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.35, shadowRadius: 8, elevation: 4,
+  },
   avatarText: { fontSize: 13, fontWeight: '700', color: '#fff' },
 
   greetingSub: { fontSize: 12, color: ForgeTheme.colors.t2, fontWeight: '500' },
-  greetingName: { fontSize: 22, fontWeight: '700', color: ForgeTheme.colors.t1, marginTop: 4 },
+  greetingName: { fontSize: 22, fontWeight: '700', color: ForgeTheme.colors.t1, marginTop: 2 },
 
-  todayCard: { marginHorizontal: 20, borderRadius: 16, borderWidth: 1, borderColor: ForgeTheme.colors.b1, overflow: 'hidden', marginBottom: 20 },
-  todayCardContent: { padding: 20, position: 'relative', zIndex: 1 },
-  todayTag: { fontSize: 10, fontWeight: '700', color: ForgeTheme.colors.forge, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6 },
-  todayWorkout: { fontSize: 20, fontWeight: '700', color: ForgeTheme.colors.t1, marginBottom: 4 },
-  todayMeta: { fontSize: 13, color: ForgeTheme.colors.t2, marginBottom: 20 },
-  btnPrimary: { backgroundColor: ForgeTheme.colors.forge, borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
+  // Today card
+  todayCard: {
+    marginHorizontal: 20, marginBottom: 20,
+    borderRadius: 20, borderWidth: 1, borderColor: ForgeTheme.colors.b1,
+    overflow: 'hidden',
+  },
+  blobDecor: {
+    position: 'absolute', top: -30, right: -20,
+    width: 100, height: 100,
+    backgroundColor: 'rgba(255,92,46,0.10)',
+    borderRadius: 50,
+    // blur via opacity layering (no blurRadius needed)
+  },
+  todayCardContent: { padding: 18, zIndex: 1 },
+  todayTag: {
+    fontSize: 10, fontWeight: '600', color: ForgeTheme.colors.forge,
+    letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 6,
+  },
+  todayWorkout: { fontSize: 20, fontWeight: '700', color: '#ffffff', marginBottom: 4 },
+  todayMeta: { fontSize: 12, color: '#9B9BA8', marginBottom: 14 },
+  chipRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: 16 },
+  btnPrimary: {
+    backgroundColor: ForgeTheme.colors.forge,
+    borderRadius: 14, paddingVertical: 14,
+    alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8,
+  },
   btnPrimaryText: { color: '#fff', fontSize: 15, fontWeight: '700' },
 
+  // Cards
   ringsRow: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, marginBottom: 20 },
-  cardRings: { flex: 1, backgroundColor: ForgeTheme.colors.bg1, borderRadius: 16, borderWidth: 1, borderColor: ForgeTheme.colors.b1, padding: 16, alignItems: 'center' },
-  cardStreak: { flex: 1, backgroundColor: ForgeTheme.colors.bg1, borderRadius: 16, borderWidth: 1, borderColor: ForgeTheme.colors.b1, padding: 16, alignItems: 'center', justifyContent: 'center' },
+  card: {
+    flex: 1,
+    backgroundColor: ForgeTheme.colors.bg1,
+    borderRadius: 20, borderWidth: 1, borderColor: ForgeTheme.colors.b1,
+    padding: 16, alignItems: 'center', justifyContent: 'center',
+  },
 
-  flameWrap: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,92,46,0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  streakNum: { fontSize: 28, fontWeight: '800', color: ForgeTheme.colors.t1 },
-
-  coachWrap: { marginHorizontal: 20, marginBottom: 24 },
-  card: { backgroundColor: ForgeTheme.colors.bg1, borderRadius: 16, borderWidth: 1, borderColor: ForgeTheme.colors.b1, overflow: 'hidden' },
-  leftAccent: { borderLeftWidth: 3, borderLeftColor: ForgeTheme.colors.forge },
-  halo: { shadowColor: ForgeTheme.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.15, shadowRadius: 10, elevation: 5 },
-  coachAvatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: ForgeTheme.colors.bg2, alignItems: 'center', justifyContent: 'center' },
-  chatBtn: { alignSelf: 'flex-start', backgroundColor: ForgeTheme.colors.bg2, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, marginTop: 12 },
+  sectionLabel: {
+    fontSize: 11, fontWeight: '500', color: ForgeTheme.colors.t3,
+    textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 8,
+  },
 });

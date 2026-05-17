@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FORGE — UI Kit Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg0: #0A0A0B;
+  --bg1: #141416;
+  --bg2: #1C1C20;
+  --bg3: #242428;
+  --b1: #2A2A2E;
+  --t1: #F5F5F7;
+  --t2: #8E8E99;
+  --t3: #4E4E58;
+  --forge: #FF5C2E;
+  --forge-h: #FF7A52;
+  --blue: #0A84FF;
+  --green: #34C759;
+  --gold: #FFD700;
+}
+
+body {
+  background: #111;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--t1);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem 4rem;
+  gap: 2rem;
+}
+
+h1.page-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--t3);
+  font-weight: 500;
+  text-align: center;
+}
+
+.screens-row {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 1100px;
+}
+
+/* ── Phone shell ── */
+.phone {
+  width: 320px;
+  background: var(--bg0);
+  border-radius: 40px;
+  border: 1.5px solid #2a2a30;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 0 0 4px #0d0d0d, 0 32px 80px rgba(0,0,0,0.7);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.phone-label {
+  font-size: 11px;
+  color: var(--t3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: 10px;
+  font-weight: 500;
+}
+.notch {
+  width: 100px; height: 28px;
+  background: var(--bg0);
+  border-radius: 0 0 16px 16px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+  border-bottom: 1px solid #1e1e22;
+  flex-shrink: 0;
+}
+.screen-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+}
+.screen-body::-webkit-scrollbar { display: none; }
+
+/* ── Tab bar ── */
+.tabbar {
+  height: 72px;
+  background: rgba(10,10,11,0.92);
+  border-top: 0.5px solid var(--b1);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 8px 10px;
+  flex-shrink: 0;
+  position: relative;
+  backdrop-filter: blur(12px);
+}
+.tab-item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px 12px; border-radius: 10px; flex: 1; cursor: pointer;
+}
+.tab-icon { font-size: 22px; line-height: 1; }
+.tab-item span { font-size: 10px; color: var(--t3); font-weight: 500; }
+.tab-item.active .tab-icon svg { color: var(--forge); }
+.tab-item.active span { color: var(--forge); }
+.tab-item svg { color: var(--t3); }
+.fab-wrap { flex: 1; display: flex; justify-content: center; position: relative; }
+.fab-btn {
+  position: absolute;
+  top: -32px;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--forge);
+  border: 3px solid var(--bg0);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; color: #fff; font-weight: 300; cursor: pointer;
+  box-shadow: 0 0 20px rgba(255,92,46,0.35);
+}
+
+/* ── Shared ── */
+.px { padding-left: 20px; padding-right: 20px; }
+.card {
+  background: var(--bg1);
+  border-radius: 16px;
+  border: 0.5px solid var(--b1);
+  overflow: hidden;
+  position: relative;
+}
+.card.left-accent::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--forge);
+}
+.card.halo { box-shadow: 0 0 20px rgba(255,92,46,0.08); }
+.section-label {
+  font-size: 11px; font-weight: 500;
+  color: var(--t3); letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.btn-primary {
+  width: 100%; background: var(--forge); border: none;
+  border-radius: 14px; color: #fff; font-size: 15px;
+  font-weight: 600; padding: 14px; cursor: pointer;
+  font-family: inherit;
+  transition: opacity .15s;
+}
+.btn-primary:hover { opacity: .9; }
+.tag {
+  display: inline-block;
+  padding: 3px 10px; border-radius: 100px;
+  background: var(--bg2); color: var(--t1);
+  font-size: 11px; font-weight: 500;
+}
+.badge-pill {
+  font-size: 10px; padding: 2px 8px; border-radius: 100px;
+  font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+}
+
+/* ============================================================
+   HOME SCREEN
+   ============================================================ */
+#screen-home .top-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 36px 20px 12px;
+}
+#screen-home .wordmark {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 18px; font-weight: 700;
+  letter-spacing: 0.06em; color: var(--forge);
+}
+#screen-home .avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--forge), #FF8C5A);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff;
+}
+#screen-home .greeting-sub { font-size: 12px; color: var(--t2); }
+#screen-home .greeting-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px; font-weight: 600; color: var(--t1); margin-top: 2px;
+}
+
+/* Today card */
+.today-card {
+  background: linear-gradient(135deg, #1C1C20 0%, #0A0A0B 100%);
+  border-radius: 16px;
+  border: 0.5px solid var(--b1);
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+  margin: 0 20px;
+}
+.today-card::after {
+  content: '';
+  position: absolute;
+  top: -30px; right: -20px;
+  width: 100px; height: 100px;
+  background: rgba(255,92,46,0.12);
+  border-radius: 50%;
+}
+.today-tag {
+  font-size: 10px; font-weight: 600;
+  color: var(--forge); letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 4px;
+}
+.today-workout {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 18px; font-weight: 600; color: var(--t1); margin-bottom: 2px;
+}
+.today-meta { font-size: 12px; color: var(--t2); margin-bottom: 14px; }
+
+/* Macro rings + streak row */
+.rings-row { display: flex; gap: 12px; padding: 0 20px; }
+.rings-card { flex: 1; padding: 16px; display: flex; flex-direction: column; align-items: center; }
+.streak-card { flex: 1; padding: 16px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.streak-num {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 28px; font-weight: 700; color: var(--t1);
+}
+.flame-wrap {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(255,92,46,0.1);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 8px;
+  box-shadow: 0 0 16px rgba(255,92,46,0.15);
+}
+.week-dots { display: flex; gap: 4px; margin-top: 8px; }
+.week-dot-col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.week-dot-col .day-label { font-size: 8px; color: var(--t3); }
+.week-dot { width: 6px; height: 6px; border-radius: 50%; }
+.week-dot.done { background: var(--forge); }
+.week-dot.empty { background: var(--bg3); }
+
+/* AI Coach card */
+.coach-card { margin: 0 20px; }
+.chat-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 14px; border-radius: 100px;
+  background: var(--bg2); color: var(--forge);
+  font-size: 12px; font-weight: 500; border: none; cursor: pointer;
+  font-family: inherit; margin-top: 10px;
+}
+.chat-btn:hover { background: var(--bg3); }
+
+/* Recent workouts */
+.recent-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0; border-bottom: 0.5px solid var(--b1);
+}
+.recent-row:last-child { border-bottom: none; }
+.ex-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: var(--bg2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.recent-name { font-size: 14px; font-weight: 500; color: var(--t1); }
+.recent-meta { font-size: 11px; color: var(--t3); margin-top: 1px; }
+.delta { font-size: 11px; font-weight: 600; color: var(--green); margin-left: auto; }
+
+/* ============================================================
+   WORKOUT LOGGER
+   ============================================================ */
+#screen-workout .sticky-header {
+  background: rgba(10,10,11,0.95);
+  padding: 36px 20px 14px;
+  border-bottom: 0.5px solid var(--b1);
+  position: sticky; top: 0; z-index: 10;
+}
+#screen-workout .header-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.back-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--bg2); border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--t2);
+}
+.timer-pill {
+  padding: 5px 12px; border-radius: 100px;
+  background: rgba(255,92,46,0.1); color: var(--forge);
+  font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+}
+.timer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--forge); animation: pulse 1.4s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.prog-dots { display: flex; justify-content: center; gap: 6px; }
+.prog-dot { height: 5px; border-radius: 100px; background: var(--bg2); transition: all .25s; }
+.prog-dot.done { background: var(--forge); width: 14px; }
+.prog-dot.cur { background: var(--forge); width: 22px; }
+.prog-dot.rest { width: 14px; }
+
+/* PR banner */
+.pr-banner {
+  background: linear-gradient(90deg, rgba(255,215,0,0.12), rgba(255,215,0,0.03));
+  border: 0.5px solid rgba(255,215,0,0.25);
+  border-radius: 12px; padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px;
+  margin: 14px 20px 0;
+}
+.pr-text { font-size: 12px; font-weight: 500; color: var(--gold); }
+
+/* Set table */
+.set-table {
+  background: var(--bg1); border-radius: 16px;
+  border: 0.5px solid var(--b1); overflow: hidden;
+  margin: 0 20px;
+}
+.set-header {
+  display: grid;
+  grid-template-columns: 28px 1fr 60px 52px 36px;
+  gap: 8px; padding: 10px 14px;
+  border-bottom: 0.5px solid var(--b1);
+  background: rgba(36,36,40,0.5);
+}
+.set-header span { font-size: 10px; font-weight: 600; color: var(--t3); letter-spacing: 0.06em; text-transform: uppercase; text-align: center; }
+.set-header span:nth-child(2) { text-align: left; }
+.set-row-tr {
+  display: grid;
+  grid-template-columns: 28px 1fr 60px 52px 36px;
+  gap: 8px; padding: 10px 14px;
+  border-bottom: 0.5px solid var(--b1);
+  align-items: center;
+  transition: background .15s;
+}
+.set-row-tr.active { background: rgba(255,92,46,0.05); }
+.set-row-tr:last-child { border-bottom: none; }
+.set-num { font-size: 13px; color: var(--t2); text-align: center; font-weight: 500; }
+.set-prev { font-size: 12px; color: var(--t3); }
+.set-input {
+  background: var(--bg2); border-radius: 8px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 600; color: var(--t1);
+  border: 1px solid transparent;
+}
+.set-input.active { border-color: rgba(255,92,46,0.5); }
+.check-circle {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto;
+}
+.check-circle.done { background: var(--forge); }
+.check-circle.empty { background: var(--bg3); border: 1.5px solid var(--b1); }
+
+/* Rest timer */
+.rest-timer-wrap {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 16px 20px 20px;
+  background: linear-gradient(to top, var(--bg0) 70%, transparent);
+  z-index: 20;
+}
+.rest-timer-pill {
+  background: var(--bg1); border-radius: 24px;
+  border: 0.5px solid var(--b1);
+  padding: 14px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: relative; overflow: hidden;
+}
+.rest-timer-pill::before {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(255,92,46,0.04);
+}
+.rest-ctrl {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--bg2); border: none; color: var(--t2);
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-family: inherit; position: relative; z-index: 1;
+}
+.rest-timer-center { position: relative; width: 88px; height: 88px; z-index: 1; }
+.rest-num {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 24px; font-weight: 700; color: var(--forge);
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-shadow: 0 0 12px rgba(255,92,46,0.3);
+}
+.rest-label { font-size: 9px; color: var(--t3); letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* ============================================================
+   NUTRITION SCREEN
+   ============================================================ */
+.meal-section { margin: 0 20px 10px; }
+.meal-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0 8px;
+}
+.meal-section-title { font-size: 13px; font-weight: 600; color: var(--t1); }
+.meal-kcal { font-size: 11px; color: var(--t2); }
+.add-meal-btn {
+  font-size: 11px; font-weight: 600; color: var(--forge);
+  background: none; border: none; cursor: pointer; font-family: inherit;
+}
+.meal-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; border-bottom: 0.5px solid var(--b1);
+}
+.meal-item:last-child { border-bottom: none; }
+.meal-item-name { font-size: 13px; color: var(--t1); font-weight: 500; }
+.meal-item-macros { font-size: 11px; color: var(--t3); margin-top: 2px; }
+.meal-item-kcal { font-size: 13px; font-weight: 600; color: var(--t2); }
+.macro-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.macro-chip {
+  font-size: 10px; padding: 2px 7px; border-radius: 100px;
+  font-weight: 500;
+}
+.macro-chip.p { background: rgba(52,199,89,0.15); color: #34C759; }
+.macro-chip.c { background: rgba(10,132,255,0.15); color: #0A84FF; }
+.macro-chip.f { background: rgba(255,214,10,0.15); color: #FFD60A; }
+
+/* Nutrition summary bar */
+.nutrition-summary {
+  margin: 12px 20px 16px;
+  background: var(--bg1); border-radius: 16px;
+  border: 0.5px solid var(--b1); padding: 16px;
+}
+.cal-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.cal-consumed { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; color: var(--t1); }
+.cal-goal { font-size: 12px; color: var(--t2); }
+.cal-bar-wrap { height: 6px; background: var(--bg3); border-radius: 3px; margin-bottom: 12px; overflow: hidden; }
+.cal-bar { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--forge), var(--forge-h)); }
+.macro-row { display: flex; gap: 8px; }
+.macro-stat { flex: 1; text-align: center; }
+.macro-stat-num { font-size: 14px; font-weight: 600; color: var(--t1); }
+.macro-stat-label { font-size: 10px; color: var(--t3); margin-top: 1px; }
+
+/* ============================================================
+   PROGRESS SCREEN
+   ============================================================ */
+.timeframe-pills { display: flex; gap: 6px; padding: 12px 20px; }
+.tf-pill {
+  padding: 5px 12px; border-radius: 100px; font-size: 11px; font-weight: 600;
+  border: none; cursor: pointer; font-family: inherit;
+}
+.tf-pill.active { background: var(--forge); color: #fff; }
+.tf-pill.idle { background: var(--bg2); color: var(--t3); }
+
+.weight-chart-wrap { margin: 0 20px; position: relative; }
+.weight-big { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; color: var(--t1); }
+.weight-delta-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  background: rgba(52,199,89,0.12); color: var(--green);
+  font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 100px;
+  margin-left: 8px;
+}
+
+.measurements-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 20px; }
+.meas-card { background: var(--bg1); border-radius: 14px; border: 0.5px solid var(--b1); padding: 14px; }
+.meas-label { font-size: 10px; color: var(--t3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.meas-val { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700; color: var(--t1); }
+.meas-unit { font-size: 11px; color: var(--t2); margin-top: 1px; }
+.update-btn {
+  margin-top: 8px; font-size: 10px; font-weight: 600;
+  color: var(--forge); background: rgba(255,92,46,0.1);
+  border: none; border-radius: 6px; padding: 3px 8px;
+  cursor: pointer; font-family: inherit; letter-spacing: 0.04em; text-transform: uppercase;
+}
+
+.transform-grid { display: flex; gap: 8px; margin: 0 20px; }
+.transform-photo {
+  flex: 1; aspect-ratio: 0.75;
+  background: var(--bg2); border-radius: 12px;
+  border: 0.5px solid var(--b1);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; position: relative; overflow: hidden;
+}
+.transform-photo-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 8px; text-align: center;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--t2);
+  background: linear-gradient(to top, rgba(10,10,11,0.8), transparent);
+}
+
+/* ============================================================
+   MODALS / OVERLAYS
+   ============================================================ */
+.modal-overlay {
+  position: absolute; inset: 0;
+  background: var(--bg0); z-index: 100;
+  display: flex; flex-direction: column;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 36px 20px 14px;
+  border-bottom: 0.5px solid var(--b1);
+  background: var(--bg1);
+}
+.modal-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px; font-weight: 600;
+}
+.modal-back {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--bg2); border: none;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--t2); cursor: pointer;
+}
+.chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+.bubble-ai { max-width: 85%; display: flex; gap: 10px; align-items: flex-start; }
+.bubble-ai-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--bg2); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 2px;
+}
+.bubble-ai-text {
+  background: var(--bg2); border-radius: 16px 16px 16px 4px;
+  padding: 12px 14px; font-size: 14px; color: var(--t1); line-height: 1.55;
+}
+.bubble-user { align-self: flex-end; max-width: 80%; }
+.bubble-user-text {
+  background: var(--forge); border-radius: 16px 16px 4px 16px;
+  padding: 12px 14px; font-size: 14px; color: #fff; line-height: 1.55;
+}
+.logged-card {
+  background: var(--bg0); border-radius: 12px;
+  border: 0.5px solid rgba(255,92,46,0.25); padding: 12px 14px;
+  margin-top: 8px;
+}
+.chat-input-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px 24px;
+  background: var(--bg1); border-top: 0.5px solid var(--b1);
+}
+.chat-input {
+  flex: 1; background: var(--bg2); border-radius: 22px;
+  height: 44px; display: flex; align-items: center; padding: 0 16px;
+  font-size: 14px; color: var(--t1);
+}
+.chat-send-btn {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--forge); border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #fff;
+}
+.chat-mic-btn {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--bg2); border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--t2);
+}
+
+/* SVGs inline */
+svg { display: block; }
+
+/* Scrollable content padding */
+.scroll-pad { padding: 0 0 20px; display: flex; flex-direction: column; gap: 14px; }
+
+/* ── Responsive ── */
+@media (max-width: 720px) {
+  .screens-row { gap: 1.5rem; }
+  .phone { width: 290px; }
+}
+</style>
+</head>
+<body>
+
+<h1 class="page-title">FORGE — Interactive UI Kit</h1>
+
+<div class="screens-row">
+
+  <!-- ======================================================
+       SCREEN 1: HOME
+       ====================================================== -->
+  <div>
+  <div class="phone" style="height:680px;">
+    <div class="notch"></div>
+    <div class="screen-body" id="home-screen">
+      <div class="scroll-pad">
+
+        <!-- Top bar -->
+        <div id="screen-home">
+          <div class="top-bar">
+            <span class="wordmark">FORGE</span>
+            <div style="display:flex;gap:12px;align-items:center;">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="var(--t2)" stroke-width="1.8" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <div class="avatar">A</div>
+            </div>
+          </div>
+
+          <!-- Greeting -->
+          <div class="px" style="margin-bottom:14px;">
+            <div class="greeting-sub">Good morning · Wednesday</div>
+            <div class="greeting-name">Alex Mercer</div>
+          </div>
+
+          <!-- Today card -->
+          <div class="today-card">
+            <div class="today-tag">📅 Today's Plan</div>
+            <div class="today-workout">Upper Body Power</div>
+            <div class="today-meta">6 exercises &nbsp;·&nbsp; 45 min &nbsp;·&nbsp; Chest / Triceps / Shoulders</div>
+            <div style="display:flex;gap:6px;margin-bottom:14px;">
+              <span class="tag">Chest</span>
+              <span class="tag">Triceps</span>
+              <span class="tag">Shoulders</span>
+            </div>
+            <button class="btn-primary" onclick="showWorkout()">▶ Start Workout</button>
+          </div>
+
+          <!-- Macro rings + streak -->
+          <div class="rings-row" style="margin-top:14px;">
+            <!-- Rings -->
+            <div class="card rings-card">
+              <div style="position:relative;width:96px;height:96px;">
+                <svg width="96" height="96" viewBox="0 0 100 100" style="transform:rotate(-90deg);">
+                  <!-- Water outer ring bg -->
+                  <circle cx="50" cy="50" r="44" stroke="#1A2035" stroke-width="8" fill="none"/>
+                  <!-- Calorie inner ring bg -->
+                  <circle cx="50" cy="50" r="32" stroke="#251614" stroke-width="8" fill="none"/>
+                  <!-- Water ring (78%) -->
+                  <circle cx="50" cy="50" r="44" stroke="var(--blue)" stroke-width="8" fill="none"
+                    stroke-dasharray="276" stroke-dashoffset="61" stroke-linecap="round"/>
+                  <!-- Calorie ring (72%) -->
+                  <circle cx="50" cy="50" r="32" stroke="var(--forge)" stroke-width="8" fill="none"
+                    stroke-dasharray="201" stroke-dashoffset="56" stroke-linecap="round"/>
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                  <span style="font-size:9px;color:var(--t2);font-weight:500;">72%</span>
+                </div>
+              </div>
+              <div style="display:flex;gap:12px;margin-top:10px;">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                  <span style="width:8px;height:8px;border-radius:50%;background:var(--forge);display:block;"></span>
+                  <span style="font-size:10px;color:var(--t2);">1.8k cal</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                  <span style="width:8px;height:8px;border-radius:50%;background:var(--blue);display:block;"></span>
+                  <span style="font-size:10px;color:var(--t2);">2.4 L</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Streak -->
+            <div class="card streak-card">
+              <div class="flame-wrap">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--forge)">
+                  <path d="M12 2C12 2 7 7.5 7 12.5C7 15.538 9.238 18 12 18C14.762 18 17 15.538 17 12.5C17 10.5 16 9 16 9C16 9 15 11 13.5 11C12.5 11 12 10 12 10C12 10 12 6 12 2Z"/>
+                </svg>
+              </div>
+              <div class="streak-num">12</div>
+              <div style="font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;">Day Streak</div>
+              <!-- FIX: week dots — was using cn() without import -->
+              <div class="week-dots">
+                <div class="week-dot-col"><span class="day-label">M</span><div class="week-dot done"></div></div>
+                <div class="week-dot-col"><span class="day-label">T</span><div class="week-dot done"></div></div>
+                <div class="week-dot-col"><span class="day-label">W</span><div class="week-dot done"></div></div>
+                <div class="week-dot-col"><span class="day-label">T</span><div class="week-dot empty"></div></div>
+                <div class="week-dot-col"><span class="day-label">F</span><div class="week-dot empty"></div></div>
+                <div class="week-dot-col"><span class="day-label">S</span><div class="week-dot empty"></div></div>
+                <div class="week-dot-col"><span class="day-label">S</span><div class="week-dot empty"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Coach widget -->
+          <div class="card left-accent halo coach-card">
+            <div style="padding:14px 14px 14px 18px;display:flex;gap:12px;">
+              <div style="width:38px;height:38px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--forge)" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 1v4"/><path d="M8 5h8"/><circle cx="9" cy="16" r="1"/><circle cx="15" cy="16" r="1"/></svg>
+              </div>
+              <div>
+                <div style="font-size:10px;font-weight:600;color:var(--forge);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px;">Personalized</div>
+                <div style="font-size:13px;color:var(--t1);line-height:1.55;">You're recovering well! Based on yesterday's strain, aim for 8–10 reps on top sets today.</div>
+                <button class="chat-btn" onclick="showChat()">Chat with Coach ↗</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent workouts -->
+          <div class="px">
+            <div class="section-label" style="margin-bottom:8px;">Recent Workouts</div>
+            <div class="card" style="padding:0 14px;">
+              <div class="recent-row">
+                <div class="ex-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--forge-h)" stroke-width="1.8" stroke-linecap="round"><path d="M6 5h2m10 0h-2M4 12h16M6 19h2m10 0h-2"/><rect x="8" y="3" width="8" height="4" rx="1"/><rect x="8" y="17" width="8" height="4" rx="1"/></svg>
+                </div>
+                <div>
+                  <div class="recent-name">Lower Body Power</div>
+                  <div class="recent-meta">Yesterday · 52 min · 38,200 lbs</div>
+                </div>
+                <div class="delta">+12%</div>
+              </div>
+              <div class="recent-row">
+                <div class="ex-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--forge-h)" stroke-width="1.8" stroke-linecap="round"><path d="M6 5h2m10 0h-2M4 12h16M6 19h2m10 0h-2"/><rect x="8" y="3" width="8" height="4" rx="1"/><rect x="8" y="17" width="8" height="4" rx="1"/></svg>
+                </div>
+                <div>
+                  <div class="recent-name">Upper Body Pull</div>
+                  <div class="recent-meta">Sunday · 44 min · 26,800 lbs</div>
+                </div>
+                <div class="delta">+6%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- AI Chat Modal (hidden by default) -->
+      <div class="modal-overlay" id="chat-modal" style="display:none;">
+        <div class="modal-header">
+          <button class="modal-back" onclick="hideChat()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          </button>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--forge)" stroke-width="1.8" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <span class="modal-title">AI Coach</span>
+          </div>
+          <div style="width:36px;"></div>
+        </div>
+        <div class="chat-area">
+          <!-- AI message -->
+          <div class="bubble-ai">
+            <div class="bubble-ai-avatar">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 1v4"/><path d="M8 5h8"/><circle cx="9" cy="16" r="1"/><circle cx="15" cy="16" r="1"/></svg>
+            </div>
+            <div class="bubble-ai-text">Hey Alex! Ready to crush Upper Body Power today? You hit a new PR on bench press last week — let's maintain that weight for your working sets.</div>
+          </div>
+          <!-- User message -->
+          <div class="bubble-user">
+            <div class="bubble-user-text">I walked 15km this morning, legs are pretty sore.</div>
+          </div>
+          <!-- AI response + logged card -->
+          <div class="bubble-ai">
+            <div class="bubble-ai-avatar">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 1v4"/><path d="M8 5h8"/><circle cx="9" cy="16" r="1"/><circle cx="15" cy="16" r="1"/></svg>
+            </div>
+            <div style="flex:1;">
+              <div class="bubble-ai-text">That's a lot of steps! I've logged the activity and adjusted your daily calorie goal. Good thing today is upper body 💪</div>
+              <div class="logged-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--forge)" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <span style="font-size:12px;font-weight:600;color:var(--t1);">Activity Logged</span>
+                  </div>
+                  <span style="background:rgba(52,199,89,0.15);color:var(--green);font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;letter-spacing:0.04em;">✓ DONE</span>
+                </div>
+                <div style="font-size:11px;color:var(--t2);">Walking · 15km · Auto-detected</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-bar">
+          <button class="chat-mic-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <div class="chat-input" style="color:var(--t3);">Message AI Coach...</div>
+          <button class="chat-send-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tabbar">
+      <div class="tab-item active">
+        <div class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--forge)" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+        <span style="color:var(--forge);">Home</span>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.8" stroke-linecap="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+        <span>Nutrition</span>
+      </div>
+      <div class="fab-wrap">
+        <div class="fab-btn">+</div>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.8" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <span>Progress</span>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg></div>
+        <span>Profile</span>
+      </div>
+    </div>
+  </div>
+  <div class="phone-label">Home · Tap "Chat with Coach"</div>
+  </div>
+
+
+  <!-- ======================================================
+       SCREEN 2: WORKOUT LOGGER (fixed)
+       ====================================================== -->
+  <div>
+  <div class="phone" style="height:680px;" id="screen-workout">
+    <div class="notch"></div>
+    <div class="screen-body">
+
+      <!-- Sticky header -->
+      <div class="sticky-header">
+        <div class="header-row">
+          <button class="back-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          </button>
+          <div style="text-align:center;">
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;">Upper Body Power</div>
+            <div style="font-size:11px;color:var(--t2);margin-top:1px;">Exercise 2 of 6</div>
+          </div>
+          <div class="timer-pill">
+            <div class="timer-dot"></div>
+            14:32
+          </div>
+        </div>
+        <!-- Progress dots -->
+        <div class="prog-dots">
+          <div class="prog-dot done"></div>
+          <div class="prog-dot cur"></div>
+          <div class="prog-dot rest"></div>
+          <div class="prog-dot rest"></div>
+          <div class="prog-dot rest"></div>
+          <div class="prog-dot rest"></div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div style="padding:0 0 160px;display:flex;flex-direction:column;gap:14px;">
+
+        <!-- PR Banner -->
+        <div class="pr-banner">
+          <span style="font-size:20px;">🏆</span>
+          <span class="pr-text">New PR Projected — Beat 185 lbs × 8 reps</span>
+        </div>
+
+        <!-- Exercise info -->
+        <div class="px" style="margin-top:4px;">
+          <h2 style="font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:700;margin-bottom:6px;">Barbell Bench Press</h2>
+          <div style="display:flex;gap:6px;">
+            <span style="padding:3px 10px;border-radius:6px;background:var(--bg2);color:var(--t2);font-size:11px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;">Chest</span>
+            <span style="padding:3px 10px;border-radius:6px;background:var(--bg2);color:var(--t2);font-size:11px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;">Barbell</span>
+          </div>
+          <div style="font-size:12px;color:var(--t3);margin-top:6px;">Previous: 185 lbs × 8</div>
+        </div>
+
+        <!-- Set table -->
+        <div class="set-table">
+          <div class="set-header">
+            <span>SET</span>
+            <span style="text-align:left;">PREV</span>
+            <span>LBS</span>
+            <span>REPS</span>
+            <span>✓</span>
+          </div>
+          <!-- Set 1 done -->
+          <div class="set-row-tr">
+            <div class="set-num">1</div>
+            <div class="set-prev">135 × 10</div>
+            <div class="set-input" style="font-size:14px;font-weight:600;">135</div>
+            <div class="set-input" style="font-size:14px;font-weight:600;">10</div>
+            <div class="check-circle done">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+          <!-- Set 2 active -->
+          <div class="set-row-tr active">
+            <div class="set-num" style="color:var(--forge);">2</div>
+            <div class="set-prev">185 × 8</div>
+            <div class="set-input active" style="font-size:14px;font-weight:600;">185</div>
+            <div class="set-input active" style="font-size:14px;font-weight:600;">8</div>
+            <div class="check-circle empty"></div>
+          </div>
+          <!-- Set 3 -->
+          <div class="set-row-tr">
+            <div class="set-num">3</div>
+            <div class="set-prev">185 × 8</div>
+            <div class="set-input" style="font-size:14px;color:var(--t3);">—</div>
+            <div class="set-input" style="font-size:14px;color:var(--t3);">—</div>
+            <div class="check-circle empty"></div>
+          </div>
+          <div style="padding:12px 14px;font-size:13px;color:var(--t2);font-weight:500;cursor:pointer;text-align:center;">+ Add Set</div>
+        </div>
+
+        <!-- Next up -->
+        <div class="px">
+          <div class="section-label" style="margin-bottom:8px;">Next Up</div>
+          <div class="card" style="padding:12px 14px;display:flex;align-items:center;gap:12px;opacity:0.7;">
+            <div style="width:36px;height:36px;border-radius:8px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--t2);">3/6</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;">Incline Dumbbell Press</div>
+              <div style="font-size:11px;color:var(--t3);margin-top:2px;">3 sets × 10–12 reps</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating rest timer -->
+      <div class="rest-timer-wrap">
+        <div class="rest-timer-pill">
+          <button class="rest-ctrl">+30s</button>
+          <div class="rest-timer-center">
+            <svg width="88" height="88" viewBox="0 0 100 100" style="position:absolute;inset:0;transform:rotate(-90deg);">
+              <circle cx="50" cy="50" r="44" stroke="#251614" stroke-width="5" fill="none"/>
+              <circle cx="50" cy="50" r="44" stroke="var(--forge)" stroke-width="5" fill="none"
+                stroke-dasharray="276" stroke-dashoffset="138" stroke-linecap="round"
+                style="filter:drop-shadow(0 0 6px rgba(255,92,46,0.4));"/>
+            </svg>
+            <div class="rest-num">
+              01:45
+              <span class="rest-label">Rest</span>
+            </div>
+          </div>
+          <button class="rest-ctrl">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--t2)"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="phone-label">Active Workout Logger</div>
+  </div>
+
+
+  <!-- ======================================================
+       SCREEN 3: NUTRITION LOG
+       ====================================================== -->
+  <div>
+  <div class="phone" style="height:680px;">
+    <div class="notch"></div>
+    <div class="screen-body">
+      <div class="scroll-pad">
+
+        <!-- Header -->
+        <div style="padding:36px 20px 8px;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:600;">Nutrition</span>
+          <div style="display:flex;gap:6px;">
+            <div style="padding:4px 10px;border-radius:100px;background:var(--forge);font-size:11px;font-weight:600;color:#fff;">Today</div>
+          </div>
+        </div>
+
+        <!-- Daily summary -->
+        <div class="nutrition-summary">
+          <div class="cal-row">
+            <div>
+              <span class="cal-consumed">1,840</span>
+              <span class="cal-goal" style="margin-left:4px;"> / 2,500 kcal</span>
+            </div>
+            <span style="font-size:11px;color:var(--green);font-weight:600;">74%</span>
+          </div>
+          <div class="cal-bar-wrap">
+            <div class="cal-bar" style="width:74%;"></div>
+          </div>
+          <div class="macro-row">
+            <div class="macro-stat">
+              <div class="macro-stat-num" style="color:var(--green);">142g</div>
+              <div class="macro-stat-label">Protein</div>
+            </div>
+            <div class="macro-stat">
+              <div class="macro-stat-num" style="color:var(--blue);">210g</div>
+              <div class="macro-stat-label">Carbs</div>
+            </div>
+            <div class="macro-stat">
+              <div class="macro-stat-num" style="color:#FFD60A;">58g</div>
+              <div class="macro-stat-label">Fat</div>
+            </div>
+            <div class="macro-stat">
+              <div class="macro-stat-num" style="color:var(--blue);">2.4L</div>
+              <div class="macro-stat-label">Water</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Breakfast -->
+        <div class="meal-section">
+          <div class="meal-section-header">
+            <div>
+              <div class="meal-section-title">🌅 Breakfast</div>
+              <div class="meal-kcal">480 kcal</div>
+            </div>
+            <button class="add-meal-btn">+ Add</button>
+          </div>
+          <div class="card" style="padding:0 14px;">
+            <div class="meal-item">
+              <div>
+                <div class="meal-item-name">Oatmeal w/ Banana</div>
+                <div class="macro-chips">
+                  <span class="macro-chip p">8g P</span>
+                  <span class="macro-chip c">54g C</span>
+                  <span class="macro-chip f">6g F</span>
+                </div>
+              </div>
+              <div class="meal-item-kcal">310</div>
+            </div>
+            <div class="meal-item">
+              <div>
+                <div class="meal-item-name">Greek Yogurt</div>
+                <div class="macro-chips">
+                  <span class="macro-chip p">17g P</span>
+                  <span class="macro-chip c">8g C</span>
+                  <span class="macro-chip f">0g F</span>
+                </div>
+              </div>
+              <div class="meal-item-kcal">170</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lunch -->
+        <div class="meal-section">
+          <div class="meal-section-header">
+            <div>
+              <div class="meal-section-title">☀️ Lunch</div>
+              <div class="meal-kcal">720 kcal</div>
+            </div>
+            <button class="add-meal-btn">+ Add</button>
+          </div>
+          <div class="card" style="padding:0 14px;">
+            <div class="meal-item">
+              <div>
+                <div class="meal-item-name">Chicken Rice Bowl</div>
+                <div class="macro-chips">
+                  <span class="macro-chip p">52g P</span>
+                  <span class="macro-chip c">68g C</span>
+                  <span class="macro-chip f">14g F</span>
+                </div>
+              </div>
+              <div class="meal-item-kcal">620</div>
+            </div>
+            <div class="meal-item" style="opacity:0.5;cursor:pointer;">
+              <div style="font-size:12px;color:var(--t3);">+ Add food to Lunch</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dinner -->
+        <div class="meal-section">
+          <div class="meal-section-header">
+            <div>
+              <div class="meal-section-title">🌙 Dinner</div>
+              <div class="meal-kcal" style="color:var(--t3);">0 kcal</div>
+            </div>
+            <button class="add-meal-btn">+ Add</button>
+          </div>
+          <div class="card" style="padding:12px 14px;opacity:0.5;">
+            <div style="font-size:12px;color:var(--t3);text-align:center;">No meals logged yet</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- Tab bar -->
+    <div class="tabbar">
+      <div class="tab-item">
+        <div class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+        <span>Home</span>
+      </div>
+      <div class="tab-item active">
+        <div class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--forge)" stroke-width="1.8" stroke-linecap="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg></div>
+        <span style="color:var(--forge);">Nutrition</span>
+      </div>
+      <div class="fab-wrap"><div class="fab-btn">+</div></div>
+      <div class="tab-item">
+        <div class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.8" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <span>Progress</span>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg></div>
+        <span>Profile</span>
+      </div>
+    </div>
+  </div>
+  <div class="phone-label">Nutrition & Meal Log</div>
+  </div>
+
+
+  <!-- ======================================================
+       SCREEN 4: PROGRESS HUB
+       ====================================================== -->
+  <div>
+  <div class="phone" style="height:680px;">
+    <div class="notch"></div>
+    <div class="screen-body">
+      <div class="scroll-pad">
+
+        <!-- Header -->
+        <div style="padding:36px 20px 4px;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:600;">Progress</span>
+        </div>
+
+        <!-- Timeframe pills -->
+        <div class="timeframe-pills">
+          <button class="tf-pill active">7D</button>
+          <button class="tf-pill idle">1M</button>
+          <button class="tf-pill idle">3M</button>
+          <button class="tf-pill idle">YTD</button>
+        </div>
+
+        <!-- Weight trend chart -->
+        <div class="weight-chart-wrap">
+          <div class="card" style="padding:16px;">
+            <div style="display:flex;align-items:baseline;margin-bottom:4px;">
+              <span class="weight-big">178.4</span>
+              <span style="font-size:13px;color:var(--t2);margin-left:4px;">lbs</span>
+              <span class="weight-delta-badge">↓ 2.1 lbs</span>
+            </div>
+            <div style="font-size:11px;color:var(--t3);margin-bottom:12px;">vs. last week</div>
+            <!-- SVG line chart -->
+            <svg width="100%" height="80" viewBox="0 0 260 80">
+              <defs>
+                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#FF5C2E" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#FF5C2E" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- Grid lines -->
+              <line x1="0" y1="20" x2="260" y2="20" stroke="var(--b1)" stroke-width="0.5"/>
+              <line x1="0" y1="50" x2="260" y2="50" stroke="var(--b1)" stroke-width="0.5"/>
+              <!-- Fill -->
+              <path d="M0 60 L37 55 L74 50 L111 45 L148 38 L185 30 L222 25 L260 20 L260 80 L0 80 Z" fill="url(#chartGrad)"/>
+              <!-- Line -->
+              <path d="M0 60 L37 55 L74 50 L111 45 L148 38 L185 30 L222 25 L260 20" fill="none" stroke="var(--forge)" stroke-width="2" stroke-linecap="round" style="filter:drop-shadow(0 0 4px rgba(255,92,46,0.5))"/>
+              <!-- Dots -->
+              <circle cx="260" cy="20" r="4" fill="var(--forge)" stroke="var(--bg1)" stroke-width="2"/>
+              <!-- Day labels -->
+              <text x="0" y="78" font-size="9" fill="var(--t3)">Mon</text>
+              <text x="37" y="78" font-size="9" fill="var(--t3)">Tue</text>
+              <text x="74" y="78" font-size="9" fill="var(--t3)">Wed</text>
+              <text x="111" y="78" font-size="9" fill="var(--t3)">Thu</text>
+              <text x="148" y="78" font-size="9" fill="var(--t3)">Fri</text>
+              <text x="185" y="78" font-size="9" fill="var(--t3)">Sat</text>
+              <text x="222" y="78" font-size="9" fill="var(--t3)">Sun</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Transformation photos -->
+        <div class="px">
+          <div class="section-label" style="margin-bottom:8px;">Transformation</div>
+          <div class="transform-grid">
+            <div class="transform-photo">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span style="font-size:10px;color:var(--t3);">Jan 2025</span>
+              <div class="transform-photo-label">BEFORE</div>
+            </div>
+            <div class="transform-photo">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span style="font-size:10px;color:var(--t3);">Today</span>
+              <div class="transform-photo-label">CURRENT</div>
+            </div>
+          </div>
+          <button style="width:100%;margin-top:10px;padding:11px;border-radius:12px;background:rgba(255,92,46,0.1);border:0.5px solid rgba(255,92,46,0.3);color:var(--forge);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Take Progress Photo
+          </button>
+        </div>
+
+        <!-- Body measurements -->
+        <div class="px">
+          <div class="section-label" style="margin-bottom:8px;">Body Measurements</div>
+          <div class="measurements-grid">
+            <div class="meas-card">
+              <div class="meas-label">Chest</div>
+              <div class="meas-val">41.5</div>
+              <div class="meas-unit">inches</div>
+              <button class="update-btn">Update</button>
+            </div>
+            <div class="meas-card">
+              <div class="meas-label">Waist</div>
+              <div class="meas-val">33.0</div>
+              <div class="meas-unit">inches</div>
+              <button class="update-btn">Update</button>
+            </div>
+            <div class="meas-card">
+              <div class="meas-label">Arms</div>
+              <div class="meas-val">15.2</div>
+              <div class="meas-unit">inches</div>
+              <button class="update-btn">Update</button>
+            </div>
+            <div class="meas-card">
+              <div class="meas-label">Legs</div>
+              <div class="meas-val">24.8</div>
+              <div class="meas-unit">inches</div>
+              <button class="update-btn">Update</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- Tab bar -->
+    <div class="tabbar">
+      <div class="tab-item">
+        <div class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+        <span>Home</span>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.8" stroke-linecap="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg></div>
+        <span>Nutrition</span>
+      </div>
+      <div class="fab-wrap"><div class="fab-btn">+</div></div>
+      <div class="tab-item active">
+        <div class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--forge)" stroke-width="1.8" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <span style="color:var(--forge);">Progress</span>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg></div>
+        <span>Profile</span>
+      </div>
+    </div>
+  </div>
+  <div class="phone-label">Progress & Transformation Hub</div>
+  </div>
+
+</div><!-- /screens-row -->
+
+<script>
+function showChat() {
+  document.getElementById('chat-modal').style.display = 'flex';
+}
+function hideChat() {
+  document.getElementById('chat-modal').style.display = 'none';
+}
+function showWorkout() {
+  document.getElementById('home-screen').scrollTop = 0;
+}
+</script>
+</body>
+</html>
