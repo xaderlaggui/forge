@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { useAiCoach } from '../../../hooks/useAiCoach';
 import { useNutrition } from '../../../hooks/useNutrition';
+import { useStreak } from '../../../hooks/useStreak';
 import { useWorkouts } from '../../../hooks/useWorkouts';
 import { useAuthStore } from '../../../stores/authStore';
 
@@ -9,6 +10,7 @@ export function useDashboardData() {
   const { data: nutrition, isLoading: isNutritionLoading } = useNutrition();
   const { workouts, isLoading: isWorkoutsLoading } = useWorkouts();
   const { data: aiTip, isLoading: isAiLoading } = useAiCoach();
+  const streak = useStreak();
 
   const isLoading = isNutritionLoading || isWorkoutsLoading;
 
@@ -52,5 +54,6 @@ export function useDashboardData() {
     muscleTags: muscleTags as string[],
     recentWorkouts,
     weekActivity,
+    streak,
   };
 }

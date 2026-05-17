@@ -42,7 +42,7 @@ export default function HomeScreen() {
         calGoal={data.calGoal}
         waterLiters={data.waterLiters}
         waterGoal={data.waterGoal}
-        streak={(data.user as any)?.streak ?? 0}
+        streak={data.streak}
         weekActivity={data.weekActivity}
       />
 
