@@ -2,8 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Plus } from 'lucide-react-native';
-import { ForgeTheme as T } from '../../constants/ForgeTheme';
-
 // Feature dependencies
 import { useDailyNutrition } from '../../features/nutrition/hooks/useDailyNutrition';
 import { NutritionSkeleton } from '../../features/nutrition/components/NutritionSkeleton';
@@ -13,8 +11,11 @@ import { HydrationTracker } from '../../features/nutrition/components/HydrationT
 import { MealLogList } from '../../features/nutrition/components/MealLogList';
 import { MascotImage } from '../../components/common/MascotImage';
 import { MascotImages } from '../../constants/mascotImages';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 export default function NutritionScreen() {
+    const { T } = useForgeTheme();
+    const s = useS(T);
   const router = useRouter();
   
   // Clean Architecture: Logic and data fetching are handled by the hook
@@ -22,7 +23,7 @@ export default function NutritionScreen() {
 
   if (isLoading || !nutrition || !aggregates) {
     return (
-      <View style={s.container}>
+      <View style={useS.container}>
         <NutritionSkeleton />
       </View>
     );
@@ -30,23 +31,23 @@ export default function NutritionScreen() {
 
   return (
     <ScrollView
-      style={s.container}
-      contentContainerStyle={s.content}
+      style={useS.container}
+      contentContainerStyle={useS.content}
       showsVerticalScrollIndicator={false}
     >
       {/* ── Composition: Header ── */}
-      <View style={s.header}>
+      <View style={useS.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <Image source={MascotImages.nutrition} style={{ width: 48, height: 48, resizeMode: 'contain' }} />
           <View>
-            <Text style={s.headerSub} maxFontSizeMultiplier={1.2}>
+            <Text style={useS.headerSub} maxFontSizeMultiplier={1.2}>
               Today · {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
             </Text>
-            <Text style={s.headerTitle} maxFontSizeMultiplier={1.2}>Nutrition</Text>
+            <Text style={useS.headerTitle} maxFontSizeMultiplier={1.2}>Nutrition</Text>
           </View>
         </View>
         <TouchableOpacity
-          style={s.addBtn}
+          style={useS.addBtn}
           onPress={() => router.push('/addMeal')}
           activeOpacity={0.8}
         >
@@ -89,21 +90,21 @@ export default function NutritionScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: T.colors.bg0 },
-  content: { paddingBottom: 110 },
+const useS = (T: any) => StyleSheet.create({
+          container: { flex: 1, backgroundColor: T.colors.bg0 },
+          content: { paddingBottom: 110 },
 
-  header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
-    paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: T.spacing.px4,
-  },
-  headerSub: { fontSize: T.typography.sizes.bodyS, color: T.colors.t2, fontWeight: '500', marginBottom: 2 },
-  headerTitle: { fontSize: T.typography.sizes.h1, fontWeight: '700', color: T.colors.t1 },
-  addBtn: {
-    width: 40, height: 40, borderRadius: T.radii.full,
-    backgroundColor: T.colors.forge,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: T.colors.forge,
-    shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6,
-  },
-});
+          header: {
+            flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
+            paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: T.spacing.px4,
+          },
+          headerSub: { fontSize: T.typography.sizes.bodyS, color: T.colors.t2, fontWeight: '500', marginBottom: 2 },
+          headerTitle: { fontSize: T.typography.sizes.h1, fontWeight: '700', color: T.colors.t1 },
+          addBtn: {
+            width: 40, height: 40, borderRadius: T.radii.full,
+            backgroundColor: T.colors.forge,
+            alignItems: 'center', justifyContent: 'center',
+            shadowColor: T.colors.forge,
+            shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6,
+          },
+        });

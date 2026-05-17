@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { MacroDonutRing } from '../../../components/forge/MacroDonutRing';
 import { StreakWidget } from '../../../components/forge/StreakWidget';
 import { SkeletonMetricRow } from '../../../components/forge/ForgeSkeleton';
-import { ForgeTheme as T } from '../../../constants/ForgeTheme';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 interface MetricRingsRowProps {
   isLoading: boolean;
@@ -24,13 +24,15 @@ export function MetricRingsRow({
   streak,
   weekActivity,
 }: MetricRingsRowProps) {
+    const { T } = useForgeTheme();
+    const s = useS(T);
   if (isLoading) {
     return <SkeletonMetricRow />;
   }
 
   return (
-    <View style={s.metricsRow}>
-      <View style={s.metricCard}>
+    <View style={useS.metricsRow}>
+      <View style={useS.metricCard}>
         <MacroDonutRing
           calories={activeCals}
           calorieGoal={calGoal}
@@ -38,20 +40,20 @@ export function MetricRingsRow({
           waterGoal={waterGoal}
         />
       </View>
-      <View style={s.metricCard}>
+      <View style={useS.metricCard}>
         <StreakWidget streak={streak} weekActivity={weekActivity} />
       </View>
     </View>
   );
 }
 
-const s = StyleSheet.create({
-  metricsRow: {
-    flexDirection: 'row', gap: 12, paddingHorizontal: T.spacing.page, marginBottom: T.spacing.px5,
-  },
-  metricCard: {
-    flex: 1, backgroundColor: T.colors.bg1, borderRadius: T.radii.xl,
-    borderWidth: 0.5, borderColor: T.colors.b1, padding: T.spacing.px4,
-    alignItems: 'center', justifyContent: 'center',
-  },
-});
+const useS = (T: any) => StyleSheet.create({
+          metricsRow: {
+            flexDirection: 'row', gap: 12, paddingHorizontal: T.spacing.page, marginBottom: T.spacing.px5,
+          },
+          metricCard: {
+            flex: 1, backgroundColor: T.colors.bg1, borderRadius: T.radii.xl,
+            borderWidth: 0.5, borderColor: T.colors.b1, padding: T.spacing.px4,
+            alignItems: 'center', justifyContent: 'center',
+          },
+        });

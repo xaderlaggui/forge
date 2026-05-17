@@ -2,13 +2,13 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, Modal, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArrowUpCircle, ArrowDownCircle, PersonStanding, AlertTriangle, Plus, X, Zap, Dumbbell, Timer, Shuffle, Sparkles } from 'lucide-react-native';
-import { ForgeTheme as T } from '../constants/ForgeTheme';
 import { useRoutines } from '../hooks/useRoutines';
 import { useExercises } from '../hooks/useExercises';
 import { useAuthStore } from '../stores/authStore';
 import { groqComplete } from '../services/groq';
 import { ExerciseLibrary, ExercisePreviewModal } from '../features/planner/components/ExerciseLibrary';
 import type { Exercise } from '../types';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 // ── Types ──────────────────────────────────────────────────────────────
 type SplitType   = 'push' | 'pull' | 'legs' | 'full';
@@ -60,6 +60,8 @@ interface ExData {
 }
 
 export default function BuildRoutineScreen() {
+    const { T } = useForgeTheme();
+    const s = useS(T);
   const router = useRouter();
   const { saveRoutine }           = useRoutines();
   const { data: dbExercises }     = useExercises();
@@ -232,40 +234,40 @@ No markdown, no explanation. Raw JSON array only.`;
 
   // ── Render ──────────────────────────────────────────────────
   return (
-    <View style={s.container}>
+    <View style={useS.container}>
       {/* Header */}
-      <View style={s.header}>
-        <TouchableOpacity onPress={() => router.back()} style={s.iconBtn}>
+      <View style={useS.header}>
+        <TouchableOpacity onPress={() => router.back()} style={useS.iconBtn}>
           <X size={24} color={T.colors.t1} />
         </TouchableOpacity>
-        <Text style={s.title}>CREATE ROUTINE</Text>
+        <Text style={useS.title}>CREATE ROUTINE</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={useS.content} showsVerticalScrollIndicator={false}>
         {/* Step dots — now 4 steps */}
-        <View style={s.stepDots}>
+        <View style={useS.stepDots}>
           {[1, 2, 3, 4].map(i => (
-            <View key={i} style={[s.dot, step === i && s.dotActive, step > i && s.dotDone]} />
+            <View key={i} style={[useS.dot, step === i && useS.dotActive, step > i && useS.dotDone]} />
           ))}
         </View>
 
         {/* ── STEP 1: Name & Split ── */}
         {step === 1 && (
           <View>
-            <Text style={s.stepLabel}>STEP 1 OF 4 — NAME & SPLIT</Text>
+            <Text style={useS.stepLabel}>STEP 1 OF 4 — NAME & SPLIT</Text>
 
-            <Text style={s.fieldLabel}>ROUTINE NAME</Text>
+            <Text style={useS.fieldLabel}>ROUTINE NAME</Text>
             <TextInput
-              style={s.input}
+              style={useS.input}
               placeholder="e.g. My Push Day"
               placeholderTextColor={T.colors.t3}
               value={name}
               onChangeText={setName}
             />
 
-            <Text style={s.fieldLabel}>CHOOSE SPLIT TYPE</Text>
-            <View style={s.splitGrid}>
+            <Text style={useS.fieldLabel}>CHOOSE SPLIT TYPE</Text>
+            <View style={useS.splitGrid}>
               {(Object.keys(SPLITS) as SplitType[]).map(key => {
                 const sp   = SPLITS[key];
                 const Icon = sp.icon;
@@ -273,20 +275,20 @@ No markdown, no explanation. Raw JSON array only.`;
                 return (
                   <TouchableOpacity
                     key={key}
-                    style={[s.splitCard, active && { backgroundColor: sp.color + '18', borderColor: sp.color }]}
+                    style={[useS.splitCard, active && { backgroundColor: sp.color + '18', borderColor: sp.color }]}
                     onPress={() => setSplit(key)}
                     activeOpacity={0.7}
                   >
                     <Icon size={24} color={active ? sp.color : T.colors.t2} style={{ marginBottom: 6 }} />
-                    <Text style={[s.scName, active && { color: sp.color }]}>{sp.label}</Text>
-                    <Text style={s.scHint}>{sp.hint}</Text>
+                    <Text style={[useS.scName, active && { color: sp.color }]}>{sp.label}</Text>
+                    <Text style={useS.scHint}>{sp.hint}</Text>
                   </TouchableOpacity>
                 );
               })}
             </View>
 
-            <TouchableOpacity style={s.nextBtn} onPress={handleNext}>
-              <Text style={s.nextBtnText}>Next Step →</Text>
+            <TouchableOpacity style={useS.nextBtn} onPress={handleNext}>
+              <Text style={useS.nextBtnText}>Next Step →</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -294,10 +296,10 @@ No markdown, no explanation. Raw JSON array only.`;
         {/* ── STEP 2: Training Purpose ── */}
         {step === 2 && (
           <View>
-            <Text style={s.stepLabel}>STEP 2 OF 4 — TRAINING PURPOSE</Text>
-            <Text style={[s.fieldLabel, { marginBottom: 14 }]}>WHAT IS YOUR GOAL FOR THIS SESSION?</Text>
+            <Text style={useS.stepLabel}>STEP 2 OF 4 — TRAINING PURPOSE</Text>
+            <Text style={[useS.fieldLabel, { marginBottom: 14 }]}>WHAT IS YOUR GOAL FOR THIS SESSION?</Text>
 
-            <View style={s.purposeGrid}>
+            <View style={useS.purposeGrid}>
               {(Object.keys(PURPOSES) as PurposeType[]).map(key => {
                 const p    = PURPOSES[key];
                 const Icon = p.icon;
@@ -305,29 +307,29 @@ No markdown, no explanation. Raw JSON array only.`;
                 return (
                   <TouchableOpacity
                     key={key}
-                    style={[s.purposeCard, active && { borderColor: p.color, backgroundColor: p.color + '12' }]}
+                    style={[useS.purposeCard, active && { borderColor: p.color, backgroundColor: p.color + '12' }]}
                     onPress={() => setPurpose(key)}
                     activeOpacity={0.75}
                   >
                     {/* Icon + label row */}
-                    <View style={[s.purposeIconWrap, { backgroundColor: p.color + '22' }]}>
+                    <View style={[useS.purposeIconWrap, { backgroundColor: p.color + '22' }]}>
                       <Icon size={20} color={p.color} />
                     </View>
-                    <Text style={[s.purposeLabel, active && { color: p.color }]}>{p.label}</Text>
-                    <Text style={s.purposeHint} numberOfLines={2}>{p.hint}</Text>
+                    <Text style={[useS.purposeLabel, active && { color: p.color }]}>{p.label}</Text>
+                    <Text style={useS.purposeHint} numberOfLines={2}>{p.hint}</Text>
 
                     {/* Rep scheme chips */}
-                    <View style={s.presetPreview}>
+                    <View style={useS.presetPreview}>
                       {p.presets.slice(0, 2).map(preset => (
-                        <View key={preset} style={[s.presetTag, active && { borderColor: p.color + '90', backgroundColor: p.color + '16' }]}>
-                          <Text style={[s.presetTagText, active && { color: p.color }]}>{preset}</Text>
+                        <View key={preset} style={[useS.presetTag, active && { borderColor: p.color + '90', backgroundColor: p.color + '16' }]}>
+                          <Text style={[useS.presetTagText, active && { color: p.color }]}>{preset}</Text>
                         </View>
                       ))}
                     </View>
 
                     {/* Active check */}
                     {active && (
-                      <View style={[s.activeCheck, { backgroundColor: p.color }]}>
+                      <View style={[useS.activeCheck, { backgroundColor: p.color }]}>
                         <Text style={{ color: '#000', fontSize: 9, fontWeight: '900' }}>✓</Text>
                       </View>
                     )}
@@ -337,13 +339,13 @@ No markdown, no explanation. Raw JSON array only.`;
             </View>
 
             {/* Description of selected purpose */}
-            <View style={[s.purposeDescCard, { borderColor: PURPOSES[purpose].color + '40', backgroundColor: PURPOSES[purpose].color + '08' }]}>
-              <Text style={[s.purposeDescText, { color: PURPOSES[purpose].color }]}>{PURPOSES[purpose].description}</Text>
+            <View style={[useS.purposeDescCard, { borderColor: PURPOSES[purpose].color + '40', backgroundColor: PURPOSES[purpose].color + '08' }]}>
+              <Text style={[useS.purposeDescText, { color: PURPOSES[purpose].color }]}>{PURPOSES[purpose].description}</Text>
             </View>
 
-            <View style={s.navRow}>
-              <TouchableOpacity style={s.navBack} onPress={goBack}><Text style={s.navBackText}>Back</Text></TouchableOpacity>
-              <TouchableOpacity style={s.navNext} onPress={handleNext}><Text style={s.navNextText}>Next →</Text></TouchableOpacity>
+            <View style={useS.navRow}>
+              <TouchableOpacity style={useS.navBack} onPress={goBack}><Text style={useS.navBackText}>Back</Text></TouchableOpacity>
+              <TouchableOpacity style={useS.navNext} onPress={handleNext}><Text style={useS.navNextText}>Next →</Text></TouchableOpacity>
             </View>
           </View>
         )}
@@ -351,40 +353,40 @@ No markdown, no explanation. Raw JSON array only.`;
         {/* ── STEP 3: Exercises ── */}
         {step === 3 && (
           <View>
-            <Text style={s.stepLabel}>STEP 3 OF 4 — EXERCISES</Text>
+            <Text style={useS.stepLabel}>STEP 3 OF 4 — EXERCISES</Text>
 
             {/* Purpose context banner */}
-            <View style={[s.purposeBanner, { borderColor: PURPOSES[purpose].color + '50', backgroundColor: PURPOSES[purpose].color + '0D' }]}>
+            <View style={[useS.purposeBanner, { borderColor: PURPOSES[purpose].color + '50', backgroundColor: PURPOSES[purpose].color + '0D' }]}>
               {React.createElement(PURPOSES[purpose].icon, { size: 14, color: PURPOSES[purpose].color })}
-              <Text style={[s.purposeBannerText, { color: PURPOSES[purpose].color }]}>
+              <Text style={[useS.purposeBannerText, { color: PURPOSES[purpose].color }]}>
                 {PURPOSES[purpose].label} · {SPLITS[split].label}
               </Text>
             </View>
 
             {overlapWarning && (
-              <View style={s.warnCard}>
+              <View style={useS.warnCard}>
                 <AlertTriangle size={16} color="#FFD60A" style={{ marginTop: 2 }} />
-                <Text style={s.warnText}>{overlapWarning}</Text>
+                <Text style={useS.warnText}>{overlapWarning}</Text>
               </View>
             )}
 
-            <Text style={s.fieldLabel}>{SPLITS[split].label} — {PURPOSES[purpose].label} EXERCISES</Text>
+            <Text style={useS.fieldLabel}>{SPLITS[split].label} — {PURPOSES[purpose].label} EXERCISES</Text>
 
             {exercises.length === 0 && (
-              <View style={s.emptyExState}>
+              <View style={useS.emptyExState}>
                 {isAiGenerating ? (
-                  <View style={s.aiLoadingWrap}>
+                  <View style={useS.aiLoadingWrap}>
                     <ActivityIndicator color={T.colors.forge} size="large" />
-                    <Text style={s.aiLoadingText}>AI is building your {PURPOSES[purpose].label.toLowerCase()} session…</Text>
+                    <Text style={useS.aiLoadingText}>AI is building your {PURPOSES[purpose].label.toLowerCase()} session…</Text>
                   </View>
                 ) : (
                   <>
-                    <TouchableOpacity style={s.aiGenBtn} onPress={generateWithAI}>
+                    <TouchableOpacity style={useS.aiGenBtn} onPress={generateWithAI}>
                       <Sparkles size={18} color="#000" strokeWidth={2.5} />
-                      <Text style={s.aiGenBtnText}>Generate with AI</Text>
+                      <Text style={useS.aiGenBtnText}>Generate with AI</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={s.autoFillBtn} onPress={autoPopulate}>
-                      <Text style={s.autoFillText}>Use Smart Suggestions</Text>
+                    <TouchableOpacity style={useS.autoFillBtn} onPress={autoPopulate}>
+                      <Text style={useS.autoFillText}>Use Smart Suggestions</Text>
                     </TouchableOpacity>
                   </>
                 )}
@@ -392,12 +394,12 @@ No markdown, no explanation. Raw JSON array only.`;
             )}
 
             {exercises.map((ex, idx) => (
-              <View key={idx} style={s.exItem}>
-                <View style={s.exItemTop}>
+              <View key={idx} style={useS.exItem}>
+                <View style={useS.exItemTop}>
                   <TouchableOpacity onPress={() => handlePreview(ex.name)} style={{ flex: 1 }}>
-                    <Text style={s.exItemName}>{ex.name}</Text>
+                    <Text style={useS.exItemName}>{ex.name}</Text>
                     {ex.purpose && (
-                      <Text style={[s.exPurposeBadge, { color: PURPOSES[ex.purpose as PurposeType]?.color ?? T.colors.t3 }]}>
+                      <Text style={[useS.exPurposeBadge, { color: PURPOSES[ex.purpose as PurposeType]?.color ?? T.colors.t3 }]}>
                         {ex.purpose.toUpperCase()}
                       </Text>
                     )}
@@ -406,28 +408,28 @@ No markdown, no explanation. Raw JSON array only.`;
                     <X size={16} color={T.colors.t3} />
                   </TouchableOpacity>
                 </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.presetRow}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={useS.presetRow}>
                   {presets.map(p => (
                     <TouchableOpacity
                       key={p}
-                      style={[s.presetPill, ex.preset === p && s.presetPillOn]}
+                      style={[useS.presetPill, ex.preset === p && useS.presetPillOn]}
                       onPress={() => setPreset(idx, p)}
                     >
-                      <Text style={[s.presetPillText, ex.preset === p && { color: PURPOSES[purpose].color }]}>{p}</Text>
+                      <Text style={[useS.presetPillText, ex.preset === p && { color: PURPOSES[purpose].color }]}>{p}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
               </View>
             ))}
 
-            <TouchableOpacity style={s.addExBtn} onPress={() => setShowPicker(true)}>
+            <TouchableOpacity style={useS.addExBtn} onPress={() => setShowPicker(true)}>
               <Plus size={18} color={T.colors.forge} />
-              <Text style={s.addExText}>Add Exercise</Text>
+              <Text style={useS.addExText}>Add Exercise</Text>
             </TouchableOpacity>
 
-            <View style={s.navRow}>
-              <TouchableOpacity style={s.navBack} onPress={goBack}><Text style={s.navBackText}>Back</Text></TouchableOpacity>
-              <TouchableOpacity style={s.navNext} onPress={handleNext}><Text style={s.navNextText}>Review →</Text></TouchableOpacity>
+            <View style={useS.navRow}>
+              <TouchableOpacity style={useS.navBack} onPress={goBack}><Text style={useS.navBackText}>Back</Text></TouchableOpacity>
+              <TouchableOpacity style={useS.navNext} onPress={handleNext}><Text style={useS.navNextText}>Review →</Text></TouchableOpacity>
             </View>
           </View>
         )}
@@ -435,46 +437,46 @@ No markdown, no explanation. Raw JSON array only.`;
         {/* ── STEP 4: Review & Save ── */}
         {step === 4 && (
           <View>
-            <Text style={s.stepLabel}>STEP 4 OF 4 — REVIEW & SAVE</Text>
+            <Text style={useS.stepLabel}>STEP 4 OF 4 — REVIEW & SAVE</Text>
 
-            <Text style={s.fieldLabel}>ROUTINE DETAILS</Text>
-            <View style={s.reviewCard}>
-              <View style={s.rvRow}>
-                <Text style={s.rvName}>{name || 'My Routine'}</Text>
+            <Text style={useS.fieldLabel}>ROUTINE DETAILS</Text>
+            <View style={useS.reviewCard}>
+              <View style={useS.rvRow}>
+                <Text style={useS.rvName}>{name || 'My Routine'}</Text>
                 <View style={{ flexDirection: 'row', gap: 6 }}>
-                  <View style={[s.badge, { backgroundColor: SPLITS[split].color + '26' }]}>
-                    <Text style={[s.badgeText, { color: SPLITS[split].color }]}>{SPLITS[split].label}</Text>
+                  <View style={[useS.badge, { backgroundColor: SPLITS[split].color + '26' }]}>
+                    <Text style={[useS.badgeText, { color: SPLITS[split].color }]}>{SPLITS[split].label}</Text>
                   </View>
-                  <View style={[s.badge, { backgroundColor: PURPOSES[purpose].color + '26' }]}>
-                    <Text style={[s.badgeText, { color: PURPOSES[purpose].color }]}>{PURPOSES[purpose].label}</Text>
+                  <View style={[useS.badge, { backgroundColor: PURPOSES[purpose].color + '26' }]}>
+                    <Text style={[useS.badgeText, { color: PURPOSES[purpose].color }]}>{PURPOSES[purpose].label}</Text>
                   </View>
                 </View>
               </View>
             </View>
 
-            <Text style={[s.fieldLabel, { marginTop: 16 }]}>EXERCISES ({exercises.length})</Text>
-            <View style={s.reviewCard}>
+            <Text style={[useS.fieldLabel, { marginTop: 16 }]}>EXERCISES ({exercises.length})</Text>
+            <View style={useS.reviewCard}>
               {exercises.map((ex, idx) => (
-                <View key={idx} style={[s.rvRow, idx < exercises.length - 1 && s.rvBorder]}>
+                <View key={idx} style={[useS.rvRow, idx < exercises.length - 1 && useS.rvBorder]}>
                   <View>
-                    <Text style={s.rvName}>{ex.name}</Text>
+                    <Text style={useS.rvName}>{ex.name}</Text>
                     {ex.purpose && (
-                      <Text style={[s.exPurposeBadge, { color: PURPOSES[ex.purpose as PurposeType]?.color ?? T.colors.t3 }]}>
+                      <Text style={[useS.exPurposeBadge, { color: PURPOSES[ex.purpose as PurposeType]?.color ?? T.colors.t3 }]}>
                         {ex.purpose.toUpperCase()}
                       </Text>
                     )}
                   </View>
-                  <Text style={s.rvPreset}>{ex.preset}</Text>
+                  <Text style={useS.rvPreset}>{ex.preset}</Text>
                 </View>
               ))}
             </View>
 
-            <TouchableOpacity style={[s.nextBtn, { marginTop: 24 }]} onPress={handleSave}>
-              <Text style={s.nextBtnText}>Save Routine</Text>
+            <TouchableOpacity style={[useS.nextBtn, { marginTop: 24 }]} onPress={handleSave}>
+              <Text style={useS.nextBtnText}>Save Routine</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[s.navBack, { marginTop: 12, borderWidth: 0, paddingVertical: 16 }]} onPress={goBack}>
-              <Text style={s.navBackText}>Back</Text>
+            <TouchableOpacity style={[useS.navBack, { marginTop: 12, borderWidth: 0, paddingVertical: 16 }]} onPress={goBack}>
+              <Text style={useS.navBackText}>Back</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -483,11 +485,11 @@ No markdown, no explanation. Raw JSON array only.`;
       {/* Exercise Picker Modal */}
       <Modal visible={showPicker} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowPicker(false)}>
         <SafeAreaView style={{ flex: 1, backgroundColor: T.colors.bg0 }}>
-          <View style={[s.header, { paddingTop: 16 }]}>
-            <TouchableOpacity onPress={() => setShowPicker(false)} style={s.iconBtn}>
+          <View style={[useS.header, { paddingTop: 16 }]}>
+            <TouchableOpacity onPress={() => setShowPicker(false)} style={useS.iconBtn}>
               <X size={24} color={T.colors.t1} />
             </TouchableOpacity>
-            <Text style={s.title}>SELECT EXERCISE</Text>
+            <Text style={useS.title}>SELECT EXERCISE</Text>
             <View style={{ width: 40 }} />
           </View>
           <ExerciseLibrary exercises={splitExercises} isLoading={!dbExercises} onSelect={handleAddExercise} />
@@ -500,124 +502,124 @@ No markdown, no explanation. Raw JSON array only.`;
   );
 }
 
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: T.colors.bg0 },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: 16,
-    borderBottomWidth: 0.5, borderBottomColor: T.colors.b1, backgroundColor: T.colors.bg0,
-  },
-  iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 16, fontWeight: '800', color: T.colors.t1, letterSpacing: 1 },
-  content: { padding: T.spacing.page, paddingBottom: 80 },
+const useS = (T: any) => StyleSheet.create({
+          container: { flex: 1, backgroundColor: T.colors.bg0 },
+          header: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: 16,
+            borderBottomWidth: 0.5, borderBottomColor: T.colors.b1, backgroundColor: T.colors.bg0,
+          },
+          iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+          title: { fontSize: 16, fontWeight: '800', color: T.colors.t1, letterSpacing: 1 },
+          content: { padding: T.spacing.page, paddingBottom: 80 },
 
-  stepDots: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 24 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: T.colors.bg3 },
-  dotActive: { width: 20, backgroundColor: T.colors.forge },
-  dotDone: { backgroundColor: T.colors.forge },
+          stepDots: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 24 },
+          dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: T.colors.bg3 },
+          dotActive: { width: 20, backgroundColor: T.colors.forge },
+          dotDone: { backgroundColor: T.colors.forge },
 
-  stepLabel: { color: T.colors.t3, fontSize: 11, fontWeight: '800', letterSpacing: 0.6, textAlign: 'center', marginBottom: 24 },
-  fieldLabel: { color: T.colors.t3, fontSize: 10, fontWeight: '800', letterSpacing: 0.8, marginBottom: 8 },
+          stepLabel: { color: T.colors.t3, fontSize: 11, fontWeight: '800', letterSpacing: 0.6, textAlign: 'center', marginBottom: 24 },
+          fieldLabel: { color: T.colors.t3, fontSize: 10, fontWeight: '800', letterSpacing: 0.8, marginBottom: 8 },
 
-  input: {
-    backgroundColor: T.colors.bg1, borderWidth: 0.5, borderColor: T.colors.b1,
-    borderRadius: 12, padding: 16, color: T.colors.t1, fontSize: 16, fontWeight: '600', marginBottom: 24,
-  },
+          input: {
+            backgroundColor: T.colors.bg1, borderWidth: 0.5, borderColor: T.colors.b1,
+            borderRadius: 12, padding: 16, color: T.colors.t1, fontSize: 16, fontWeight: '600', marginBottom: 24,
+          },
 
-  splitGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 32 },
-  splitCard: {
-    width: '48%', backgroundColor: T.colors.bg1, borderWidth: 0.5, borderColor: T.colors.b1,
-    borderRadius: 16, padding: 16, alignItems: 'center', justifyContent: 'center', minHeight: 100,
-  },
-  scName: { fontSize: 14, fontWeight: '800', color: T.colors.t1, marginTop: 8, marginBottom: 2 },
-  scHint: { fontSize: 10, color: T.colors.t3, textAlign: 'center' },
+          splitGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 32 },
+          splitCard: {
+            width: '48%', backgroundColor: T.colors.bg1, borderWidth: 0.5, borderColor: T.colors.b1,
+            borderRadius: 16, padding: 16, alignItems: 'center', justifyContent: 'center', minHeight: 100,
+          },
+          scName: { fontSize: 14, fontWeight: '800', color: T.colors.t1, marginTop: 8, marginBottom: 2 },
+          scHint: { fontSize: 10, color: T.colors.t3, textAlign: 'center' },
 
-  // Purpose cards – compact 2-col grid
-  purposeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 16 },
-  purposeCard: {
-    width: '47.5%', backgroundColor: T.colors.bg1, borderWidth: 1.5, borderColor: T.colors.b1,
-    borderRadius: 16, padding: 14, position: 'relative', overflow: 'hidden',
-  },
-  purposeIconWrap: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-  purposeLabel: { fontSize: 13, fontWeight: '800', color: T.colors.t1, letterSpacing: 0.4, marginBottom: 3 },
-  purposeHint: { fontSize: 10, color: T.colors.t3, fontWeight: '600', lineHeight: 14, marginBottom: 10 },
-  presetPreview: { flexDirection: 'row', gap: 5, flexWrap: 'wrap' },
-  presetTag: {
-    paddingHorizontal: 7, paddingVertical: 3, borderRadius: 5,
-    borderWidth: 0.5, borderColor: T.colors.b1, backgroundColor: T.colors.bg2,
-  },
-  presetTagText: { fontSize: 10, fontWeight: '700', color: T.colors.t3 },
-  activeCheck: {
-    position: 'absolute', top: 10, right: 10,
-    width: 18, height: 18, borderRadius: 9,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  // Selected purpose description card
-  purposeDescCard: {
-    borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 24,
-  },
-  purposeDescText: { fontSize: 12, fontWeight: '600', lineHeight: 18 },
+          // Purpose cards – compact 2-col grid
+          purposeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 16 },
+          purposeCard: {
+            width: '47.5%', backgroundColor: T.colors.bg1, borderWidth: 1.5, borderColor: T.colors.b1,
+            borderRadius: 16, padding: 14, position: 'relative', overflow: 'hidden',
+          },
+          purposeIconWrap: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+          purposeLabel: { fontSize: 13, fontWeight: '800', color: T.colors.t1, letterSpacing: 0.4, marginBottom: 3 },
+          purposeHint: { fontSize: 10, color: T.colors.t3, fontWeight: '600', lineHeight: 14, marginBottom: 10 },
+          presetPreview: { flexDirection: 'row', gap: 5, flexWrap: 'wrap' },
+          presetTag: {
+            paddingHorizontal: 7, paddingVertical: 3, borderRadius: 5,
+            borderWidth: 0.5, borderColor: T.colors.b1, backgroundColor: T.colors.bg2,
+          },
+          presetTagText: { fontSize: 10, fontWeight: '700', color: T.colors.t3 },
+          activeCheck: {
+            position: 'absolute', top: 10, right: 10,
+            width: 18, height: 18, borderRadius: 9,
+            alignItems: 'center', justifyContent: 'center',
+          },
+          // Selected purpose description card
+          purposeDescCard: {
+            borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 24,
+          },
+          purposeDescText: { fontSize: 12, fontWeight: '600', lineHeight: 18 },
 
-  // Purpose banner in step 3
-  purposeBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8,
-    marginBottom: 16,
-  },
-  purposeBannerText: { fontSize: 12, fontWeight: '800', letterSpacing: 0.6 },
+          // Purpose banner in step 3
+          purposeBanner: {
+            flexDirection: 'row', alignItems: 'center', gap: 8,
+            borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8,
+            marginBottom: 16,
+          },
+          purposeBannerText: { fontSize: 12, fontWeight: '800', letterSpacing: 0.6 },
 
-  nextBtn: { backgroundColor: T.colors.forge, padding: 16, borderRadius: 14, alignItems: 'center' },
-  nextBtnText: { color: '#000', fontSize: 16, fontWeight: '800' },
+          nextBtn: { backgroundColor: T.colors.forge, padding: 16, borderRadius: 14, alignItems: 'center' },
+          nextBtnText: { color: '#000', fontSize: 16, fontWeight: '800' },
 
-  warnCard: {
-    backgroundColor: 'rgba(255, 214, 10, 0.1)', borderWidth: 0.5, borderColor: 'rgba(255, 214, 10, 0.3)',
-    borderRadius: 12, padding: 12, flexDirection: 'row', gap: 10, marginBottom: 20,
-  },
-  warnText: { color: '#FFD60A', fontSize: 13, lineHeight: 18, flex: 1, fontWeight: '500' },
+          warnCard: {
+            backgroundColor: 'rgba(255, 214, 10, 0.1)', borderWidth: 0.5, borderColor: 'rgba(255, 214, 10, 0.3)',
+            borderRadius: 12, padding: 12, flexDirection: 'row', gap: 10, marginBottom: 20,
+          },
+          warnText: { color: '#FFD60A', fontSize: 13, lineHeight: 18, flex: 1, fontWeight: '500' },
 
-  exItem: { backgroundColor: T.colors.bg1, borderWidth: 0.5, borderColor: T.colors.b1, borderRadius: 14, padding: 14, marginBottom: 10 },
-  exItemTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
-  exItemName: { color: T.colors.t1, fontSize: 15, fontWeight: '700', marginBottom: 2 },
-  exPurposeBadge: { fontSize: 10, fontWeight: '800', letterSpacing: 0.6 },
+          exItem: { backgroundColor: T.colors.bg1, borderWidth: 0.5, borderColor: T.colors.b1, borderRadius: 14, padding: 14, marginBottom: 10 },
+          exItemTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
+          exItemName: { color: T.colors.t1, fontSize: 15, fontWeight: '700', marginBottom: 2 },
+          exPurposeBadge: { fontSize: 10, fontWeight: '800', letterSpacing: 0.6 },
 
-  presetRow: { flexDirection: 'row', gap: 6 },
-  presetPill: { backgroundColor: T.colors.bg2, borderWidth: 0.5, borderColor: T.colors.b1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
-  presetPillOn: { backgroundColor: 'rgba(255, 92, 46, 0.08)', borderColor: T.colors.forge },
-  presetPillText: { color: T.colors.t3, fontSize: 12, fontWeight: '700' },
+          presetRow: { flexDirection: 'row', gap: 6 },
+          presetPill: { backgroundColor: T.colors.bg2, borderWidth: 0.5, borderColor: T.colors.b1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
+          presetPillOn: { backgroundColor: 'rgba(255, 92, 46, 0.08)', borderColor: T.colors.forge },
+          presetPillText: { color: T.colors.t3, fontSize: 12, fontWeight: '700' },
 
-  addExBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    borderWidth: 1, borderStyle: 'dashed', borderColor: T.colors.forge,
-    borderRadius: 14, padding: 16, marginBottom: 24,
-  },
-  addExText: { color: T.colors.forge, fontSize: 15, fontWeight: '700' },
+          addExBtn: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+            borderWidth: 1, borderStyle: 'dashed', borderColor: T.colors.forge,
+            borderRadius: 14, padding: 16, marginBottom: 24,
+          },
+          addExText: { color: T.colors.forge, fontSize: 15, fontWeight: '700' },
 
-  navRow: { flexDirection: 'row', gap: 12 },
-  navBack: { flex: 1, borderWidth: 0.5, borderColor: T.colors.b1, borderRadius: 14, padding: 16, alignItems: 'center' },
-  navBackText: { color: T.colors.t2, fontSize: 15, fontWeight: '700' },
-  navNext: { flex: 2, backgroundColor: T.colors.forge, borderRadius: 14, padding: 16, alignItems: 'center' },
-  navNextText: { color: '#000', fontSize: 15, fontWeight: '800' },
+          navRow: { flexDirection: 'row', gap: 12 },
+          navBack: { flex: 1, borderWidth: 0.5, borderColor: T.colors.b1, borderRadius: 14, padding: 16, alignItems: 'center' },
+          navBackText: { color: T.colors.t2, fontSize: 15, fontWeight: '700' },
+          navNext: { flex: 2, backgroundColor: T.colors.forge, borderRadius: 14, padding: 16, alignItems: 'center' },
+          navNextText: { color: '#000', fontSize: 15, fontWeight: '800' },
 
-  reviewCard: { backgroundColor: T.colors.bg1, borderWidth: 0.5, borderColor: T.colors.b1, borderRadius: 14, padding: 16 },
-  rvRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 },
-  rvBorder: { borderBottomWidth: 0.5, borderBottomColor: T.colors.b1 },
-  rvName: { color: T.colors.t1, fontSize: 15, fontWeight: '600' },
-  rvPreset: { color: T.colors.t3, fontSize: 13, fontWeight: '600' },
+          reviewCard: { backgroundColor: T.colors.bg1, borderWidth: 0.5, borderColor: T.colors.b1, borderRadius: 14, padding: 16 },
+          rvRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 },
+          rvBorder: { borderBottomWidth: 0.5, borderBottomColor: T.colors.b1 },
+          rvName: { color: T.colors.t1, fontSize: 15, fontWeight: '600' },
+          rvPreset: { color: T.colors.t3, fontSize: 13, fontWeight: '600' },
 
-  badge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  badgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+          badge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
+          badgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
 
-  // AI Generation empty state
-  emptyExState: { alignItems: 'center', paddingVertical: 32, gap: 12 },
-  aiGenBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: T.colors.forge, paddingVertical: 16, paddingHorizontal: 32,
-    borderRadius: 14, width: '100%',
-    shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
-  },
-  aiGenBtnText: { color: '#000', fontSize: 16, fontWeight: '900', letterSpacing: 0.5 },
-  autoFillBtn: { paddingVertical: 12, paddingHorizontal: 24 },
-  autoFillText: { color: T.colors.t3, fontSize: 14, fontWeight: '600' },
-  aiLoadingWrap: { alignItems: 'center', gap: 16, paddingVertical: 20 },
-  aiLoadingText: { color: T.colors.t3, fontSize: 14, fontWeight: '600', textAlign: 'center' },
-});
+          // AI Generation empty state
+          emptyExState: { alignItems: 'center', paddingVertical: 32, gap: 12 },
+          aiGenBtn: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+            backgroundColor: T.colors.forge, paddingVertical: 16, paddingHorizontal: 32,
+            borderRadius: 14, width: '100%',
+            shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
+          },
+          aiGenBtnText: { color: '#000', fontSize: 16, fontWeight: '900', letterSpacing: 0.5 },
+          autoFillBtn: { paddingVertical: 12, paddingHorizontal: 24 },
+          autoFillText: { color: T.colors.t3, fontSize: 14, fontWeight: '600' },
+          aiLoadingWrap: { alignItems: 'center', gap: 16, paddingVertical: 20 },
+          aiLoadingText: { color: T.colors.t3, fontSize: 14, fontWeight: '600', textAlign: 'center' },
+        });

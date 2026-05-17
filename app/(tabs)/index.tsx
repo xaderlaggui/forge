@@ -1,8 +1,6 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
-
-import { ForgeTheme } from '../../constants/ForgeTheme';
 import { AiCoachCard } from '../../components/forge/AiCoachCard';
 
 // Dashboard Feature Modules
@@ -11,8 +9,11 @@ import { DashboardHeader } from '../../features/dashboard/components/DashboardHe
 import { TodayPlanCard } from '../../features/dashboard/components/TodayPlanCard';
 import { MetricRingsRow } from '../../features/dashboard/components/MetricRingsRow';
 import { RecentWorkoutsList } from '../../features/dashboard/components/RecentWorkoutsList';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 export default function HomeScreen() {
+    const { T: ForgeTheme } = useForgeTheme();
+    const styles = useStyles(ForgeTheme);
   const router = useRouter();
   
   // Clean Architecture: Fetch all state/aggregates via a unified hook
@@ -20,8 +21,8 @@ export default function HomeScreen() {
 
   return (
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
+      style={useStyles.container}
+      contentContainerStyle={useStyles.scrollContent}
       showsVerticalScrollIndicator={false}
     >
       {/* ── Composition: Header & Greeting ── */}
@@ -47,7 +48,7 @@ export default function HomeScreen() {
       />
 
       {/* ── Composition: AI Coach (Shared Component) ── */}
-      <View style={styles.section}>
+      <View style={useStyles.section}>
         <AiCoachCard
           tip={data.aiTip}
           isLoading={data.isAiLoading}
@@ -62,16 +63,16 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: ForgeTheme.colors.bg0,
-  },
-  scrollContent: {
-    paddingBottom: 110,
-  },
-  section: {
-    paddingHorizontal: ForgeTheme.spacing.page,
-    marginBottom: ForgeTheme.spacing.px5,
-  },
-});
+const useStyles = (T: any) => StyleSheet.create({
+          container: {
+            flex: 1,
+            backgroundColor: ForgeTheme.colors.bg0,
+          },
+          scrollContent: {
+            paddingBottom: 110,
+          },
+          section: {
+            paddingHorizontal: ForgeTheme.spacing.page,
+            marginBottom: ForgeTheme.spacing.px5,
+          },
+        });

@@ -18,8 +18,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { MascotImage } from '../../components/common/MascotImage';
-import { ForgeTheme as T } from '../../constants/ForgeTheme';
 import { auth, db } from '../../services/firebase';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 function InputField({
   icon, placeholder, value, onChangeText,
@@ -27,14 +27,16 @@ function InputField({
   keyboardType = 'default', returnKeyType = 'next',
   focusedField, setFocusedField
 }: any) {
+    const { T } = useForgeTheme();
+    const s = useS(T);
   return (
-    <View style={[s.inputWrap, focusedField === fieldKey && s.inputWrapFocused]}>
+    <View style={[useS.inputWrap, focusedField === fieldKey && useS.inputWrapFocused]}>
       {React.cloneElement(icon, {
         color: focusedField === fieldKey ? T.colors.forge : T.colors.t3,
         size: 18,
       })}
       <TextInput
-        style={s.input}
+        style={useS.input}
         placeholder={placeholder}
         placeholderTextColor={T.colors.t3}
         value={value}
@@ -51,6 +53,8 @@ function InputField({
 }
 
 export default function SignupScreen() {
+    const { T } = useForgeTheme();
+    const s = useS(T);
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -112,14 +116,14 @@ export default function SignupScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={s.container}
+      style={useS.container}
     >
-      <View style={s.innerWrapper}>
-        <Animated.View style={[s.inner, animStyle]}>
+      <View style={useS.innerWrapper}>
+        <Animated.View style={[useS.inner, animStyle]}>
 
           {/* Back to login */}
-          <TouchableOpacity style={s.backRow} onPress={() => router.back()}>
-            <Text style={s.backText}>← Back to Login</Text>
+          <TouchableOpacity style={useS.backRow} onPress={() => router.back()}>
+            <Text style={useS.backText}>← Back to Login</Text>
           </TouchableOpacity>
 
           <MascotImage
@@ -131,9 +135,9 @@ export default function SignupScreen() {
             style={{ alignSelf: 'center', marginBottom: 8 }}
           />
           {/* Brand */}
-          <Text style={s.wordmark}>FORGE</Text>
-          <Text style={s.title}>Create your account</Text>
-          <Text style={s.subtitle}>Start building your best self today.</Text>
+          <Text style={useS.wordmark}>FORGE</Text>
+          <Text style={useS.title}>Create your account</Text>
+          <Text style={useS.subtitle}>Start building your best self today.</Text>
 
           {/* Fields */}
           <InputField
@@ -180,19 +184,19 @@ export default function SignupScreen() {
 
           {/* CTA */}
           <TouchableOpacity
-            style={[s.btn, loading && { opacity: 0.7 }]}
+            style={[useS.btn, loading && { opacity: 0.7 }]}
             onPress={handleSignup}
             disabled={loading}
             activeOpacity={0.85}
           >
             {loading
               ? <ActivityIndicator color="#fff" />
-              : <Text style={s.btnText}>Create Account</Text>
+              : <Text style={useS.btnText}>Create Account</Text>
             }
           </TouchableOpacity>
 
           {/* Terms */}
-          <Text style={s.terms}>
+          <Text style={useS.terms}>
             By signing up, you agree to our{' '}
             <Text style={{ color: T.colors.forge }}>Terms of Service</Text>
             {' '}and{' '}
@@ -200,10 +204,10 @@ export default function SignupScreen() {
           </Text>
 
           {/* Footer */}
-          <View style={s.footer}>
-            <Text style={s.footerText}>Already have an account? </Text>
+          <View style={useS.footer}>
+            <Text style={useS.footerText}>Already have an account? </Text>
             <TouchableOpacity onPress={() => router.back()}>
-              <Text style={s.footerLink}>Log in</Text>
+              <Text style={useS.footerLink}>Log in</Text>
             </TouchableOpacity>
           </View>
 
@@ -213,59 +217,59 @@ export default function SignupScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: T.colors.bg0 },
-  innerWrapper: { flex: 1 },
-  inner: {
-    flex: 1, paddingHorizontal: 24,
-    paddingTop: 54, paddingBottom: 24,
-    alignItems: 'center', justifyContent: 'center'
-  },
+const useS = (T: any) => StyleSheet.create({
+          container: { flex: 1, backgroundColor: T.colors.bg0 },
+          innerWrapper: { flex: 1 },
+          inner: {
+            flex: 1, paddingHorizontal: 24,
+            paddingTop: 54, paddingBottom: 24,
+            alignItems: 'center', justifyContent: 'center'
+          },
 
-  backRow: { alignSelf: 'flex-start', marginBottom: 28 },
-  backText: { fontSize: 13, color: T.colors.t3, fontWeight: '500' },
+          backRow: { alignSelf: 'flex-start', marginBottom: 28 },
+          backText: { fontSize: 13, color: T.colors.t3, fontWeight: '500' },
 
-  wordmark: {
-    fontSize: 28, fontWeight: '800', letterSpacing: 4,
-    color: T.colors.forge, marginBottom: 16,
-    textShadowColor: 'rgba(255,92,46,0.35)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 14,
-  },
-  title: { fontSize: 22, fontWeight: '700', color: T.colors.t1, marginBottom: 6, textAlign: 'center' },
-  subtitle: { fontSize: 13, color: T.colors.t2, textAlign: 'center', marginBottom: 32 },
+          wordmark: {
+            fontSize: 28, fontWeight: '800', letterSpacing: 4,
+            color: T.colors.forge, marginBottom: 16,
+            textShadowColor: 'rgba(255,92,46,0.35)',
+            textShadowOffset: { width: 0, height: 0 },
+            textShadowRadius: 14,
+          },
+          title: { fontSize: 22, fontWeight: '700', color: T.colors.t1, marginBottom: 6, textAlign: 'center' },
+          subtitle: { fontSize: 13, color: T.colors.t2, textAlign: 'center', marginBottom: 32 },
 
-  // Inputs
-  inputWrap: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    width: '100%', height: 56,
-    backgroundColor: T.colors.bg2,
-    borderRadius: 16, paddingHorizontal: 16,
-    marginBottom: 12,
-    borderWidth: 1, borderColor: 'transparent',
-  },
-  inputWrapFocused: {
-    borderColor: T.colors.forge,
-    backgroundColor: T.colors.bg1,
-  },
-  input: { flex: 1, fontSize: 15, color: T.colors.t1 },
+          // Inputs
+          inputWrap: {
+            flexDirection: 'row', alignItems: 'center', gap: 12,
+            width: '100%', height: 56,
+            backgroundColor: T.colors.bg2,
+            borderRadius: 16, paddingHorizontal: 16,
+            marginBottom: 12,
+            borderWidth: 1, borderColor: 'transparent',
+          },
+          inputWrapFocused: {
+            borderColor: T.colors.forge,
+            backgroundColor: T.colors.bg1,
+          },
+          input: { flex: 1, fontSize: 15, color: T.colors.t1 },
 
-  // Button
-  btn: {
-    width: '100%', height: 56,
-    backgroundColor: T.colors.forge,
-    borderRadius: 16, alignItems: 'center', justifyContent: 'center',
-    marginTop: 8,
-    shadowColor: T.colors.forge,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3, shadowRadius: 16, elevation: 8,
-  },
-  btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+          // Button
+          btn: {
+            width: '100%', height: 56,
+            backgroundColor: T.colors.forge,
+            borderRadius: 16, alignItems: 'center', justifyContent: 'center',
+            marginTop: 8,
+            shadowColor: T.colors.forge,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.3, shadowRadius: 16, elevation: 8,
+          },
+          btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 
-  terms: { fontSize: 11, color: T.colors.t3, textAlign: 'center', marginTop: 16, lineHeight: 18 },
+          terms: { fontSize: 11, color: T.colors.t3, textAlign: 'center', marginTop: 16, lineHeight: 18 },
 
-  // Footer
-  footer: { flexDirection: 'row', alignItems: 'center', marginTop: 28 },
-  footerText: { fontSize: 13, color: T.colors.t3 },
-  footerLink: { fontSize: 13, color: T.colors.forge, fontWeight: '600' },
-});
+          // Footer
+          footer: { flexDirection: 'row', alignItems: 'center', marginTop: 28 },
+          footerText: { fontSize: 13, color: T.colors.t3 },
+          footerLink: { fontSize: 13, color: T.colors.forge, fontWeight: '600' },
+        });

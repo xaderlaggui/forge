@@ -3,9 +3,11 @@ import { Dumbbell, Home, PieChart, Sparkles, Settings, TrendingUp } from 'lucide
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ForgeTheme as T } from '../../constants/ForgeTheme';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 function ForgeFAB() {
+    const { T } = useForgeTheme();
+    const styles = useStyles(T);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   
@@ -13,7 +15,7 @@ function ForgeFAB() {
 
   return (
     <TouchableOpacity
-      style={[styles.fab, { bottom: 85 + insets.bottom, backgroundColor: aiColor, shadowColor: aiColor }]}
+      style={[useStyles.fab, { bottom: 85 + insets.bottom, backgroundColor: aiColor, shadowColor: aiColor }]}
       onPress={() => router.push('/chat')}
       activeOpacity={0.85}
       accessibilityLabel="AI Coach"
@@ -25,6 +27,8 @@ function ForgeFAB() {
 }
 
 export default function TabLayout() {
+    const { T } = useForgeTheme();
+    const styles = useStyles(T);
   return (
     <View style={{ flex: 1, backgroundColor: T.colors.bg0 }}>
       <Tabs
@@ -94,21 +98,21 @@ export default function TabLayout() {
   );
 }
 
-const styles = StyleSheet.create({
-  fab: {
-    position: 'absolute',
-    right: T.spacing.page,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: T.colors.forge,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: T.colors.forge,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 8,
-    zIndex: 100,
-  },
-});
+const useStyles = (T: any) => StyleSheet.create({
+          fab: {
+            position: 'absolute',
+            right: T.spacing.page,
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+            backgroundColor: T.colors.forge,
+            alignItems: 'center',
+            justifyContent: 'center',
+            shadowColor: T.colors.forge,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 12,
+            elevation: 8,
+            zIndex: 100,
+          },
+        });

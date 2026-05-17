@@ -1,7 +1,6 @@
 import React from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ForgeSegment } from '../../components/forge/ForgeSegment';
-import { ForgeTheme as T } from '../../constants/ForgeTheme';
 import { MascotImages } from '../../constants/mascotImages';
 
 // Feature Modules
@@ -10,8 +9,11 @@ import { ExerciseLibrary } from '../../features/planner/components/ExerciseLibra
 import { RoutineList } from '../../features/planner/components/RoutineList';
 import { WeeklyCalendar } from '../../features/planner/components/WeeklyCalendar';
 import { usePlannerData } from '../../features/planner/hooks/usePlannerData';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 export default function WorkoutScreen() {
+    const { T } = useForgeTheme();
+    const s = useS(T);
   // Clean Architecture: Hook handles all state, formatting, and fetching
   const {
     activeTab, setActiveTab,
@@ -21,12 +23,12 @@ export default function WorkoutScreen() {
   } = usePlannerData();
 
   return (
-    <View style={s.container}>
+    <View style={useS.container}>
       {/* ── Composition: Header ── */}
-      <View style={s.header}>
+      <View style={useS.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: T.spacing.px4 }}>
           <Image source={MascotImages.workout} style={{ width: 48, height: 48, resizeMode: 'contain' }} />
-          <Text style={s.title} maxFontSizeMultiplier={1.2}>Workout Planner</Text>
+          <Text style={useS.title} maxFontSizeMultiplier={1.2}>Workout Planner</Text>
         </View>
         <ForgeSegment
           options={['Planner', 'Routines', 'Library']}
@@ -44,7 +46,7 @@ export default function WorkoutScreen() {
       ) : activeTab === 'Routines' ? (
         <RoutineList />
       ) : (
-        <ScrollView contentContainerStyle={s.plannerContainer} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={useS.plannerContainer} showsVerticalScrollIndicator={false}>
           <WeeklyCalendar
             days={days}
             activeDayIdx={activeDayIdx}
@@ -63,12 +65,12 @@ export default function WorkoutScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: T.colors.bg0 },
-  header: {
-    paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: T.spacing.px4,
-    backgroundColor: T.colors.bg0, borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
-  },
-  title: { fontSize: T.typography.sizes.h1, fontWeight: '700', color: T.colors.t1 },
-  plannerContainer: { padding: T.spacing.page, paddingBottom: 100 },
-});
+const useS = (T: any) => StyleSheet.create({
+          container: { flex: 1, backgroundColor: T.colors.bg0 },
+          header: {
+            paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: T.spacing.px4,
+            backgroundColor: T.colors.bg0, borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
+          },
+          title: { fontSize: T.typography.sizes.h1, fontWeight: '700', color: T.colors.t1 },
+          plannerContainer: { padding: T.spacing.page, paddingBottom: 100 },
+        });

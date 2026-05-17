@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming, Easing } from 'react-native-reanimated';
-import { ForgeTheme as T } from '../../../constants/ForgeTheme';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 interface WeeklyCalendarProps {
   days: { label: string; date: number; fullDate: string }[];
@@ -10,6 +10,8 @@ interface WeeklyCalendarProps {
 }
 
 export function WeeklyCalendar({ days, activeDayIdx, onSelectDay }: WeeklyCalendarProps) {
+    const { T } = useForgeTheme();
+    const s = useS(T);
   const dotOpacity = useSharedValue(0.6);
 
   useEffect(() => {
@@ -25,21 +27,21 @@ export function WeeklyCalendar({ days, activeDayIdx, onSelectDay }: WeeklyCalend
   }));
 
   return (
-    <View style={s.weekRow}>
+    <View style={useS.weekRow}>
       {days.map((day, idx) => {
         const isActive = idx === activeDayIdx;
         return (
           <TouchableOpacity
             key={idx}
             onPress={() => onSelectDay(idx)}
-            style={s.weekDotCol}
+            style={useS.weekDotCol}
             activeOpacity={0.7}
           >
-            <Text style={s.dayLabel} maxFontSizeMultiplier={1.2}>{day.label}</Text>
+            <Text style={useS.dayLabel} maxFontSizeMultiplier={1.2}>{day.label}</Text>
             {isActive ? (
-              <Animated.View style={[s.weekDot, s.weekDotActive, dotOpacityStyle]} />
+              <Animated.View style={[useS.weekDot, useS.weekDotActive, dotOpacityStyle]} />
             ) : (
-              <View style={s.weekDot} />
+              <View style={useS.weekDot} />
             )}
           </TouchableOpacity>
         );
@@ -48,18 +50,18 @@ export function WeeklyCalendar({ days, activeDayIdx, onSelectDay }: WeeklyCalend
   );
 }
 
-const s = StyleSheet.create({
-  weekRow: {
-    flexDirection: 'row', justifyContent: 'space-between', marginBottom: T.spacing.px6,
-    backgroundColor: T.colors.bg1, padding: T.spacing.px4, borderRadius: T.radii.lg,
-    borderWidth: 0.5, borderColor: T.colors.b1,
-  },
-  weekDotCol: { alignItems: 'center', gap: 6 },
-  dayLabel: { fontSize: T.typography.sizes.caption, color: T.colors.t3, fontWeight: '600' },
-  weekDot: { width: 8, height: 8, borderRadius: T.radii.xs, backgroundColor: T.colors.bg3 },
-  weekDotActive: {
-    backgroundColor: T.colors.forge,
-    shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5, shadowRadius: 6, elevation: 3,
-  },
-});
+const useS = (T: any) => StyleSheet.create({
+          weekRow: {
+            flexDirection: 'row', justifyContent: 'space-between', marginBottom: T.spacing.px6,
+            backgroundColor: T.colors.bg1, padding: T.spacing.px4, borderRadius: T.radii.lg,
+            borderWidth: 0.5, borderColor: T.colors.b1,
+          },
+          weekDotCol: { alignItems: 'center', gap: 6 },
+          dayLabel: { fontSize: T.typography.sizes.caption, color: T.colors.t3, fontWeight: '600' },
+          weekDot: { width: 8, height: 8, borderRadius: T.radii.xs, backgroundColor: T.colors.bg3 },
+          weekDotActive: {
+            backgroundColor: T.colors.forge,
+            shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.5, shadowRadius: 6, elevation: 3,
+          },
+        });

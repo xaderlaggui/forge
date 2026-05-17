@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { ForgeTheme } from '../../constants/ForgeTheme';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 interface MacroDonutRingProps {
   /** Calories consumed */
@@ -15,6 +15,8 @@ interface MacroDonutRingProps {
 }
 
 export function MacroDonutRing({ calories, calorieGoal, waterLiters, waterGoal }: MacroDonutRingProps) {
+    const { T: ForgeTheme } = useForgeTheme();
+    const styles = useStyles(ForgeTheme);
   const SIZE = 96;
   const OUTER_R = 44;
   const INNER_R = 32;
@@ -30,7 +32,7 @@ export function MacroDonutRing({ calories, calorieGoal, waterLiters, waterGoal }
   const calOffset = innerCircumference - calPercent * innerCircumference;
 
   return (
-    <View style={styles.wrapper}>
+    <View style={useStyles.wrapper}>
       <View style={{ width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center' }}>
         <Svg width={SIZE} height={SIZE} viewBox="0 0 100 100" style={{ transform: [{ rotate: '-90deg' }] }}>
           {/* Track rings */}
@@ -59,33 +61,33 @@ export function MacroDonutRing({ calories, calorieGoal, waterLiters, waterGoal }
         </Svg>
         {/* Center label */}
         <View style={StyleSheet.absoluteFillObject as any} pointerEvents="none">
-          <View style={styles.center}>
-            <Text style={styles.centerText}>{Math.round(calPercent * 100)}%</Text>
+          <View style={useStyles.center}>
+            <Text style={useStyles.centerText}>{Math.round(calPercent * 100)}%</Text>
           </View>
         </View>
       </View>
 
       {/* Legend */}
-      <View style={styles.legend}>
-        <View style={styles.legendItem}>
-          <View style={[styles.dot, { backgroundColor: ForgeTheme.colors.forge }]} />
-          <Text style={styles.legendLabel}>{calories} cal</Text>
+      <View style={useStyles.legend}>
+        <View style={useStyles.legendItem}>
+          <View style={[useStyles.dot, { backgroundColor: ForgeTheme.colors.forge }]} />
+          <Text style={useStyles.legendLabel}>{calories} cal</Text>
         </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.dot, { backgroundColor: ForgeTheme.colors.blue }]} />
-          <Text style={styles.legendLabel}>{waterLiters.toFixed(1)} L</Text>
+        <View style={useStyles.legendItem}>
+          <View style={[useStyles.dot, { backgroundColor: ForgeTheme.colors.blue }]} />
+          <Text style={useStyles.legendLabel}>{waterLiters.toFixed(1)} L</Text>
         </View>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  wrapper: { alignItems: 'center' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  centerText: { fontSize: 11, fontWeight: '700', color: ForgeTheme.colors.t1 },
-  legend: { flexDirection: 'row', gap: 12, marginTop: 12 },
-  legendItem: { alignItems: 'center', gap: 4 },
-  dot: { width: 8, height: 8, borderRadius: 4 },
-  legendLabel: { fontSize: 10, color: ForgeTheme.colors.t2 },
-});
+const useStyles = (T: any) => StyleSheet.create({
+          wrapper: { alignItems: 'center' },
+          center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+          centerText: { fontSize: 11, fontWeight: '700', color: ForgeTheme.colors.t1 },
+          legend: { flexDirection: 'row', gap: 12, marginTop: 12 },
+          legendItem: { alignItems: 'center', gap: 4 },
+          dot: { width: 8, height: 8, borderRadius: 4 },
+          legendLabel: { fontSize: 10, color: ForgeTheme.colors.t2 },
+        });

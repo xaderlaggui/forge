@@ -4,11 +4,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import { MascotImage } from '../../../components/common/MascotImage';
 import { ForgeButton } from '../../../components/forge/ForgeButton';
 import { ForgeSkeleton } from '../../../components/forge/ForgeSkeleton';
-import { ForgeTheme as T } from '../../../constants/ForgeTheme';
 
 function SkeletonPlanner() {
+    const { T } = useForgeTheme();
+    const s = useS(T);
   return (
-    <View style={s.todayCard}>
+    <View style={useS.todayCard}>
       <ForgeSkeleton width="40%" height={12} radius={4} style={{ marginBottom: 10 }} />
       <ForgeSkeleton width="70%" height={24} radius={6} style={{ marginBottom: 8 }} />
       <ForgeSkeleton width="55%" height={14} radius={4} style={{ marginBottom: 32 }} />
@@ -27,8 +28,11 @@ interface DailyPlanCardProps {
 import Body from 'react-native-body-highlighter';
 import { useExercises } from '../../../hooks/useExercises';
 import { mapMusclesToSlugs } from './ExerciseLibrary';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, activeDateStr }: DailyPlanCardProps) {
+    const { T } = useForgeTheme();
+    const s = useS(T);
   const router = useRouter();
   const { data: allExercises = [] } = useExercises();
 
@@ -55,14 +59,14 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
   if (isCompleted) {
     const data = getHeatmapData(loggedWorkout.exercises);
     return (
-      <View style={s.todayCard}>
-        <Text style={s.todayTitle} maxFontSizeMultiplier={1.2}>✅ Completed</Text>
-        <Text style={s.todaySub} maxFontSizeMultiplier={1.2}>{loggedWorkout.notes || 'Workout Logged'}</Text>
-        <Text style={s.todayMeta} maxFontSizeMultiplier={1.2}>
+      <View style={useS.todayCard}>
+        <Text style={useS.todayTitle} maxFontSizeMultiplier={1.2}>✅ Completed</Text>
+        <Text style={useS.todaySub} maxFontSizeMultiplier={1.2}>{loggedWorkout.notes || 'Workout Logged'}</Text>
+        <Text style={useS.todayMeta} maxFontSizeMultiplier={1.2}>
           {loggedWorkout.exercises?.length ?? 0} Exercises Completed
         </Text>
         {data.length > 0 && (
-          <View style={s.heatmapFigures}>
+          <View style={useS.heatmapFigures}>
             <Body data={data} gender="male" side="front" scale={0.4} colors={['#333', T.colors.forge]} />
             <Body data={data} gender="male" side="back" scale={0.4} colors={['#333', T.colors.forge]} />
           </View>
@@ -79,14 +83,14 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
   if (!isRestDay) {
     const data = getHeatmapData(plannedWorkout.exercises);
     return (
-      <View style={s.todayCard}>
-        <Text style={s.todayTitle} maxFontSizeMultiplier={1.2}>Scheduled Routine</Text>
-        <Text style={s.todaySub} maxFontSizeMultiplier={1.2}>{plannedWorkout.title}</Text>
-        <Text style={s.todayMeta} maxFontSizeMultiplier={1.2}>
+      <View style={useS.todayCard}>
+        <Text style={useS.todayTitle} maxFontSizeMultiplier={1.2}>Scheduled Routine</Text>
+        <Text style={useS.todaySub} maxFontSizeMultiplier={1.2}>{plannedWorkout.title}</Text>
+        <Text style={useS.todayMeta} maxFontSizeMultiplier={1.2}>
           {plannedWorkout.exercises?.length ?? 0} Exercises Prescribed
         </Text>
         {data.length > 0 && (
-          <View style={s.heatmapFigures}>
+          <View style={useS.heatmapFigures}>
             <Body data={data} gender="male" side="front" scale={0.4} colors={['#333', T.colors.forge]} />
             <Body data={data} gender="male" side="back" scale={0.4} colors={['#333', T.colors.forge]} />
           </View>
@@ -101,7 +105,7 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
   }
 
   return (
-    <View style={[s.todayCard, s.todayCardEmpty]}>
+    <View style={[useS.todayCard, useS.todayCardEmpty]}>
       <MascotImage
         mascot="workout"
         width={160}
@@ -110,8 +114,8 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
         accessibilityLabel="Forge the bear lifting weights — no workout planned yet"
         style={{ alignSelf: 'center', marginBottom: 16 }}
       />
-      <Text style={s.todaySub} maxFontSizeMultiplier={1.2}>Active Recovery</Text>
-      <Text style={s.todayMetaCenter} maxFontSizeMultiplier={1.2}>
+      <Text style={useS.todaySub} maxFontSizeMultiplier={1.2}>Active Recovery</Text>
+      <Text style={useS.todayMetaCenter} maxFontSizeMultiplier={1.2}>
         No formal training scheduled. Rest up or do light cardio.
       </Text>
       <ForgeButton
@@ -123,18 +127,18 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
   );
 }
 
-const s = StyleSheet.create({
-  todayCard: {
-    backgroundColor: T.colors.bg1, padding: T.spacing.px6, borderRadius: T.radii.xl,
-    borderWidth: 0.5, borderColor: T.colors.b1,
-  },
-  todayCardEmpty: { alignItems: 'center', paddingVertical: 40 },
-  todayTitle: {
-    fontSize: T.typography.sizes.label, color: T.colors.t3, marginBottom: 6,
-    fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase',
-  },
-  todaySub: { fontSize: T.typography.sizes.h2, fontWeight: '700', color: T.colors.t1, marginBottom: T.spacing.px2 },
-  todayMeta: { color: T.colors.t2, marginBottom: T.spacing.px6, fontSize: T.typography.sizes.bodyS },
-  todayMetaCenter: { color: T.colors.t2, marginBottom: T.spacing.px6, fontSize: T.typography.sizes.bodyS, textAlign: 'center' },
-  heatmapFigures: { flexDirection: 'row', justifyContent: 'center', gap: 20, marginBottom: T.spacing.px6 },
-});
+const useS = (T: any) => StyleSheet.create({
+          todayCard: {
+            backgroundColor: T.colors.bg1, padding: T.spacing.px6, borderRadius: T.radii.xl,
+            borderWidth: 0.5, borderColor: T.colors.b1,
+          },
+          todayCardEmpty: { alignItems: 'center', paddingVertical: 40 },
+          todayTitle: {
+            fontSize: T.typography.sizes.label, color: T.colors.t3, marginBottom: 6,
+            fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase',
+          },
+          todaySub: { fontSize: T.typography.sizes.h2, fontWeight: '700', color: T.colors.t1, marginBottom: T.spacing.px2 },
+          todayMeta: { color: T.colors.t2, marginBottom: T.spacing.px6, fontSize: T.typography.sizes.bodyS },
+          todayMetaCenter: { color: T.colors.t2, marginBottom: T.spacing.px6, fontSize: T.typography.sizes.bodyS, textAlign: 'center' },
+          heatmapFigures: { flexDirection: 'row', justifyContent: 'center', gap: 20, marginBottom: T.spacing.px6 },
+        });

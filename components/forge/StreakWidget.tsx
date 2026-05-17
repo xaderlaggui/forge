@@ -8,7 +8,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { ForgeTheme } from '../../constants/ForgeTheme';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // StreakWidget v2 — Animated flame + gold streak number + 7-day dots
@@ -23,6 +23,8 @@ interface StreakWidgetProps {
 const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 export function StreakWidget({ streak, weekActivity }: StreakWidgetProps) {
+    const { T: ForgeTheme } = useForgeTheme();
+    const styles = useStyles(ForgeTheme);
   // Flame flicker — subtle scale + opacity pulse
   const flameScale   = useSharedValue(1);
   const flameOpacity = useSharedValue(0.85);
@@ -57,9 +59,9 @@ export function StreakWidget({ streak, weekActivity }: StreakWidgetProps) {
   const hasStreak = streak > 0;
 
   return (
-    <View style={styles.wrapper}>
+    <View style={useStyles.wrapper}>
       {/* Flame icon with glow ring */}
-      <View style={styles.flameRing}>
+      <View style={useStyles.flameRing}>
         <Animated.View style={flameStyle}>
           <Flame
             size={26}
@@ -72,26 +74,26 @@ export function StreakWidget({ streak, weekActivity }: StreakWidgetProps) {
 
       {/* Streak number */}
       <Text
-        style={[styles.streakNum, hasStreak && styles.streakNumActive]}
+        style={[useStyles.streakNum, hasStreak && useStyles.streakNumActive]}
         maxFontSizeMultiplier={1.2}
       >
         {streak}
       </Text>
-      <Text style={styles.streakLabel} maxFontSizeMultiplier={1.2}>
+      <Text style={useStyles.streakLabel} maxFontSizeMultiplier={1.2}>
         Day Streak
       </Text>
 
       {/* 7-day activity dots */}
-      <View style={styles.weekRow}>
+      <View style={useStyles.weekRow}>
         {DAY_LABELS.map((label, i) => {
           const active = weekActivity[i] ?? false;
           return (
-            <View key={i} style={styles.dayCol}>
-              <Text style={styles.dayLabel}>{label}</Text>
+            <View key={i} style={useStyles.dayCol}>
+              <Text style={useStyles.dayLabel}>{label}</Text>
               <View
                 style={[
-                  styles.dayDot,
-                  active ? styles.dayDotActive : styles.dayDotEmpty,
+                  useStyles.dayDot,
+                  active ? useStyles.dayDotActive : useStyles.dayDotEmpty,
                 ]}
               />
             </View>
@@ -104,81 +106,81 @@ export function StreakWidget({ streak, weekActivity }: StreakWidgetProps) {
 
 const { colors, radii, spacing } = ForgeTheme;
 
-const styles = StyleSheet.create({
-  wrapper: {
-    alignItems: 'center',
-    paddingVertical: spacing.px2,
-  },
+const useStyles = (T: any) => StyleSheet.create({
+          wrapper: {
+            alignItems: 'center',
+            paddingVertical: spacing.px2,
+          },
 
-  // Flame
-  flameRing: {
-    width: 52,
-    height: 52,
-    borderRadius: radii.full,
-    backgroundColor: colors.goldDim,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.px2,
-    shadowColor: colors.gold,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
-    elevation: 4,
-  },
+          // Flame
+          flameRing: {
+            width: 52,
+            height: 52,
+            borderRadius: radii.full,
+            backgroundColor: colors.goldDim,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: spacing.px2,
+            shadowColor: colors.gold,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.25,
+            shadowRadius: 14,
+            elevation: 4,
+          },
 
-  // Streak number
-  streakNum: {
-    fontSize: 30,
-    fontWeight: '800',
-    color: colors.t3,         // grey when no streak
-    lineHeight: 36,
-    letterSpacing: -0.5,
-  },
-  streakNumActive: {
-    color: colors.gold,        // gold when streak > 0
-  },
+          // Streak number
+          streakNum: {
+            fontSize: 30,
+            fontWeight: '800',
+            color: colors.t3,         // grey when no streak
+            lineHeight: 36,
+            letterSpacing: -0.5,
+          },
+          streakNumActive: {
+            color: colors.gold,        // gold when streak > 0
+          },
 
-  streakLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: colors.t3,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginTop: 2,
-    marginBottom: spacing.px3,
-  },
+          streakLabel: {
+            fontSize: 10,
+            fontWeight: '600',
+            color: colors.t3,
+            textTransform: 'uppercase',
+            letterSpacing: 0.8,
+            marginTop: 2,
+            marginBottom: spacing.px3,
+          },
 
-  // 7-day row
-  weekRow: {
-    flexDirection: 'row',
-    gap: 5,
-  },
-  dayCol: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  dayLabel: {
-    fontSize: 8,
-    fontWeight: '600',
-    color: colors.t3,
-    textTransform: 'uppercase',
-  },
-  dayDot: {
-    width: 7,
-    height: 7,
-    borderRadius: radii.full,
-  },
-  dayDotEmpty: {
-    backgroundColor: colors.bg3,
-    borderWidth: 0.5,
-    borderColor: colors.b1,
-  },
-  dayDotActive: {
-    backgroundColor: colors.gold,
-    shadowColor: colors.gold,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-});
+          // 7-day row
+          weekRow: {
+            flexDirection: 'row',
+            gap: 5,
+          },
+          dayCol: {
+            alignItems: 'center',
+            gap: 4,
+          },
+          dayLabel: {
+            fontSize: 8,
+            fontWeight: '600',
+            color: colors.t3,
+            textTransform: 'uppercase',
+          },
+          dayDot: {
+            width: 7,
+            height: 7,
+            borderRadius: radii.full,
+          },
+          dayDotEmpty: {
+            backgroundColor: colors.bg3,
+            borderWidth: 0.5,
+            borderColor: colors.b1,
+          },
+          dayDotActive: {
+            backgroundColor: colors.gold,
+            shadowColor: colors.gold,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.5,
+            shadowRadius: 4,
+            elevation: 2,
+          },
+        });

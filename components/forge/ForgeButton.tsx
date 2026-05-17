@@ -14,7 +14,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import { ForgeTheme } from '../../constants/ForgeTheme';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ForgeButton — Primary reusable button component
@@ -65,6 +65,8 @@ export function ForgeButton({
   accessibilityLabel,
   testID,
 }: ForgeButtonProps) {
+    const { T: ForgeTheme } = useForgeTheme();
+    const styles = useStyles(ForgeTheme);
   const scale = useSharedValue(1);
 
   // Breathing pulse — only animate when requested and not disabled/loading
@@ -90,10 +92,10 @@ export function ForgeButton({
     <Animated.View style={[pulseStyle, style]}>
       <TouchableOpacity
         style={[
-          styles.base,
-          styles[`size_${size}`],
-          styles[`variant_${variant}`],
-          isDisabled && styles.disabled,
+          useStyles.base,
+          useStyles[`size_${size}`],
+          useStyles[`variant_${variant}`],
+          isDisabled && useStyles.disabled,
         ]}
         onPress={onPress}
         disabled={isDisabled}
@@ -109,20 +111,20 @@ export function ForgeButton({
             color={variant === 'primary' ? '#000' : variant === 'danger' ? '#fff' : ForgeTheme.colors.forge}
           />
         ) : (
-          <View style={styles.inner}>
-            {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
+          <View style={useStyles.inner}>
+            {leftIcon && <View style={useStyles.iconLeft}>{leftIcon}</View>}
             <Text
               style={[
-                styles.label,
-                styles[`label_${size}`],
-                styles[`labelColor_${variant}`],
-                isDisabled && styles.labelDisabled,
+                useStyles.label,
+                useStyles[`label_${size}`],
+                useStyles[`labelColor_${variant}`],
+                isDisabled && useStyles.labelDisabled,
               ]}
               maxFontSizeMultiplier={1.2}
             >
               {label}
             </Text>
-            {rightIcon && <View style={styles.iconRight}>{rightIcon}</View>}
+            {rightIcon && <View style={useStyles.iconRight}>{rightIcon}</View>}
           </View>
         )}
       </TouchableOpacity>
@@ -132,71 +134,71 @@ export function ForgeButton({
 
 const { colors, radii, motion } = ForgeTheme;
 
-const styles = StyleSheet.create({
-  // ── Base ────────────────────────────────────────────────────────────────
-  base: {
-    borderRadius: radii.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  inner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
+const useStyles = (T: any) => StyleSheet.create({
+          // ── Base ────────────────────────────────────────────────────────────────
+          base: {
+            borderRadius: radii.md,
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'row',
+          },
+          inner: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+          },
 
-  // ── Sizes ────────────────────────────────────────────────────────────────
-  size_sm: { height: 40, paddingHorizontal: 16 },
-  size_md: { height: 52, paddingHorizontal: 24 },
-  size_lg: { height: 60, paddingHorizontal: 32 },
+          // ── Sizes ────────────────────────────────────────────────────────────────
+          size_sm: { height: 40, paddingHorizontal: 16 },
+          size_md: { height: 52, paddingHorizontal: 24 },
+          size_lg: { height: 60, paddingHorizontal: 32 },
 
-  // ── Variants (background / border) ───────────────────────────────────────
-  variant_primary: {
-    backgroundColor: colors.forge,
-    shadowColor: colors.forge,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.28,
-    shadowRadius: 14,
-    elevation: 6,
-  },
-  variant_secondary: {
-    backgroundColor: colors.forgeDim,
-    borderWidth: 1,
-    borderColor: colors.forge,
-  },
-  variant_ghost: {
-    backgroundColor: 'transparent',
-  },
-  variant_danger: {
-    backgroundColor: colors.red,
-    shadowColor: colors.red,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 4,
-  },
+          // ── Variants (background / border) ───────────────────────────────────────
+          variant_primary: {
+            backgroundColor: colors.forge,
+            shadowColor: colors.forge,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.28,
+            shadowRadius: 14,
+            elevation: 6,
+          },
+          variant_secondary: {
+            backgroundColor: colors.forgeDim,
+            borderWidth: 1,
+            borderColor: colors.forge,
+          },
+          variant_ghost: {
+            backgroundColor: 'transparent',
+          },
+          variant_danger: {
+            backgroundColor: colors.red,
+            shadowColor: colors.red,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.25,
+            shadowRadius: 10,
+            elevation: 4,
+          },
 
-  // ── Label colors ─────────────────────────────────────────────────────────
-  label: {
-    fontWeight: '700',
-    letterSpacing: 0.2,
-  },
-  label_sm: { fontSize: 13 },
-  label_md: { fontSize: 15 },
-  label_lg: { fontSize: 17 },
+          // ── Label colors ─────────────────────────────────────────────────────────
+          label: {
+            fontWeight: '700',
+            letterSpacing: 0.2,
+          },
+          label_sm: { fontSize: 13 },
+          label_md: { fontSize: 15 },
+          label_lg: { fontSize: 17 },
 
-  labelColor_primary:   { color: '#000000' },
-  labelColor_secondary: { color: colors.forge },
-  labelColor_ghost:     { color: colors.forge },
-  labelColor_danger:    { color: '#fff' },
+          labelColor_primary:   { color: '#000000' },
+          labelColor_secondary: { color: colors.forge },
+          labelColor_ghost:     { color: colors.forge },
+          labelColor_danger:    { color: '#fff' },
 
-  // ── Disabled ─────────────────────────────────────────────────────────────
-  disabled: { opacity: 0.45 },
-  labelDisabled: {},
+          // ── Disabled ─────────────────────────────────────────────────────────────
+          disabled: { opacity: 0.45 },
+          labelDisabled: {},
 
-  // ── Icon spacing ─────────────────────────────────────────────────────────
-  iconLeft:  {},
-  iconRight: {},
-});
+          // ── Icon spacing ─────────────────────────────────────────────────────────
+          iconLeft:  {},
+          iconRight: {},
+        });

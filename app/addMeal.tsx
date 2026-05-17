@@ -2,12 +2,14 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Save, Sparkles, X } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { ForgeTheme as T } from '../constants/ForgeTheme';
 import { useNutrition } from '../hooks/useNutrition';
 import { groqComplete } from '../services/groq';
 import type { Meal } from '../types';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 export default function AddMealScreen() {
+    const { T } = useForgeTheme();
+    const s = useS(T);
   const router = useRouter();
   const { mealName: mealNameParam } = useLocalSearchParams();
   const { data: nutrition, updateNutrition } = useNutrition();
@@ -178,21 +180,21 @@ No markdown formatting, no backticks, just raw JSON.`
   };
 
   return (
-    <View style={s.container}>
-      <View style={s.header}>
-        <TouchableOpacity onPress={() => router.back()} style={s.iconBtn}>
+    <View style={useS.container}>
+      <View style={useS.header}>
+        <TouchableOpacity onPress={() => router.back()} style={useS.iconBtn}>
           <X size={24} color={T.colors.t1} />
         </TouchableOpacity>
-        <Text style={s.title}>LOG <Text style={{ color: T.colors.forge }}>{resolvedMealName.toUpperCase()}</Text></Text>
+        <Text style={useS.title}>LOG <Text style={{ color: T.colors.forge }}>{resolvedMealName.toUpperCase()}</Text></Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={useS.scroll}>
         {!analyzed ? (
-          <View style={s.analyzeWrap}>
-            <Text style={s.aiPrompt}>What did you eat?</Text>
+          <View style={useS.analyzeWrap}>
+            <Text style={useS.aiPrompt}>What did you eat?</Text>
             <TextInput
-              style={s.aiInput}
+              style={useS.aiInput}
               placeholder="e.g. 'I had a bowl of sinigang with 1 cup of white rice' or '2 eggs'"
               placeholderTextColor={T.colors.t3}
               multiline
@@ -201,7 +203,7 @@ No markdown formatting, no backticks, just raw JSON.`
               onChangeText={setDescription}
             />
             <TouchableOpacity
-              style={[s.aiBtn, isAnalyzing && { opacity: 0.7 }]}
+              style={[useS.aiBtn, isAnalyzing && { opacity: 0.7 }]}
               onPress={analyzeMeal}
               disabled={isAnalyzing}
             >
@@ -210,7 +212,7 @@ No markdown formatting, no backticks, just raw JSON.`
               ) : (
                 <>
                   <Sparkles size={18} color="#000" strokeWidth={3} />
-                  <Text style={s.aiBtnText}>Analyze Meal</Text>
+                  <Text style={useS.aiBtnText}>Analyze Meal</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -220,58 +222,58 @@ No markdown formatting, no backticks, just raw JSON.`
             </TouchableOpacity>
           </View>
         ) : (
-          <View style={s.formWrap}>
-            <View style={s.infoBanner}>
+          <View style={useS.formWrap}>
+            <View style={useS.infoBanner}>
               <Sparkles size={16} color={T.colors.forge} />
-              <Text style={s.infoText}>You can edit these AI estimates if needed.</Text>
+              <Text style={useS.infoText}>You can edit these AI estimates if needed.</Text>
             </View>
 
-            <Text style={s.label}>FOOD SUMMARY</Text>
-            <TextInput style={s.input} value={foodName} onChangeText={setFoodName} placeholder="Food name" placeholderTextColor={T.colors.t3} />
+            <Text style={useS.label}>FOOD SUMMARY</Text>
+            <TextInput style={useS.input} value={foodName} onChangeText={setFoodName} placeholder="Food name" placeholderTextColor={T.colors.t3} />
 
-            <Text style={s.label}>PORTION / AMOUNT</Text>
-            <TextInput style={s.input} value={portion} onChangeText={setPortion} placeholder="e.g. 1 cup, 200g" placeholderTextColor={T.colors.t3} />
+            <Text style={useS.label}>PORTION / AMOUNT</Text>
+            <TextInput style={useS.input} value={portion} onChangeText={setPortion} placeholder="e.g. 1 cup, 200g" placeholderTextColor={T.colors.t3} />
 
-            <Text style={s.label}>CALORIES</Text>
-            <TextInput style={s.input} value={cals} onChangeText={setCals} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+            <Text style={useS.label}>CALORIES</Text>
+            <TextInput style={useS.input} value={cals} onChangeText={setCals} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
 
-            <View style={s.macroRow}>
-              <View style={s.macroCol}>
-                <Text style={s.label}>PROTEIN (g)</Text>
-                <TextInput style={s.input} value={pro} onChangeText={setPro} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+            <View style={useS.macroRow}>
+              <View style={useS.macroCol}>
+                <Text style={useS.label}>PROTEIN (g)</Text>
+                <TextInput style={useS.input} value={pro} onChangeText={setPro} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
               </View>
-              <View style={s.macroCol}>
-                <Text style={s.label}>CARBS (g)</Text>
-                <TextInput style={s.input} value={carbs} onChangeText={setCarbs} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+              <View style={useS.macroCol}>
+                <Text style={useS.label}>CARBS (g)</Text>
+                <TextInput style={useS.input} value={carbs} onChangeText={setCarbs} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
               </View>
-              <View style={s.macroCol}>
-                <Text style={s.label}>FAT (g)</Text>
-                <TextInput style={s.input} value={fat} onChangeText={setFat} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
-              </View>
-            </View>
-
-            <View style={s.macroRow}>
-              <View style={s.macroCol}>
-                <Text style={s.label}>FIBER (g)</Text>
-                <TextInput style={s.input} value={fiber} onChangeText={setFiber} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
-              </View>
-              <View style={s.macroCol}>
-                <Text style={s.label}>SUGAR (g)</Text>
-                <TextInput style={s.input} value={sugar} onChangeText={setSugar} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+              <View style={useS.macroCol}>
+                <Text style={useS.label}>FAT (g)</Text>
+                <TextInput style={useS.input} value={fat} onChangeText={setFat} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
               </View>
             </View>
 
-            <View style={s.macroRow}>
-              <View style={s.macroCol}>
-                <Text style={s.label}>WATER (ml)</Text>
-                <TextInput style={s.input} value={waterMl} onChangeText={setWaterMl} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+            <View style={useS.macroRow}>
+              <View style={useS.macroCol}>
+                <Text style={useS.label}>FIBER (g)</Text>
+                <TextInput style={useS.input} value={fiber} onChangeText={setFiber} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
               </View>
-              <View style={s.macroCol} />
+              <View style={useS.macroCol}>
+                <Text style={useS.label}>SUGAR (g)</Text>
+                <TextInput style={useS.input} value={sugar} onChangeText={setSugar} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+              </View>
             </View>
 
-            <TouchableOpacity style={s.saveBtn} onPress={handleSave}>
+            <View style={useS.macroRow}>
+              <View style={useS.macroCol}>
+                <Text style={useS.label}>WATER (ml)</Text>
+                <TextInput style={useS.input} value={waterMl} onChangeText={setWaterMl} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+              </View>
+              <View style={useS.macroCol} />
+            </View>
+
+            <TouchableOpacity style={useS.saveBtn} onPress={handleSave}>
               <Save size={18} color="#000" strokeWidth={2.5} />
-              <Text style={s.saveBtnText}>SAVE MEAL</Text>
+              <Text style={useS.saveBtnText}>SAVE MEAL</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -280,50 +282,50 @@ No markdown formatting, no backticks, just raw JSON.`
   );
 }
 
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: T.colors.bg0 },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: 16,
-    borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
-  },
-  iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 20, fontWeight: '900', color: T.colors.t1, letterSpacing: 1 },
-  scroll: { padding: T.spacing.page, paddingBottom: 60 },
+const useS = (T: any) => StyleSheet.create({
+          container: { flex: 1, backgroundColor: T.colors.bg0 },
+          header: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: 16,
+            borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
+          },
+          iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+          title: { fontSize: 20, fontWeight: '900', color: T.colors.t1, letterSpacing: 1 },
+          scroll: { padding: T.spacing.page, paddingBottom: 60 },
 
-  analyzeWrap: { marginTop: 40 },
-  aiPrompt: { fontSize: 28, fontWeight: '700', color: T.colors.t1, marginBottom: 20 },
-  aiInput: {
-    backgroundColor: T.colors.bg1, borderWidth: 1, borderColor: T.colors.b1,
-    borderRadius: T.radii.lg, padding: 20, color: T.colors.t1,
-    fontSize: 18, minHeight: 150, marginBottom: 24, lineHeight: 26,
-  },
-  aiBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: T.colors.forge, padding: 20, borderRadius: T.radii.lg,
-    shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 15, elevation: 8,
-  },
-  aiBtnText: { color: '#000', fontSize: 18, fontWeight: '800', letterSpacing: 1 },
+          analyzeWrap: { marginTop: 40 },
+          aiPrompt: { fontSize: 28, fontWeight: '700', color: T.colors.t1, marginBottom: 20 },
+          aiInput: {
+            backgroundColor: T.colors.bg1, borderWidth: 1, borderColor: T.colors.b1,
+            borderRadius: T.radii.lg, padding: 20, color: T.colors.t1,
+            fontSize: 18, minHeight: 150, marginBottom: 24, lineHeight: 26,
+          },
+          aiBtn: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+            backgroundColor: T.colors.forge, padding: 20, borderRadius: T.radii.lg,
+            shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 15, elevation: 8,
+          },
+          aiBtnText: { color: '#000', fontSize: 18, fontWeight: '800', letterSpacing: 1 },
 
-  formWrap: { flex: 1 },
-  infoBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(178, 255, 36, 0.1)', padding: 12, borderRadius: T.radii.md,
-    borderWidth: 1, borderColor: 'rgba(178, 255, 36, 0.2)', marginBottom: 24,
-  },
-  infoText: { color: T.colors.forge, fontSize: 13, fontWeight: '600' },
-  label: { fontSize: 11, fontWeight: '800', color: T.colors.t3, letterSpacing: 1, marginBottom: 8 },
-  input: {
-    backgroundColor: T.colors.bg2, borderWidth: 1, borderColor: T.colors.b1,
-    borderRadius: T.radii.md, padding: 16, color: T.colors.t1,
-    fontSize: 16, fontWeight: '600', marginBottom: 20,
-  },
-  macroRow: { flexDirection: 'row', gap: 12 },
-  macroCol: { flex: 1 },
-  saveBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: T.colors.forge, padding: 20, borderRadius: T.radii.lg, marginTop: 24,
-    shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 15, elevation: 8,
-  },
-  saveBtnText: { color: '#000', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
-});
+          formWrap: { flex: 1 },
+          infoBanner: {
+            flexDirection: 'row', alignItems: 'center', gap: 8,
+            backgroundColor: 'rgba(178, 255, 36, 0.1)', padding: 12, borderRadius: T.radii.md,
+            borderWidth: 1, borderColor: 'rgba(178, 255, 36, 0.2)', marginBottom: 24,
+          },
+          infoText: { color: T.colors.forge, fontSize: 13, fontWeight: '600' },
+          label: { fontSize: 11, fontWeight: '800', color: T.colors.t3, letterSpacing: 1, marginBottom: 8 },
+          input: {
+            backgroundColor: T.colors.bg2, borderWidth: 1, borderColor: T.colors.b1,
+            borderRadius: T.radii.md, padding: 16, color: T.colors.t1,
+            fontSize: 16, fontWeight: '600', marginBottom: 20,
+          },
+          macroRow: { flexDirection: 'row', gap: 12 },
+          macroCol: { flex: 1 },
+          saveBtn: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+            backgroundColor: T.colors.forge, padding: 20, borderRadius: T.radii.lg, marginTop: 24,
+            shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 15, elevation: 8,
+          },
+          saveBtnText: { color: '#000', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
+        });

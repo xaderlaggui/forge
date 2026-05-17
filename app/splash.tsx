@@ -9,8 +9,8 @@ import Animated, {
   withDelay,
   withTiming
 } from 'react-native-reanimated';
-import { ForgeTheme as T } from '../constants/ForgeTheme';
 import { MascotImages } from '../constants/mascotImages';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 /**
  * Splash screen — shown on first app load.
@@ -20,6 +20,8 @@ import { MascotImages } from '../constants/mascotImages';
  * The root _layout.tsx should redirect here before checking auth state.
  */
 export default function SplashScreen() {
+    const { T } = useForgeTheme();
+    const s = useS(T);
   const router = useRouter();
 
   const opacity = useSharedValue(0);
@@ -66,60 +68,60 @@ export default function SplashScreen() {
   }, []);
 
   return (
-    <View style={s.container}>
+    <View style={useS.container}>
       {/* Radial glow blob behind the wordmark */}
-      <Animated.View style={[s.glow, glowStyle]} />
+      <Animated.View style={[useS.glow, glowStyle]} />
 
-      <Animated.View style={[s.wordmarkWrap, wordmarkStyle]}>
+      <Animated.View style={[useS.wordmarkWrap, wordmarkStyle]}>
         <RNAnimated.Image
           source={MascotImages.hero}
           style={{ width: 200, height: 200, opacity: fadeAnim, alignSelf: 'center', marginBottom: 16 } as any}
           resizeMode="contain"
           accessibilityLabel="FORGE — Forge the bear"
         />
-        <Text style={s.wordmark}>FORGE</Text>
-        <Text style={s.tagline}>Build your best self.</Text>
+        <Text style={useS.wordmark}>FORGE</Text>
+        <Text style={useS.tagline}>Build your best self.</Text>
       </Animated.View>
     </View>
   );
 }
 
-const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: T.colors.bg0,  // #0A0A0B — deep off-black from ZIP
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  glow: {
-    position: 'absolute',
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: 'rgba(255,92,46,0.12)',
-    // simulate radial blur via nested scaling
-    shadowColor: T.colors.forge,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 80,
-    elevation: 0,
-  },
-  wordmarkWrap: { alignItems: 'center', gap: 12 },
-  wordmark: {
-    fontSize: 48,
-    fontWeight: '800',
-    letterSpacing: 6,
-    color: T.colors.forge,
-    // Glow effect via text shadow
-    textShadowColor: 'rgba(255,92,46,0.6)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 24,
-  },
-  tagline: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: T.colors.t3,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
-});
+const useS = (T: any) => StyleSheet.create({
+          container: {
+            flex: 1,
+            backgroundColor: T.colors.bg0,  // #0A0A0B — deep off-black from ZIP
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
+          glow: {
+            position: 'absolute',
+            width: 280,
+            height: 280,
+            borderRadius: 140,
+            backgroundColor: 'rgba(255,92,46,0.12)',
+            // simulate radial blur via nested scaling
+            shadowColor: T.colors.forge,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.6,
+            shadowRadius: 80,
+            elevation: 0,
+          },
+          wordmarkWrap: { alignItems: 'center', gap: 12 },
+          wordmark: {
+            fontSize: 48,
+            fontWeight: '800',
+            letterSpacing: 6,
+            color: T.colors.forge,
+            // Glow effect via text shadow
+            textShadowColor: 'rgba(255,92,46,0.6)',
+            textShadowOffset: { width: 0, height: 0 },
+            textShadowRadius: 24,
+          },
+          tagline: {
+            fontSize: 13,
+            fontWeight: '500',
+            color: T.colors.t3,
+            letterSpacing: 1.5,
+            textTransform: 'uppercase',
+          },
+        });

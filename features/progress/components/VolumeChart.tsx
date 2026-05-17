@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
 import { TrendingDown, TrendingUp, Activity } from 'lucide-react-native';
-import { ForgeTheme as T } from '../../../constants/ForgeTheme';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 const SCREEN_W = Dimensions.get('window').width;
 
@@ -17,6 +17,8 @@ interface VolumeChartProps {
 export function VolumeChart({
   volumeLineData, currentVolume, volumeDiff, minVol, maxVol
 }: VolumeChartProps) {
+    const { T } = useForgeTheme();
+    const s = useS(T);
   // If there's no real data yet, don't render an empty chart
   if (volumeLineData.length === 0 || (volumeLineData.length === 1 && volumeLineData[0].label === 'No Data')) {
     return null;
@@ -26,18 +28,18 @@ export function VolumeChart({
   const isUp = volumeDiff >= 0;
 
   return (
-    <View style={s.section}>
-      <Text style={s.sectionLabel} maxFontSizeMultiplier={1.2}>Progressive Overload</Text>
+    <View style={useS.section}>
+      <Text style={useS.sectionLabel} maxFontSizeMultiplier={1.2}>Progressive Overload</Text>
       
-      <View style={s.chartCard}>
-        <View style={s.chartHeader}>
+      <View style={useS.chartCard}>
+        <View style={useS.chartHeader}>
           <View>
-            <Text style={s.chartTitle} maxFontSizeMultiplier={1.2}>Total Volume</Text>
-            <Text style={s.chartSub} maxFontSizeMultiplier={1.2}>{currentVolume.toLocaleString()} lbs in latest session</Text>
+            <Text style={useS.chartTitle} maxFontSizeMultiplier={1.2}>Total Volume</Text>
+            <Text style={useS.chartSub} maxFontSizeMultiplier={1.2}>{currentVolume.toLocaleString()} lbs in latest session</Text>
           </View>
-          <View style={[s.deltaBadge, isUp ? s.deltaBadgeUp : s.deltaBadgeDown]}>
+          <View style={[useS.deltaBadge, isUp ? useS.deltaBadgeUp : useS.deltaBadgeDown]}>
             {isUp ? <TrendingUp size={12} color={T.colors.forge} /> : <TrendingDown size={12} color={T.colors.t3} />}
-            <Text style={[s.deltaBadgeText, isUp ? { color: T.colors.forge } : { color: T.colors.t3 }]} maxFontSizeMultiplier={1.2}>
+            <Text style={[useS.deltaBadgeText, isUp ? { color: T.colors.forge } : { color: T.colors.t3 }]} maxFontSizeMultiplier={1.2}>
               {isUp ? '+' : ''}{volumeDiff.toLocaleString()}
             </Text>
           </View>
@@ -74,26 +76,26 @@ export function VolumeChart({
   );
 }
 
-const s = StyleSheet.create({
-  section: { marginHorizontal: T.spacing.page, marginBottom: T.spacing.px6 },
-  sectionLabel: {
-    fontSize: T.typography.sizes.label, fontWeight: '600', color: T.colors.t3,
-    textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: T.spacing.px3,
-  },
-  chartCard: {
-    backgroundColor: T.colors.bg1, borderRadius: T.radii.xl, borderWidth: 0.5,
-    borderColor: T.colors.b1, padding: T.spacing.px4, overflow: 'hidden',
-  },
-  chartHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  chartTitle: { fontSize: T.typography.sizes.body, fontWeight: '700', color: T.colors.t1, marginBottom: 2 },
-  chartSub:   { fontSize: 12, color: T.colors.t3 },
-  
-  deltaBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 8, paddingVertical: 4, borderRadius: T.radii.full, backgroundColor: T.colors.bg2,
-    borderWidth: 0.5, borderColor: T.colors.b1
-  },
-  deltaBadgeUp:   { backgroundColor: T.colors.forgeDim, borderColor: 'transparent' },
-  deltaBadgeDown: { backgroundColor: T.colors.bg2 },
-  deltaBadgeText: { fontSize: T.typography.sizes.label, fontWeight: '700' },
-});
+const useS = (T: any) => StyleSheet.create({
+          section: { marginHorizontal: T.spacing.page, marginBottom: T.spacing.px6 },
+          sectionLabel: {
+            fontSize: T.typography.sizes.label, fontWeight: '600', color: T.colors.t3,
+            textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: T.spacing.px3,
+          },
+          chartCard: {
+            backgroundColor: T.colors.bg1, borderRadius: T.radii.xl, borderWidth: 0.5,
+            borderColor: T.colors.b1, padding: T.spacing.px4, overflow: 'hidden',
+          },
+          chartHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+          chartTitle: { fontSize: T.typography.sizes.body, fontWeight: '700', color: T.colors.t1, marginBottom: 2 },
+          chartSub:   { fontSize: 12, color: T.colors.t3 },
+          
+          deltaBadge: {
+            flexDirection: 'row', alignItems: 'center', gap: 4,
+            paddingHorizontal: 8, paddingVertical: 4, borderRadius: T.radii.full, backgroundColor: T.colors.bg2,
+            borderWidth: 0.5, borderColor: T.colors.b1
+          },
+          deltaBadgeUp:   { backgroundColor: T.colors.forgeDim, borderColor: 'transparent' },
+          deltaBadgeDown: { backgroundColor: T.colors.bg2 },
+          deltaBadgeText: { fontSize: T.typography.sizes.label, fontWeight: '700' },
+        });

@@ -12,9 +12,11 @@ const files = project.getSourceFiles().filter(f =>
 for (const sourceFile of files) {
   // Skip settings.tsx since it's already hand-tuned
   if (sourceFile.getFilePath().includes('settings.tsx')) continue;
+  if (sourceFile.getFilePath().includes('useForgeTheme.ts')) continue;
+  if (sourceFile.getFilePath().includes('ForgeTheme.ts')) continue;
 
   let hasForgeThemeImport = false;
-  let tIdentifier = 'T'; // Default to 'T' but check what it's imported as
+  let tIdentifier = 'T'; 
   
   const imports = sourceFile.getImportDeclarations();
   let forgeThemeImportDecl = null;
@@ -38,82 +40,79 @@ for (const sourceFile of files) {
   }
 
   if (!hasForgeThemeImport) continue;
-
   console.log('Processing:', sourceFile.getFilePath());
 
-  // Add useForgeTheme import
-  let useForgeImport = sourceFile.getImportDeclaration(decl => decl.getModuleSpecifierValue().includes('useForgeTheme'));
-  if (!useForgeImport) {
-    sourceFile.addImportDeclaration({
-      namedImports: ['useForgeTheme'],
-      moduleSpecifier: '@/hooks/useForgeTheme'
-    });
-  }
-
-  // Refactor StyleSheet.create
+  // Refactor StyleSheet.create to useStyles = (T: any) => StyleSheet.create
   let stylesheetName = null;
   const varDecls = sourceFile.getVariableDeclarations();
   for (const vd of varDecls) {
     const init = vd.getInitializer();
     if (init && init.getKind() === SyntaxKind.CallExpression && init.getText().startsWith('StyleSheet.create')) {
-      stylesheetName = vd.getName(); // e.g. "styles" or "s"
+      stylesheetName = vd.getName();
       const newName = 'use' + stylesheetName.charAt(0).toUpperCase() + stylesheetName.slice(1);
-      
       vd.rename(newName);
       vd.setInitializer(`(T: any) => ${init.getText()}`);
     }
   }
 
-  // Find all React components
-  const functions = [...sourceFile.getFunctions(), ...sourceFile.getVariableDeclarations().map(vd => {
-    if (vd.getInitializer() && (vd.getInitializer().getKind() === SyntaxKind.ArrowFunction || vd.getInitializer().getKind() === SyntaxKind.FunctionExpression)) {
-      return vd.getInitializer();
-    }
-    return null;
-  }).filter(Boolean)];
+  let modifiedComponents = 0;
 
-  for (const fn of functions) {
-    let name = '';
-    if (fn.getKind() === SyntaxKind.FunctionDeclaration) {
-      name = fn.getName() || '';
-    } else {
-      name = fn.getParent().getName() || '';
+  // Find all React components
+  const components = [];
+  
+  // 1. Function declarations (function MyComp() {})
+  sourceFile.getFunctions().forEach(f => {
+    if (f.getName() && /^[A-Z]/.test(f.getName())) {
+      components.push({ name: f.getName(), body: f.getBody(), node: f });
     }
+  });
+
+  // 2. Arrow functions (const MyComp = () => {})
+  sourceFile.getVariableDeclarations().forEach(vd => {
+    if (vd.getName() && /^[A-Z]/.test(vd.getName())) {
+      const init = vd.getInitializer();
+      if (init && (init.getKind() === SyntaxKind.ArrowFunction || init.getKind() === SyntaxKind.FunctionExpression)) {
+        components.push({ name: vd.getName(), body: init.getBody(), node: init });
+      }
+    }
+  });
+
+  for (const comp of components) {
+    let body = comp.body;
     
-    // Check if it's a component (starts with uppercase)
-    if (name && /^[A-Z]/.test(name)) {
-      const body = fn.getBody();
-      if (body && body.getKind() === SyntaxKind.Block) {
-        // Only insert if it doesn't already have it
-        if (!body.getText().includes('useForgeTheme()')) {
-          body.insertStatements(0, `const { T } = useForgeTheme();`);
-          if (stylesheetName) {
-            const hookName = 'use' + stylesheetName.charAt(0).toUpperCase() + stylesheetName.slice(1);
-            body.insertStatements(1, `const ${stylesheetName} = ${hookName}(T);`);
-          }
+    // Convert implicit return arrow function to block body
+    if (body && body.getKind() !== SyntaxKind.Block && comp.node.getKind() === SyntaxKind.ArrowFunction) {
+      const oldText = body.getText();
+      comp.node.setBodyText(`return ${oldText};`);
+      body = comp.node.getBody(); // Re-fetch the new block body
+    }
+
+    if (body && body.getKind() === SyntaxKind.Block) {
+      const bodyText = body.getText();
+      if (!bodyText.includes('useForgeTheme()')) {
+        const tDestructure = tIdentifier === 'T' ? 'const { T } = useForgeTheme();' : `const { T: ${tIdentifier} } = useForgeTheme();`;
+        body.insertStatements(0, tDestructure);
+        if (stylesheetName) {
+          const hookName = 'use' + stylesheetName.charAt(0).toUpperCase() + stylesheetName.slice(1);
+          body.insertStatements(1, `const ${stylesheetName} = ${hookName}(${tIdentifier});`);
         }
+        modifiedComponents++;
       }
     }
   }
 
-  // If T was originally aliased to something else, we need to ensure the destructure creates that alias
-  // but useForgeTheme returns { T }. So we change `const { T } = useForgeTheme()` to `const { T: ForgeTheme }` if needed.
-  // Actually, we just enforce the destructure string based on the old identifier.
-  const components = sourceFile.getFunctions().filter(f => f.getName() && /^[A-Z]/.test(f.getName()));
-  for (const comp of components) {
-    const body = comp.getBody();
-    if (body && body.getKind() === SyntaxKind.Block) {
-       let stmts = body.getStatements();
-       let useThemeStmt = stmts.find(s => s.getText().includes('useForgeTheme()'));
-       if (useThemeStmt && tIdentifier !== 'T') {
-          useThemeStmt.replaceWithText(`const { T: ${tIdentifier} } = useForgeTheme();`);
-       }
+  // Only swap imports if we actually modified components, otherwise leave it (e.g. if it's just a constants file)
+  if (modifiedComponents > 0) {
+    let useForgeImport = sourceFile.getImportDeclaration(decl => decl.getModuleSpecifierValue().includes('useForgeTheme'));
+    if (!useForgeImport) {
+      sourceFile.addImportDeclaration({
+        namedImports: ['useForgeTheme'],
+        moduleSpecifier: '@/hooks/useForgeTheme'
+      });
     }
-  }
-
-  // Finally remove the old ForgeTheme import
-  if (forgeThemeImportDecl) {
-    forgeThemeImportDecl.remove();
+    if (forgeThemeImportDecl) {
+      forgeThemeImportDecl.remove();
+    }
   }
 }
 

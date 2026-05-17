@@ -6,7 +6,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import { ForgeTheme } from '../../constants/ForgeTheme';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ForgeSkeleton — shimmer loading placeholder
@@ -35,6 +35,8 @@ export function ForgeSkeleton({
   radius,
   style,
 }: ForgeSkeletonProps) {
+    const { T: ForgeTheme } = useForgeTheme();
+    const sk = useSk(ForgeTheme);
   const opacity = useSharedValue(0.4);
 
   useEffect(() => {
@@ -73,8 +75,10 @@ export function ForgeSkeleton({
 
 /** Full card skeleton matching the Today's Plan card */
 export function SkeletonHeroCard() {
+    const { T: ForgeTheme } = useForgeTheme();
+    const sk = useSk(ForgeTheme);
   return (
-    <View style={sk.card}>
+    <View style={useSk.card}>
       <ForgeSkeleton width="40%" height={10} radius={4} style={{ marginBottom: 10 }} />
       <ForgeSkeleton width="70%" height={22} radius={6} style={{ marginBottom: 8 }} />
       <ForgeSkeleton width="55%" height={14} radius={4} style={{ marginBottom: 20 }} />
@@ -85,13 +89,15 @@ export function SkeletonHeroCard() {
 
 /** Two-column metric card row (rings + streak) */
 export function SkeletonMetricRow() {
+    const { T: ForgeTheme } = useForgeTheme();
+    const sk = useSk(ForgeTheme);
   return (
-    <View style={sk.row}>
-      <View style={sk.halfCard}>
+    <View style={useSk.row}>
+      <View style={useSk.halfCard}>
         <ForgeSkeleton circle size={80} style={{ marginBottom: 12 }} />
         <ForgeSkeleton width="60%" height={10} radius={4} />
       </View>
-      <View style={sk.halfCard}>
+      <View style={useSk.halfCard}>
         <ForgeSkeleton circle size={48} style={{ marginBottom: 8 }} />
         <ForgeSkeleton width="40%" height={28} radius={6} style={{ marginBottom: 6 }} />
         <ForgeSkeleton width="80%" height={10} radius={4} />
@@ -102,8 +108,10 @@ export function SkeletonMetricRow() {
 
 /** Single list item row */
 export function SkeletonListItem({ isLast = false }: { isLast?: boolean }) {
+    const { T: ForgeTheme } = useForgeTheme();
+    const sk = useSk(ForgeTheme);
   return (
-    <View style={[sk.listItem, !isLast && sk.listItemBorder]}>
+    <View style={[useSk.listItem, !isLast && useSk.listItemBorder]}>
       <ForgeSkeleton circle size={40} />
       <View style={{ flex: 1, gap: 6 }}>
         <ForgeSkeleton width="55%" height={14} radius={4} />
@@ -114,39 +122,39 @@ export function SkeletonListItem({ isLast = false }: { isLast?: boolean }) {
   );
 }
 
-const sk = StyleSheet.create({
-  card: {
-    backgroundColor: ForgeTheme.colors.bg1,
-    borderRadius: ForgeTheme.radii.xl,
-    borderWidth: 0.5,
-    borderColor: ForgeTheme.colors.b1,
-    padding: ForgeTheme.spacing.lg,
-    marginHorizontal: ForgeTheme.spacing.page,
-    marginBottom: ForgeTheme.spacing.lg,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingHorizontal: ForgeTheme.spacing.page,
-    marginBottom: ForgeTheme.spacing.lg,
-  },
-  halfCard: {
-    flex: 1,
-    backgroundColor: ForgeTheme.colors.bg1,
-    borderRadius: ForgeTheme.radii.xl,
-    borderWidth: 0.5,
-    borderColor: ForgeTheme.colors.b1,
-    padding: ForgeTheme.spacing.lg,
-    alignItems: 'center',
-  },
-  listItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: ForgeTheme.spacing.lg,
-  },
-  listItemBorder: {
-    borderBottomWidth: 0.5,
-    borderBottomColor: ForgeTheme.colors.b0,
-  },
-});
+const useSk = (T: any) => StyleSheet.create({
+          card: {
+            backgroundColor: ForgeTheme.colors.bg1,
+            borderRadius: ForgeTheme.radii.xl,
+            borderWidth: 0.5,
+            borderColor: ForgeTheme.colors.b1,
+            padding: ForgeTheme.spacing.lg,
+            marginHorizontal: ForgeTheme.spacing.page,
+            marginBottom: ForgeTheme.spacing.lg,
+          },
+          row: {
+            flexDirection: 'row',
+            gap: 12,
+            paddingHorizontal: ForgeTheme.spacing.page,
+            marginBottom: ForgeTheme.spacing.lg,
+          },
+          halfCard: {
+            flex: 1,
+            backgroundColor: ForgeTheme.colors.bg1,
+            borderRadius: ForgeTheme.radii.xl,
+            borderWidth: 0.5,
+            borderColor: ForgeTheme.colors.b1,
+            padding: ForgeTheme.spacing.lg,
+            alignItems: 'center',
+          },
+          listItem: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12,
+            padding: ForgeTheme.spacing.lg,
+          },
+          listItemBorder: {
+            borderBottomWidth: 0.5,
+            borderBottomColor: ForgeTheme.colors.b0,
+          },
+        });

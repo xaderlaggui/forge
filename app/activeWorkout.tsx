@@ -11,7 +11,7 @@ import { WorkoutSetsTable } from '../features/workout/components/WorkoutSetsTabl
 // Shared Components
 import { RestTimerWidget, NumpadBottomSheet } from '../components/forge/WorkoutWidgets';
 import { ForgeButton } from '../components/forge/ForgeButton';
-import { ForgeTheme as T } from '../constants/ForgeTheme';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 const PRESETS = [
   { label: '3×8', sets: 3, reps: 8 },
@@ -22,6 +22,8 @@ const PRESETS = [
 ];
 
 export default function ActiveWorkoutScreen() {
+    const { T } = useForgeTheme();
+    const styles = useStyles(T);
   const router = useRouter();
   const { id, date, routineId } = useLocalSearchParams();
   
@@ -45,7 +47,7 @@ export default function ActiveWorkoutScreen() {
   const currentExercise = session.exercises[session.currentExerciseIndex];
 
   return (
-    <View style={styles.container}>
+    <View style={useStyles.container}>
       <LiveTimerHeader 
         timerLabel={session.timerLabel}
         totalExercises={session.totalExercises}
@@ -53,50 +55,50 @@ export default function ActiveWorkoutScreen() {
         onBack={handleBack}
       />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={useStyles.content} showsVerticalScrollIndicator={false}>
         {!session.workoutStarted ? (
-          <View style={styles.startOverlay}>
-            <Text style={styles.exerciseTitle} maxFontSizeMultiplier={1.2}>
+          <View style={useStyles.startOverlay}>
+            <Text style={useStyles.exerciseTitle} maxFontSizeMultiplier={1.2}>
               {session.workoutTitle}
             </Text>
-            <Text style={styles.startHint}>Tap Start Workout to begin tracking.</Text>
+            <Text style={useStyles.startHint}>Tap Start Workout to begin tracking.</Text>
           </View>
         ) : (
           <>
             {/* Feature 4: Volume Tracker */}
-            <View style={styles.volumeTracker}>
-              <View style={styles.volStat}>
-                <Text style={styles.volValue}>{session.volumeStats.volume.toLocaleString()}</Text>
-                <Text style={styles.volLabel}>LBS VOL</Text>
+            <View style={useStyles.volumeTracker}>
+              <View style={useStyles.volStat}>
+                <Text style={useStyles.volValue}>{session.volumeStats.volume.toLocaleString()}</Text>
+                <Text style={useStyles.volLabel}>LBS VOL</Text>
               </View>
-              <View style={styles.volDivider} />
-              <View style={styles.volStat}>
-                <Text style={styles.volValue}>{session.volumeStats.completedSets}</Text>
-                <Text style={styles.volLabel}>SETS DONE</Text>
+              <View style={useStyles.volDivider} />
+              <View style={useStyles.volStat}>
+                <Text style={useStyles.volValue}>{session.volumeStats.completedSets}</Text>
+                <Text style={useStyles.volLabel}>SETS DONE</Text>
               </View>
-              <View style={styles.volDivider} />
-              <View style={styles.volStat}>
-                <Text style={styles.volValue}>{session.doneExercises}/{session.totalExercises}</Text>
-                <Text style={styles.volLabel}>EXERCISES</Text>
+              <View style={useStyles.volDivider} />
+              <View style={useStyles.volStat}>
+                <Text style={useStyles.volValue}>{session.doneExercises}/{session.totalExercises}</Text>
+                <Text style={useStyles.volLabel}>EXERCISES</Text>
               </View>
             </View>
 
             {/* Exercise Navigator */}
-            <View style={styles.navigator}>
+            <View style={useStyles.navigator}>
               <TouchableOpacity 
-                style={styles.navBtn} 
+                style={useStyles.navBtn} 
                 disabled={session.currentExerciseIndex === 0}
                 onPress={() => session.setCurrentExerciseIndex(i => i - 1)}
               >
                 <ChevronLeft size={24} color={session.currentExerciseIndex === 0 ? T.colors.t3 : T.colors.forge} />
               </TouchableOpacity>
               
-              <Text style={styles.navCount}>
+              <Text style={useStyles.navCount}>
                 {session.currentExerciseIndex + 1} OF {session.totalExercises}
               </Text>
 
               <TouchableOpacity 
-                style={styles.navBtn} 
+                style={useStyles.navBtn} 
                 disabled={session.currentExerciseIndex === session.totalExercises - 1}
                 onPress={() => session.setCurrentExerciseIndex(i => i + 1)}
               >
@@ -106,23 +108,23 @@ export default function ActiveWorkoutScreen() {
 
             {currentExercise && (
               <>
-                <Text style={styles.exerciseName} maxFontSizeMultiplier={1.2}>
+                <Text style={useStyles.exerciseName} maxFontSizeMultiplier={1.2}>
                   {currentExercise.name}
                 </Text>
 
                 {/* Preset Selector */}
-                <View style={styles.presetSection}>
-                  <Text style={styles.presetLabel}>QUICK PRESETS</Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.presetRow}>
+                <View style={useStyles.presetSection}>
+                  <Text style={useStyles.presetLabel}>QUICK PRESETS</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={useStyles.presetRow}>
                     {PRESETS.map(p => {
                       const isActive = currentExercise.sets.length === p.sets && currentExercise.sets[0]?.reps === p.reps.toString();
                       return (
                         <TouchableOpacity 
                           key={p.label} 
-                          style={[styles.presetChip, isActive && styles.presetChipActive]}
+                          style={[useStyles.presetChip, isActive && useStyles.presetChipActive]}
                           onPress={() => session.selectPreset(session.currentExerciseIndex, p.sets, p.reps)}
                         >
-                          <Text style={[styles.presetChipText, isActive && styles.presetChipTextActive]}>{p.label}</Text>
+                          <Text style={[useStyles.presetChipText, isActive && useStyles.presetChipTextActive]}>{p.label}</Text>
                         </TouchableOpacity>
                       );
                     })}
@@ -148,7 +150,7 @@ export default function ActiveWorkoutScreen() {
 
       {/* Rest Timer (Absolute) */}
       {session.isResting && (
-        <View style={styles.restTimerFloat}>
+        <View style={useStyles.restTimerFloat}>
           <RestTimerWidget
             restTime={session.restTime}
             totalTime={session.totalRestTime}
@@ -161,7 +163,7 @@ export default function ActiveWorkoutScreen() {
       )}
 
       {/* Footer CTA */}
-      <View style={styles.footer}>
+      <View style={useStyles.footer}>
         {!session.workoutStarted ? (
           <ForgeButton
             label="START WORKOUT"
@@ -203,62 +205,62 @@ export default function ActiveWorkoutScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: T.colors.bg0 },
-  content: { padding: T.spacing.page },
-  
-  startOverlay: { alignItems: 'center', justifyContent: 'center', marginTop: 40 },
-  exerciseTitle: { fontSize: 24, fontWeight: '800', color: T.colors.t1, marginBottom: 8, textAlign: 'center' },
-  startHint: { fontSize: 14, color: T.colors.t3, textAlign: 'center' },
+const useStyles = (T: any) => StyleSheet.create({
+          container: { flex: 1, backgroundColor: T.colors.bg0 },
+          content: { padding: T.spacing.page },
+          
+          startOverlay: { alignItems: 'center', justifyContent: 'center', marginTop: 40 },
+          exerciseTitle: { fontSize: 24, fontWeight: '800', color: T.colors.t1, marginBottom: 8, textAlign: 'center' },
+          startHint: { fontSize: 14, color: T.colors.t3, textAlign: 'center' },
 
-  volumeTracker: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: T.colors.bg1, borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: T.colors.b1,
-    marginBottom: 24,
-  },
-  volStat: { alignItems: 'center', flex: 1 },
-  volValue: { fontSize: 20, fontWeight: '800', color: T.colors.t1, marginBottom: 4 },
-  volLabel: { fontSize: 10, fontWeight: '700', color: T.colors.forge, letterSpacing: 1 },
-  volDivider: { width: 1, height: 24, backgroundColor: T.colors.b1 },
+          volumeTracker: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            backgroundColor: T.colors.bg1, borderRadius: 16, padding: 16,
+            borderWidth: 1, borderColor: T.colors.b1,
+            marginBottom: 24,
+          },
+          volStat: { alignItems: 'center', flex: 1 },
+          volValue: { fontSize: 20, fontWeight: '800', color: T.colors.t1, marginBottom: 4 },
+          volLabel: { fontSize: 10, fontWeight: '700', color: T.colors.forge, letterSpacing: 1 },
+          volDivider: { width: 1, height: 24, backgroundColor: T.colors.b1 },
 
-  navigator: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
-  navBtn: { padding: 8 },
-  navCount: { fontSize: 12, fontWeight: '800', color: T.colors.t3, letterSpacing: 1 },
+          navigator: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
+          navBtn: { padding: 8 },
+          navCount: { fontSize: 12, fontWeight: '800', color: T.colors.t3, letterSpacing: 1 },
 
-  exerciseName: { fontSize: 28, fontWeight: '800', color: T.colors.t1, marginBottom: 20 },
+          exerciseName: { fontSize: 28, fontWeight: '800', color: T.colors.t1, marginBottom: 20 },
 
-  presetSection: { marginBottom: 24 },
-  presetLabel: { fontSize: 10, fontWeight: '800', color: T.colors.t3, letterSpacing: 0.8, marginBottom: 8 },
-  presetRow: { flexDirection: 'row', gap: 8 },
-  presetChip: { backgroundColor: T.colors.bg1, borderWidth: 0.5, borderColor: T.colors.b1, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 10 },
-  presetChipActive: { backgroundColor: T.colors.forge },
-  presetChipText: { color: T.colors.t2, fontSize: 13, fontWeight: '700' },
-  presetChipTextActive: { color: '#000' },
+          presetSection: { marginBottom: 24 },
+          presetLabel: { fontSize: 10, fontWeight: '800', color: T.colors.t3, letterSpacing: 0.8, marginBottom: 8 },
+          presetRow: { flexDirection: 'row', gap: 8 },
+          presetChip: { backgroundColor: T.colors.bg1, borderWidth: 0.5, borderColor: T.colors.b1, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 10 },
+          presetChipActive: { backgroundColor: T.colors.forge },
+          presetChipText: { color: T.colors.t2, fontSize: 13, fontWeight: '700' },
+          presetChipTextActive: { color: '#000' },
 
-  restTimerFloat: {
-    position: 'absolute',
-    bottom: 140, left: T.spacing.px4, right: T.spacing.px4,
-    zIndex: 20,
-  },
-  manualRestBtn: {
-    backgroundColor: T.colors.bg1,
-    borderWidth: 1,
-    borderColor: T.colors.forge,
-    borderRadius: 30,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  manualRestText: {
-    color: T.colors.forge,
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  
-  footer: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    padding: T.spacing.page, paddingBottom: 36,
-    backgroundColor: T.colors.bg0,
-    borderTopWidth: 0.5, borderTopColor: T.colors.b1,
-  },
-});
+          restTimerFloat: {
+            position: 'absolute',
+            bottom: 140, left: T.spacing.px4, right: T.spacing.px4,
+            zIndex: 20,
+          },
+          manualRestBtn: {
+            backgroundColor: T.colors.bg1,
+            borderWidth: 1,
+            borderColor: T.colors.forge,
+            borderRadius: 30,
+            paddingVertical: 12,
+            alignItems: 'center',
+          },
+          manualRestText: {
+            color: T.colors.forge,
+            fontWeight: '700',
+            fontSize: 14,
+          },
+          
+          footer: {
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            padding: T.spacing.page, paddingBottom: 36,
+            backgroundColor: T.colors.bg0,
+            borderTopWidth: 0.5, borderTopColor: T.colors.b1,
+          },
+        });
