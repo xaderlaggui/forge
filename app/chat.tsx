@@ -193,7 +193,7 @@ export default function ChatScreen() {
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Image
             source={MascotImages.coach}
-            style={{ width: 200, height: 200, resizeMode: 'contain', alignSelf: 'center', marginBottom: 20 }}
+            style={{ width: 220, height: 220, resizeMode: 'contain', alignSelf: 'center', marginBottom: 20 }}
             accessibilityLabel="Forge the AI coach bear ready to help you"
           />
         </View>

@@ -3,6 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { DailyAggregates } from '../types';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
+import { Image } from 'react-native';
+import { MascotImages } from '../../../constants/mascotImages';
 
 interface DailyCalorieSummaryProps {
   aggregates: DailyAggregates;
@@ -14,16 +16,17 @@ export function DailyCalorieSummary({ aggregates }: DailyCalorieSummaryProps) {
   const { totalCal, calPct, remaining, goalCal, totalProtein, totalCarbs, totalFat } = aggregates;
 
   return (
-    <View style={s.summaryCard}>
-      <LinearGradient
-        colors={[T.colors.bg1, T.colors.bg2]}
-        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
-      />
-      {/* Decorative blob */}
-      <View style={s.blob} />
+    <View style={{ position: 'relative', overflow: 'visible', marginHorizontal: T.spacing.page, marginBottom: T.spacing.px5 }}>
+      <View style={[s.summaryCard, { marginHorizontal: 0, marginBottom: 0 }]}>
+        <LinearGradient
+          colors={[T.colors.bg1, T.colors.bg2]}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+        {/* Decorative blob */}
+        <View style={s.blob} />
 
-      {/* Top row: consumed / remaining */}
+        {/* Top row: consumed / remaining */}
       <View style={s.calTopRow}>
         <View style={s.calBlock}>
           <Text style={s.calNum} maxFontSizeMultiplier={1.2}>{totalCal}</Text>
@@ -62,7 +65,12 @@ export function DailyCalorieSummary({ aggregates }: DailyCalorieSummaryProps) {
             <Text style={s.macroLbl} maxFontSizeMultiplier={1.2}>{m.label}</Text>
           </View>
         ))}
+        </View>
       </View>
+      <Image
+        source={MascotImages.nutrition}
+        style={{ position: 'absolute', right: -8, top: -25, width: 130, height: 130, resizeMode: 'contain', zIndex: 10 }}
+      />
     </View>
   );
 }

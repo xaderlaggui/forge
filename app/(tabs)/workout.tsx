@@ -46,7 +46,6 @@ export default function WorkoutScreen() {
         <RoutineList />
       ) : (
         <ScrollView contentContainerStyle={s.plannerContainer} showsVerticalScrollIndicator={false}>
-          <Image source={MascotImages.workout} style={{ width: 220, height: 220, resizeMode: 'contain', alignSelf: 'center', marginBottom: 16 }} />
           <WeeklyCalendar
             days={days}
             activeDayIdx={activeDayIdx}

@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Image } from 'react-native';
 import { MascotImage } from '../../../components/common/MascotImage';
+import { MascotImages } from '../../../constants/mascotImages';
 import { ForgeButton } from '../../../components/forge/ForgeButton';
 import { ForgeSkeleton } from '../../../components/forge/ForgeSkeleton';
 
@@ -59,8 +60,11 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
   if (isCompleted) {
     const data = getHeatmapData(loggedWorkout.exercises);
     return (
-      <View style={s.todayCard}>
-        <Text style={s.todayTitle} maxFontSizeMultiplier={1.2}>✅ Completed</Text>
+      <View style={{ position: 'relative', overflow: 'visible' }}>
+        <View style={[s.todayCard, { overflow: 'hidden' }]}>
+          <View style={{ position: 'absolute', top: -20, right: -20, width: 110, height: 110, borderRadius: 55, backgroundColor: T.colors.forgeDim }} />
+          
+          <Text style={s.todayTitle} maxFontSizeMultiplier={1.2}>✅ Completed</Text>
         <Text style={s.todaySub} maxFontSizeMultiplier={1.2}>{loggedWorkout.notes || 'Workout Logged'}</Text>
         <Text style={s.todayMeta} maxFontSizeMultiplier={1.2}>
           {loggedWorkout.exercises?.length ?? 0} Exercises Completed
@@ -71,11 +75,13 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
             <Body data={data} gender="male" side="back" scale={0.4} colors={['#333', T.colors.forge]} />
           </View>
         )}
-        <ForgeButton
-          label="View Details"
-          onPress={() => router.push({ pathname: '/activeWorkout', params: { id: loggedWorkout.id } })}
-          variant="secondary"
-        />
+          <ForgeButton
+            label="View Details"
+            onPress={() => router.push({ pathname: '/activeWorkout', params: { id: loggedWorkout.id } })}
+            variant="secondary"
+          />
+        </View>
+        <Image source={MascotImages.workout} style={{ position: 'absolute', right: -8, top: -25, width: 120, height: 120, resizeMode: 'contain', zIndex: 10 }} />
       </View>
     );
   }
@@ -83,8 +89,11 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
   if (!isRestDay) {
     const data = getHeatmapData(plannedWorkout.exercises);
     return (
-      <View style={s.todayCard}>
-        <Text style={s.todayTitle} maxFontSizeMultiplier={1.2}>Scheduled Routine</Text>
+      <View style={{ position: 'relative', overflow: 'visible' }}>
+        <View style={[s.todayCard, { overflow: 'hidden' }]}>
+          <View style={{ position: 'absolute', top: -20, right: -20, width: 110, height: 110, borderRadius: 55, backgroundColor: T.colors.forgeDim }} />
+
+          <Text style={s.todayTitle} maxFontSizeMultiplier={1.2}>Scheduled Routine</Text>
         <Text style={s.todaySub} maxFontSizeMultiplier={1.2}>{plannedWorkout.title}</Text>
         <Text style={s.todayMeta} maxFontSizeMultiplier={1.2}>
           {plannedWorkout.exercises?.length ?? 0} Exercises Prescribed
@@ -95,11 +104,13 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
             <Body data={data} gender="male" side="back" scale={0.4} colors={['#333', T.colors.forge]} />
           </View>
         )}
-        <ForgeButton
-          label="▶ Start Routine"
-          onPress={() => router.push({ pathname: '/activeWorkout', params: { date: activeDateStr } })}
-          pulse
-        />
+          <ForgeButton
+            label="▶ Start Routine"
+            onPress={() => router.push({ pathname: '/activeWorkout', params: { date: activeDateStr } })}
+            pulse
+          />
+        </View>
+        <Image source={MascotImages.workout} style={{ position: 'absolute', right: -8, top: -25, width: 120, height: 120, resizeMode: 'contain', zIndex: 10 }} />
       </View>
     );
   }

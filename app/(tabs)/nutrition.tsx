@@ -1,23 +1,22 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Plus } from 'lucide-react-native';
+import React from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 // Feature dependencies
-import { useDailyNutrition } from '../../features/nutrition/hooks/useDailyNutrition';
-import { NutritionSkeleton } from '../../features/nutrition/components/NutritionSkeleton';
-import { DailyCalorieSummary } from '../../features/nutrition/components/DailyCalorieSummary';
-import { MacroBreakdown } from '../../features/nutrition/components/MacroBreakdown';
-import { HydrationTracker } from '../../features/nutrition/components/HydrationTracker';
-import { MealLogList } from '../../features/nutrition/components/MealLogList';
-import { MascotImage } from '../../components/common/MascotImage';
-import { MascotImages } from '../../constants/mascotImages';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
+import { MascotImage } from '../../components/common/MascotImage';
+import { DailyCalorieSummary } from '../../features/nutrition/components/DailyCalorieSummary';
+import { HydrationTracker } from '../../features/nutrition/components/HydrationTracker';
+import { MacroBreakdown } from '../../features/nutrition/components/MacroBreakdown';
+import { MealLogList } from '../../features/nutrition/components/MealLogList';
+import { NutritionSkeleton } from '../../features/nutrition/components/NutritionSkeleton';
+import { useDailyNutrition } from '../../features/nutrition/hooks/useDailyNutrition';
 
 export default function NutritionScreen() {
-    const { T } = useForgeTheme();
-    const s = useS(T);
+  const { T } = useForgeTheme();
+  const s = useS(T);
   const router = useRouter();
-  
+
   // Clean Architecture: Logic and data fetching are handled by the hook
   const { isLoading, nutrition, aggregates, expandedMeal, setExpandedMeal, activePlan, updateNutrition } = useDailyNutrition();
 
@@ -54,17 +53,13 @@ export default function NutritionScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={{ alignItems: 'center', marginVertical: 16 }}>
-        <Image source={MascotImages.nutrition} style={{ width: 240, height: 240, resizeMode: 'contain' }} />
-      </View>
-
       {/* ── Composition: Daily Stats ── */}
       <DailyCalorieSummary aggregates={aggregates} />
       <MacroBreakdown aggregates={aggregates} />
-      <HydrationTracker 
-        aggregates={aggregates} 
-        waterMl={nutrition.waterMl || 0} 
-        updateNutrition={updateNutrition} 
+      <HydrationTracker
+        aggregates={aggregates}
+        waterMl={nutrition.waterMl || 0}
+        updateNutrition={updateNutrition}
       />
 
       {/* ── Composition: Meals ── */}
@@ -81,10 +76,10 @@ export default function NutritionScreen() {
         </View>
       )}
 
-      <MealLogList 
-        meals={nutrition.meals} 
-        expandedMeal={null} 
-        setExpandedMeal={() => {}} 
+      <MealLogList
+        meals={nutrition.meals}
+        expandedMeal={null}
+        setExpandedMeal={() => { }}
         activePlan={activePlan}
         updateNutrition={updateNutrition}
       />
@@ -94,20 +89,20 @@ export default function NutritionScreen() {
 }
 
 const useS = (T: any) => StyleSheet.create({
-          container: { flex: 1, backgroundColor: T.colors.bg0 },
-          content: { paddingBottom: 110 },
+  container: { flex: 1, backgroundColor: T.colors.bg0 },
+  content: { paddingBottom: 110 },
 
-          header: {
-            flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
-            paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: T.spacing.px4,
-          },
-          headerSub: { fontSize: T.typography.sizes.bodyS, color: T.colors.t2, fontWeight: '500', marginBottom: 2 },
-          headerTitle: { fontSize: T.typography.sizes.h1, fontWeight: '700', color: T.colors.t1 },
-          addBtn: {
-            width: 40, height: 40, borderRadius: T.radii.full,
-            backgroundColor: T.colors.forge,
-            alignItems: 'center', justifyContent: 'center',
-            shadowColor: T.colors.forge,
-            shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6,
-          },
-        });
+  header: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
+    paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: T.spacing.px4,
+  },
+  headerSub: { fontSize: T.typography.sizes.bodyS, color: T.colors.t2, fontWeight: '500', marginBottom: 2 },
+  headerTitle: { fontSize: T.typography.sizes.h1, fontWeight: '700', color: T.colors.t1 },
+  addBtn: {
+    width: 40, height: 40, borderRadius: T.radii.full,
+    backgroundColor: T.colors.forge,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: T.colors.forge,
+    shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6,
+  },
+});

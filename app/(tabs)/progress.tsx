@@ -1,21 +1,19 @@
-import React from 'react';
-import { ScrollView, View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera } from 'lucide-react-native';
-import { MascotImages } from '../../constants/mascotImages';
-import { Image } from 'react-native';
+import React from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 // Feature Modules
-import { useProgressData } from '../../features/progress/hooks/useProgressData';
-import { StatCard } from '../../features/progress/components/StatCard';
-import { MeasurementCard } from '../../features/progress/components/MeasurementCard';
-import { WeightChart } from '../../features/progress/components/WeightChart';
-import { VolumeChart } from '../../features/progress/components/VolumeChart';
-import { ProgressPhotos } from '../../features/progress/components/ProgressPhotos';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
+import { MeasurementCard } from '../../features/progress/components/MeasurementCard';
+import { ProgressPhotos } from '../../features/progress/components/ProgressPhotos';
+import { StatCard } from '../../features/progress/components/StatCard';
+import { VolumeChart } from '../../features/progress/components/VolumeChart';
+import { WeightChart } from '../../features/progress/components/WeightChart';
+import { useProgressData } from '../../features/progress/hooks/useProgressData';
 
 export default function ProgressScreen() {
-    const { T } = useForgeTheme();
-    const s = useS(T);
+  const { T } = useForgeTheme();
+  const s = useS(T);
   const router = useRouter();
 
   // Clean Architecture: Hook handles all formatting, storage logic, and firestore logic
@@ -43,11 +41,6 @@ export default function ProgressScreen() {
             : <Camera size={18} color={T.colors.forge} />}
         </TouchableOpacity>
       </View>
-
-      <View style={{ alignItems: 'center', marginVertical: 16 }}>
-        <Image source={MascotImages.progress} style={{ width: 240, height: 240, resizeMode: 'contain' }} />
-      </View>
-
       {/* ── Composition: Key Stats ── */}
       <View style={s.statsRow}>
         <StatCard label="Current" value={currentWeight} unit="lbs" delta={weightDiff} />
@@ -56,13 +49,13 @@ export default function ProgressScreen() {
       </View>
 
       {/* ── Composition: Weight Chart ── */}
-      <WeightChart 
-        timeframe={timeframe} 
-        setTimeframe={setTimeframe} 
-        weightDiff={weightDiff} 
-        lineData={lineData} 
-        minVal={minVal} 
-        maxVal={maxVal} 
+      <WeightChart
+        timeframe={timeframe}
+        setTimeframe={setTimeframe}
+        weightDiff={weightDiff}
+        lineData={lineData}
+        minVal={minVal}
+        maxVal={maxVal}
       />
 
       {/* ── Composition: Body Measurements ── */}
@@ -71,26 +64,26 @@ export default function ProgressScreen() {
         <View style={s.measGrid}>
           <MeasurementCard label="Chest" value={latest?.chest} prevValue={prev?.chest} onPress={() => router.push('/measurements')} />
           <MeasurementCard label="Waist" value={latest?.waist} prevValue={prev?.waist} onPress={() => router.push('/measurements')} />
-          <MeasurementCard label="Arms"  value={latest?.arms}  prevValue={prev?.arms}  onPress={() => router.push('/measurements')} />
-          <MeasurementCard label="Legs"  value={latest?.legs}  prevValue={prev?.legs}  onPress={() => router.push('/measurements')} />
+          <MeasurementCard label="Arms" value={latest?.arms} prevValue={prev?.arms} onPress={() => router.push('/measurements')} />
+          <MeasurementCard label="Legs" value={latest?.legs} prevValue={prev?.legs} onPress={() => router.push('/measurements')} />
         </View>
       </View>
 
       {/* ── Composition: Progressive Overload ── */}
-      <VolumeChart 
-        volumeLineData={volumeLineData} 
-        currentVolume={currentVolume} 
-        volumeDiff={volumeDiff} 
-        minVol={minVol} 
-        maxVol={maxVol} 
+      <VolumeChart
+        volumeLineData={volumeLineData}
+        currentVolume={currentVolume}
+        volumeDiff={volumeDiff}
+        minVol={minVol}
+        maxVol={maxVol}
       />
 
       {/* ── Composition: Transformation ── */}
-      <ProgressPhotos 
-        firstPhoto={firstPhoto} 
-        lastPhoto={lastPhoto} 
-        isUploading={isUploading} 
-        onTakePhoto={takePhoto} 
+      <ProgressPhotos
+        firstPhoto={firstPhoto}
+        lastPhoto={lastPhoto}
+        isUploading={isUploading}
+        onTakePhoto={takePhoto}
       />
 
       {/* ── Composition: Links ── */}
@@ -106,37 +99,37 @@ export default function ProgressScreen() {
 }
 
 const useS = (T: any) => StyleSheet.create({
-          container: { flex: 1, backgroundColor: T.colors.bg0 },
-          content: { paddingBottom: 110 },
+  container: { flex: 1, backgroundColor: T.colors.bg0 },
+  content: { paddingBottom: 110 },
 
-          header: {
-            flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
-            paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: T.spacing.px4,
-          },
-          headerSub: { fontSize: T.typography.sizes.bodyS, color: T.colors.t2, fontWeight: '500', marginBottom: 2 },
-          headerTitle: { fontSize: T.typography.sizes.h1, fontWeight: '700', color: T.colors.t1 },
-          cameraBtn: {
-            width: 40, height: 40, borderRadius: T.radii.md,
-            backgroundColor: T.colors.forgeDim,
-            borderWidth: 0.5, borderColor: 'rgba(255,92,46,0.3)',
-            alignItems: 'center', justifyContent: 'center',
-          },
+  header: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
+    paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: T.spacing.px4,
+  },
+  headerSub: { fontSize: T.typography.sizes.bodyS, color: T.colors.t2, fontWeight: '500', marginBottom: 2 },
+  headerTitle: { fontSize: T.typography.sizes.h1, fontWeight: '700', color: T.colors.t1 },
+  cameraBtn: {
+    width: 40, height: 40, borderRadius: T.radii.md,
+    backgroundColor: T.colors.forgeDim,
+    borderWidth: 0.5, borderColor: 'rgba(255,92,46,0.3)',
+    alignItems: 'center', justifyContent: 'center',
+  },
 
-          statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: T.spacing.page, marginBottom: T.spacing.px5 },
-          section: { marginHorizontal: T.spacing.page, marginBottom: T.spacing.px6 },
-          sectionLabel: {
-            fontSize: T.typography.sizes.label, fontWeight: '600', color: T.colors.t3,
-            textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: T.spacing.px3,
-          },
-          measGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: T.spacing.page, marginBottom: T.spacing.px5 },
+  section: { marginHorizontal: T.spacing.page, marginBottom: T.spacing.px6 },
+  sectionLabel: {
+    fontSize: T.typography.sizes.label, fontWeight: '600', color: T.colors.t3,
+    textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: T.spacing.px3,
+  },
+  measGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
 
-          linkCard: {
-            backgroundColor: T.colors.bg1,
-            borderWidth: 1, borderColor: T.colors.b1,
-            borderRadius: T.radii.lg,
-            padding: T.spacing.px4,
-            alignItems: 'center', justifyContent: 'center',
-          },
-          linkTitle: { fontSize: T.typography.sizes.body, fontWeight: '700', color: T.colors.forge, marginBottom: 4 },
-          linkSub: { fontSize: T.typography.sizes.caption, color: T.colors.t3 },
-        });
+  linkCard: {
+    backgroundColor: T.colors.bg1,
+    borderWidth: 1, borderColor: T.colors.b1,
+    borderRadius: T.radii.lg,
+    padding: T.spacing.px4,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  linkTitle: { fontSize: T.typography.sizes.body, fontWeight: '700', color: T.colors.forge, marginBottom: 4 },
+  linkSub: { fontSize: T.typography.sizes.caption, color: T.colors.t3 },
+});

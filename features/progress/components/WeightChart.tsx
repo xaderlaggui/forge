@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-nati
 import { LineChart } from 'react-native-gifted-charts';
 import { TrendingDown, TrendingUp } from 'lucide-react-native';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
+import { Image } from 'react-native';
+import { MascotImages } from '../../../constants/mascotImages';
 
 const SCREEN_W = Dimensions.get('window').width;
 const TIMEFRAMES = ['7D', '1M', '3M', 'YTD'];
@@ -36,8 +38,11 @@ export function WeightChart({
         ))}
       </View>
 
-      <View style={s.chartCard}>
-        <View style={s.chartHeader}>
+      <View style={{ position: 'relative', overflow: 'visible' }}>
+        <View style={s.chartCard}>
+          <View style={{ position: 'absolute', top: -20, right: -20, width: 110, height: 110, borderRadius: 55, backgroundColor: T.colors.forgeDim }} />
+          
+          <View style={s.chartHeader}>
           <Text style={s.chartTitle} maxFontSizeMultiplier={1.2}>Weight Trend</Text>
           <View style={[s.deltaBadge, weightDiff <= 0 ? s.deltaBadgeDown : s.deltaBadgeUp]}>
             {weightDiff <= 0 ? <TrendingDown size={12} color={T.colors.green} /> : <TrendingUp size={12} color={T.colors.red} />}
@@ -70,6 +75,8 @@ export function WeightChart({
             width={SCREEN_W - 72}
           />
         </View>
+      </View>
+      <Image source={MascotImages.progress} style={{ position: 'absolute', right: -10, top: -20, width: 120, height: 120, resizeMode: 'contain', zIndex: 10 }} />
       </View>
     </View>
   );
