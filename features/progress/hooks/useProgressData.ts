@@ -59,7 +59,7 @@ export function useProgressData() {
     setIsUploading(true);
     try {
       const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
+        encoding: 'base64',
       });
 
       const binaryStr = atob(base64);

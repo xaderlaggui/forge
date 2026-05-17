@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming, Easing } from 'react-native-reanimated';
 import { ForgeTheme as T } from '../../../constants/ForgeTheme';
 
 interface WeeklyCalendarProps {
@@ -14,7 +14,7 @@ export function WeeklyCalendar({ days, activeDayIdx, onSelectDay }: WeeklyCalend
 
   useEffect(() => {
     dotOpacity.value = withRepeat(
-      withTiming(1, { duration: T.motion.duration.pulse, easing: T.motion.easing.standard }),
+      withTiming(1, { duration: T.motion.duration.pulse, easing: Easing.inOut(Easing.ease) }),
       -1,
       true
     );
