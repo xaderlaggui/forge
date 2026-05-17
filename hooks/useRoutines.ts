@@ -6,11 +6,13 @@ import { useAuthStore } from '../stores/authStore';
 export interface RoutineTemplate {
   id: string;
   name: string;
+  split?: 'push' | 'pull' | 'legs' | 'full';
   exercises: {
-    exerciseId: string;
+    exerciseId?: string;
     name: string;
     sets: number;
     reps: number;
+    preset?: string;
   }[];
 }
 
