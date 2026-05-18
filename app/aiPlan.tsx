@@ -147,6 +147,39 @@ function SliderRow({ value, min, max, step, onChange, T }: {
   );
 }
 
+// ─── AI Rationale Card ────────────────────────────────────────────────────────
+function CoachMessageCard({ message, T }: { message: string, T: any }) {
+  return (
+    <View style={{ 
+      flexDirection: 'row', 
+      backgroundColor: T.colors.bg1, 
+      borderRadius: 16, 
+      overflow: 'hidden', 
+      borderWidth: 1, 
+      borderColor: T.colors.b1, 
+      marginBottom: 24,
+      shadowColor: T.colors.forge,
+      shadowOpacity: 0.06,
+      shadowRadius: 12,
+      elevation: 3,
+    }}>
+      <View style={{ 
+        width: 90, 
+        backgroundColor: T.colors.forgeDim, 
+        justifyContent: 'flex-end', 
+        alignItems: 'center',
+        paddingTop: 16
+      }}>
+        <BearMascot variant="SMUG" size="md" style={{ marginBottom: -8, marginLeft: 8 }} />
+      </View>
+      <View style={{ flex: 1, padding: 16 }}>
+        <Text style={{ fontSize: 14, fontWeight: '800', color: T.colors.forge, marginBottom: 6 }}>Coach AI</Text>
+        <Text style={{ fontSize: 13, color: T.colors.t1, lineHeight: 20, fontWeight: '500' }}>{message}</Text>
+      </View>
+    </View>
+  );
+}
+
 // ─── Generated Plan Preview ───────────────────────────────────────────────────
 function PlanPreview({ plan, onApply, onSaveDraft, isApplying, T }: {
   plan: GeneratedPlan;
@@ -158,9 +191,9 @@ function PlanPreview({ plan, onApply, onSaveDraft, isApplying, T }: {
   const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   return (
     <View style={{ gap: 12 }}>
-      <View style={{ alignItems: 'center', marginBottom: 16 }}>
-        <BearMascot variant="APPROVING" size="xl" animate />
-      </View>
+      {plan.coachMessage && (
+        <CoachMessageCard message={plan.coachMessage} T={T} />
+      )}
       <Text style={{ fontSize: 18, fontWeight: '800', color: T.colors.t1, marginBottom: 4 }}>
         Weekly Preview
       </Text>

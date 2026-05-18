@@ -61,6 +61,7 @@ export interface GeneratedPlan {
   generatedAt: string;
   workoutWeek: GeneratedWorkoutDay[];
   mealPlan: GeneratedMealPlan;
+  coachMessage: string;
 }
 
 // ─── Macro Calculator (Hardcoded Math) ──────────────────────────────────────
@@ -174,8 +175,10 @@ No markdown, no backticks, no explanation. Raw JSON array only.`;
 async function generateMealPlan(
   macros: ReturnType<typeof calculateTargetMacros>,
   diet: DietPreference,
-  goal: FitnessGoal
-): Promise<GeneratedMealPlan> {
+  goal: FitnessGoal,
+  metrics: UserMetrics,
+  split: ReturnType<typeof getWorkoutSplit>
+): Promise<GeneratedMealPlan & { coachMessage: string }> {
   const dietDesc = {
     anything: 'no dietary restrictions — include meat, fish, eggs, dairy',
     vegan:    'strictly vegan — no meat, fish, eggs, or dairy',
@@ -188,7 +191,7 @@ async function generateMealPlan(
     bulk:     'bulking (muscle gain) — calorie-dense, easy to eat in volume',
   }[goal];
 
-  const prompt = `You are a world-class sports dietitian.
+  const prompt = `You are a world-class sports dietitian and fitness coach.
 Create a full daily meal plan for someone with these exact nutritional targets:
 - Total Calories: ${macros.targetCalories} kcal
 - Protein: ${macros.targetProtein}g
@@ -199,7 +202,14 @@ Goal: ${goalDesc}.
 Include exactly 4 meals: Breakfast, Lunch, Dinner, Snacks.
 The sum of each meal's calories MUST equal ${macros.targetCalories} total.
 
-Respond ONLY with a valid JSON object with key "meals" containing an array of exactly 4 objects.
+Also provide a "coachMessage" (string) explaining your strategy. Address the user directly (e.g., "Hey Athlete!"). Explain why this specific workout split and nutrition plan fits their goal, experience level, and any injuries/conditions they mentioned. Keep it concise, highly motivational, and conversational like a text message.
+User Experience: ${metrics.experienceLevel || 'Beginner'}
+User Injuries/Conditions: ${metrics.customGoals?.join(', ') || 'None'}
+Workout Split Used: ${split.map(s => s.focus).join(', ')}
+
+Respond ONLY with a valid JSON object with keys:
+- "meals" (array of exactly 4 meal objects)
+- "coachMessage" (string)
 Each meal object must have: "name" (string), "description" (string), "calories" (number), "protein" (number), "carbs" (number), "fat" (number).
 No markdown, no backticks. Raw JSON only.`;
 
@@ -210,8 +220,9 @@ No markdown, no backticks. Raw JSON only.`;
 
   const parsed = JSON.parse(content);
   const meals = parsed.meals ?? [];
+  const coachMessage = parsed.coachMessage || "Here is your personalized plan, let's crush it!";
 
-  return { ...macros, meals };
+  return { ...macros, meals, coachMessage };
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -239,12 +250,15 @@ export async function generateFullPlan(metrics: UserMetrics): Promise<GeneratedP
     })
   );
 
-  const mealPlan = await generateMealPlan(macros, metrics.dietPreference, metrics.fitnessGoal);
+  const mealPlanResult = await generateMealPlan(macros, metrics.dietPreference, metrics.fitnessGoal, metrics, split);
+  
+  const { coachMessage, ...mealPlan } = mealPlanResult;
 
   const plan: GeneratedPlan = {
     generatedAt: new Date().toISOString(),
     workoutWeek,
     mealPlan,
+    coachMessage,
   };
 
   // Persist to Supabase under generated_plans
