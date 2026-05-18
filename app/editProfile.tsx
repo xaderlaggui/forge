@@ -1,7 +1,6 @@
 import { useForgeTheme } from '@/hooks/useForgeTheme';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { doc, setDoc } from 'firebase/firestore';
 import { Camera, ChevronLeft } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
@@ -14,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { ForgeButton } from '../components/forge/ForgeButton';
-import { db } from '../services/firebase';
+import { supabase } from '../services/supabase';
 import { useAuthStore } from '../stores/authStore';
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Prefer not to say'];
@@ -64,14 +63,28 @@ export default function EditProfileScreen() {
       const updated = {
         ...user,
         displayName,
+        display_name: displayName,
         handle,
         dateOfBirth: dob,
+        date_of_birth: dob,
         height: heightVal,
         weight: weightVal,
         photoURL: photoUri || user.photoURL,
+        photo_url: photoUri || user.photoURL,
       };
 
-      await setDoc(doc(db, `users/${user.uid}`), updated, { merge: true });
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          display_name: displayName,
+          handle,
+          date_of_birth: dob,
+          height: heightVal,
+          weight: weightVal,
+          photo_url: photoUri || (user as any).photoURL,
+        })
+        .eq('id', user.uid);
+      if (error) throw error;
       setUser(updated);
       Alert.alert('Saved', 'Profile updated successfully.');
       router.back();

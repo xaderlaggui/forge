@@ -7,8 +7,7 @@
  *  3. Firestore   → persist the generated plan to the user's document
  */
 
-import { doc, setDoc, Timestamp } from 'firebase/firestore';
-import { db } from './firebase';
+import { supabase } from './supabase';
 import { groqComplete } from './groq';
 import dayjs from 'dayjs';
 
@@ -248,12 +247,14 @@ export async function generateFullPlan(metrics: UserMetrics): Promise<GeneratedP
     mealPlan,
   };
 
-  // Persist to Firestore under the user's profile
+  // Persist to Supabase under generated_plans
   const dateKey = dayjs().format('YYYY-MM-DD');
-  await setDoc(
-    doc(db, `users/${metrics.uid}/generatedPlans/${dateKey}`),
-    { ...plan, savedAt: Timestamp.now() }
-  );
+  await supabase.from('generated_plans').upsert({
+    user_id: metrics.uid,
+    date: dateKey,
+    plan: plan,
+    saved_at: new Date().toISOString(),
+  }, { onConflict: 'user_id,date' });
 
   return plan;
 }

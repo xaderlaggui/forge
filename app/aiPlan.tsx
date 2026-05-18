@@ -5,10 +5,9 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Sparkles, Check } from 'lucide-react-native';
-import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import { useForgeTheme } from '@/hooks/useForgeTheme';
 import { useAuthStore } from '../stores/authStore';
-import { db } from '../services/firebase';
+import { supabase } from '../services/supabase';
 import { generateFullPlan, GeneratedPlan, GeneratedWorkoutDay } from '../services/GeneratorEngine';
 import { BearMascot } from '../components/forge/BearMascot';
 
@@ -278,10 +277,13 @@ export default function AIPlanScreen() {
     if (!plan || !user) return;
     setApplying(true);
     try {
-      await setDoc(
-        doc(db, `users/${user.uid}/generatedPlans/active`),
-        { ...plan, activatedAt: Timestamp.now() }
-      );
+      const { error } = await supabase.from('generated_plans').upsert({
+        user_id: user.uid,
+        date: new Date().toISOString(),
+        plan: plan,
+        saved_at: new Date().toISOString(),
+      });
+      if (error) throw error;
       Alert.alert('Plan Activated!', 'Your personalized plan is now live in the Planner.', [
         { text: "Let's go!", onPress: () => router.back() },
       ]);

@@ -1,6 +1,4 @@
 import { useRouter } from 'expo-router';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
 import { Lock, Mail, User } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
@@ -18,7 +16,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { MascotImage } from '../../components/common/MascotImage';
-import { auth, db } from '../../services/firebase';
+import { supabase } from '../../services/supabase';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 function InputField({
@@ -90,20 +88,28 @@ export default function SignupScreen() {
     }
     try {
       setLoading(true);
-      const { user } = await createUserWithEmailAndPassword(auth, email.trim(), password);
-      await updateProfile(user, { displayName: name.trim() });
-      await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
-        email: user.email,
-        displayName: name.trim(),
-        createdAt: new Date().toISOString(),
-        streak: 0,
-        bmi: 0,
-        height: 0,
-        weight: 0,
-        age: 0,
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: { data: { display_name: name.trim() } },
       });
-      // Auth listener handles redirect to onboarding/tabs
+      if (error) throw error;
+      if (data.user) {
+        // Create profile row (trigger may also do this — belt-and-suspenders)
+        await supabase.from('profiles').upsert({
+          id: data.user.id,
+          email: data.user.email,
+          display_name: name.trim(),
+          streak: 0,
+          bmi: 0,
+          height: 0,
+          weight: 0,
+          age: 0,
+          is_onboarded: false,
+          created_at: new Date().toISOString(),
+        }, { onConflict: 'id' });
+      }
+      // onAuthStateChange in _layout.tsx handles redirect to onboarding
     } catch (error: any) {
       Alert.alert('Sign Up Failed', error.message);
     } finally {

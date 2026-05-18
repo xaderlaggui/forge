@@ -1,14 +1,12 @@
-import { T } from '@/constants/ForgeTheme';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { signOut } from 'firebase/auth';
 import { Database, LogOut, Moon, Shield, Smartphone, Sparkles, Sun, User as UserIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ForgeButton } from '../../components/forge/ForgeButton';
 import { useForgeTheme } from '../../hooks/useForgeTheme';
-import { auth } from '../../services/firebase';
+import { supabase } from '../../services/supabase';
 import { useAuthStore } from '../../stores/authStore';
 import { useThemeStore, type ThemePreference } from '../../stores/themeStore';
 import { seedExercises } from '../../utils/seedData';
@@ -83,7 +81,7 @@ export default function SettingsScreen() {
       {
         text: 'Log Out', style: 'destructive', onPress: async () => {
           try {
-            await signOut(auth);
+            await supabase.auth.signOut();
           } catch (error) {
             console.error(error);
           }

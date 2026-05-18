@@ -2,7 +2,6 @@ import { MascotImages } from '@/constants/mascotImages';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
-import { addDoc, collection } from 'firebase/firestore';
 import { Send, User as UserIcon, X } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -20,7 +19,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useNutrition } from '../hooks/useNutrition';
 import { useWorkouts } from '../hooks/useWorkouts';
-import { db } from '../services/firebase';
+import { supabase } from '../services/supabase';
 import { groqComplete, GroqMessage } from '../services/groq';
 import { useAuthStore } from '../stores/authStore';
 
@@ -101,14 +100,16 @@ export default function ChatScreen() {
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
           if (parsed.action === 'log_activity' && user?.uid) {
-            await addDoc(collection(db, `users/${user.uid}/workouts`), {
+            const { error } = await supabase.from('workouts').insert({
+              user_id: user.uid,
               date: dayjs().format('YYYY-MM-DD'),
               notes: parsed.activityName,
               exercises: [],
               durationMin: parsed.durationMinutes ?? 0,
               calories: Math.round((parsed.durationMinutes ?? 0) * 5),
-              createdAt: new Date().toISOString(),
+              created_at: new Date().toISOString(),
             });
+            if (error) throw error;
             displayText = `Logged: ${parsed.activityName}${parsed.notes ? ` (${parsed.notes})` : ''}\n\n${parsed.message}`;
             logged = true;
           }

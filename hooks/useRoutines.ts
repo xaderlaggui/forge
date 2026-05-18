@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { collection, query, getDocs, setDoc, doc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { supabase } from '../services/supabase';
 import { useAuthStore } from '../stores/authStore';
 
 export interface RoutineTemplate {
@@ -24,9 +23,12 @@ export function useRoutines() {
     queryKey: ['routines', user?.uid],
     queryFn: async () => {
       if (!user?.uid) return [];
-      const q = query(collection(db, `users/${user.uid}/routines`));
-      const snap = await getDocs(q);
-      return snap.docs.map(doc => doc.data() as RoutineTemplate);
+      const { data, error } = await supabase
+        .from('routines')
+        .select('*')
+        .eq('user_id', user.uid);
+      if (error) throw error;
+      return (data || []) as RoutineTemplate[];
     },
     enabled: !!user?.uid,
   });
@@ -34,17 +36,17 @@ export function useRoutines() {
   const saveRoutine = useMutation({
     mutationFn: async (routine: RoutineTemplate) => {
       if (!user?.uid) return;
-      const ref = doc(db, `users/${user.uid}/routines/${routine.id}`);
-      await setDoc(ref, routine, { merge: true });
+      const { error } = await supabase
+        .from('routines')
+        .upsert({ ...routine, user_id: user.uid }, { onConflict: 'id' });
+      if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['routines', user?.uid] });
-    }
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['routines', user?.uid] }),
   });
 
   return {
     routines: routinesQuery.data || [],
     isLoading: routinesQuery.isLoading,
-    saveRoutine: saveRoutine.mutateAsync
+    saveRoutine: saveRoutine.mutateAsync,
   };
 }

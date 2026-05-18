@@ -1,6 +1,5 @@
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { useRouter } from 'expo-router';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Lock, Mail } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
@@ -20,7 +19,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 import { MascotImages } from '../../constants/mascotImages';
-import { auth } from '../../services/firebase';
+import { supabase } from '../../services/supabase';
 
 export default function LoginScreen() {
   const { T } = useForgeTheme();
@@ -50,8 +49,12 @@ export default function LoginScreen() {
     }
     try {
       setLoading(true);
-      await signInWithEmailAndPassword(auth, email.trim(), password);
-      // Auth listener in _layout.tsx handles redirect
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (error) throw error;
+      // onAuthStateChange in _layout.tsx handles redirect
     } catch (error: any) {
       Alert.alert('Login Failed', error.message);
     } finally {

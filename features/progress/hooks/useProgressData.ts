@@ -1,8 +1,7 @@
 import { useState } from 'react';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
-import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { db, storage } from '../../../services/firebase';
+import { supabase } from '../../../services/supabase';
 import { useAuthStore } from '../../../stores/authStore';
 import { useWorkouts } from '../../../hooks/useWorkouts';
 import { WeightEntry, MeasurementEntry } from '../types';
@@ -48,7 +47,7 @@ export function useProgressData() {
   const prev   = measurements.length > 1 ? measurements[measurements.length - 2] : undefined;
 
   // ── Photos ──
-  const photos = (user as any)?.progressPhotos || [];
+  const photos = (user as any)?.progress_photos || (user as any)?.progressPhotos || [];
   const firstPhoto = photos.length > 0 ? photos[0] : null;
   const lastPhoto  = photos.length > 0 ? photos[photos.length - 1] : null;
 
@@ -102,26 +101,46 @@ export function useProgressData() {
 
   // ── Camera ──
   const uploadPhoto = async (uri: string) => {
+    if (!user?.uid) { alert('You must be logged in to upload photos.'); return; }
     setIsUploading(true);
     try {
-      // Use fetch to convert the local file URI to a Blob (works reliably on Hermes)
-      const response = await fetch(uri);
-      const blob = await response.blob();
-
-      const photoRef = ref(storage, `users/${user?.uid}/progress/${Date.now()}.jpg`);
-      await uploadBytes(photoRef, blob, { contentType: 'image/jpeg' });
-      const url = await getDownloadURL(photoRef);
-
-      await updateDoc(doc(db, 'users', user?.uid as string), {
-        progressPhotos: arrayUnion({ url, date: new Date().toISOString() }),
+      // 1. Read as base64
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
       });
+
+      // 2. Decode base64 → binary array (atob is fine here — we're not creating a Blob)
+      const binaryStr = atob(base64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+
+      // 3. Upload via Supabase Storage
+      const path = `${user.uid}/${Date.now()}.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from('progress')
+        .upload(path, bytes, { contentType: 'image/jpeg' });
+      
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('progress')
+        .getPublicUrl(path);
+
+      // 4. Save URL to Supabase profiles
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('progress_photos')
+        .eq('id', user.uid)
+        .single();
+        
+      const existing = profile?.progress_photos || [];
+      await supabase.from('profiles').update({
+        progress_photos: [...existing, { url: publicUrl, date: new Date().toISOString() }]
+      }).eq('id', user.uid);
       alert('Progress photo saved!');
     } catch (err: any) {
-      console.error('Upload error:', err);
-      const msg = err?.code === 'storage/unauthorized'
-        ? 'Storage permission denied. Check Firebase Storage rules.'
-        : err?.message || 'Upload failed. Please try again.';
-      alert(msg);
+      console.error('[uploadPhoto] error:', err?.message ?? err);
+      alert(err?.message ?? 'Upload failed. Try again.');
     } finally {
       setIsUploading(false);
     }

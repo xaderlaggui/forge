@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { supabase } from '../services/supabase';
 import { useAuthStore } from '../stores/authStore';
 import type { Workout } from '../types';
 
@@ -12,9 +11,13 @@ export function useWorkouts() {
     queryKey: ['workouts', user?.uid],
     queryFn: async () => {
       if (!user?.uid) return [];
-      const q = query(collection(db, `users/${user.uid}/workouts`));
-      const snap = await getDocs(q);
-      return snap.docs.map(doc => doc.data() as Workout);
+      const { data, error } = await supabase
+        .from('workouts')
+        .select('*')
+        .eq('user_id', user.uid)
+        .order('date', { ascending: false });
+      if (error) throw error;
+      return (data || []) as Workout[];
     },
     enabled: !!user?.uid,
   });
@@ -22,23 +25,23 @@ export function useWorkouts() {
   const saveWorkout = useMutation({
     mutationFn: async (workout: Workout) => {
       if (!user?.uid) return;
-      const ref = doc(db, `users/${user.uid}/workouts/${workout.id}`);
-      await setDoc(ref, workout, { merge: true });
+      const { error } = await supabase
+        .from('workouts')
+        .upsert({ ...workout, user_id: user.uid }, { onConflict: 'id' });
+      if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workouts', user?.uid] });
-    }
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workouts', user?.uid] }),
   });
 
   const updateWorkout = useMutation({
     mutationFn: async (workout: Workout) => {
       if (!user?.uid) return;
-      const ref = doc(db, `users/${user.uid}/workouts/${workout.id}`);
-      await setDoc(ref, workout, { merge: true });
+      const { error } = await supabase
+        .from('workouts')
+        .upsert({ ...workout, user_id: user.uid }, { onConflict: 'id' });
+      if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workouts', user?.uid] });
-    }
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workouts', user?.uid] }),
   });
 
   return {

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import { supabase } from '../../services/supabase';
 import { calculateBMI } from '../../utils/bmi';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -34,31 +33,24 @@ export default function OnboardingScreen() {
 
     try {
       setLoading(true);
-      
-      // Calculate BMI
       const { bmi } = calculateBMI(weightNum, heightNum);
-
-      // Update Firestore document
-      const userRef = doc(db, 'users', user.uid);
       const updates = {
         age: ageNum,
         height: heightNum,
         weight: weightNum,
-        bmi: bmi,
-        fitnessGoal,
-        dietPreference,
-        equipmentAccess,
-        // Also initialize bmiHistory with the first entry
-        bmiHistory: [{ value: bmi, date: new Date().toISOString() }],
-        isOnboarded: true // We can use this to track completion
+        bmi,
+        fitness_goal: fitnessGoal,
+        diet_preference: dietPreference,
+        equipment_access: equipmentAccess,
+        bmi_history: [{ value: bmi, date: new Date().toISOString() }],
+        is_onboarded: true,
       };
-      
-      await updateDoc(userRef, updates);
-
-      // Update local state so _layout.tsx doesn't boot us back
-      setUser({ ...user, ...updates } as any);
-
-      // Navigate to the main app!
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', user.uid);
+      if (error) throw error;
+      setUser({ ...user, ...updates, isOnboarded: true } as any);
       router.replace('/(tabs)');
     } catch (error: any) {
       Alert.alert('Error', error.message);

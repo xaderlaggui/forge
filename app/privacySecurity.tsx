@@ -1,7 +1,5 @@
 import { useForgeTheme } from '@/hooks/useForgeTheme';
 import { useRouter } from 'expo-router';
-import { EmailAuthProvider, reauthenticateWithCredential, signOut, updatePassword } from 'firebase/auth';
-import { deleteDoc, doc, setDoc } from 'firebase/firestore';
 import {
   BarChart2,
   ChevronLeft, ChevronRight,
@@ -26,7 +24,7 @@ import {
 } from 'react-native';
 import { ForgeButton } from '../components/forge/ForgeButton';
 import { BearMascot } from '../components/forge/BearMascot';
-import { auth, db } from '../services/firebase';
+import { supabase } from '../services/supabase';
 import { useAuthStore } from '../stores/authStore';
 
 type VisibilityOption = 'Public' | 'Friends Only' | 'Private';
@@ -135,11 +133,11 @@ export default function PrivacySecurityScreen() {
     (user as any)?.twoFAEnabled ?? false
   );
 
-  // Helper to persist to Firestore
+  // Helper to persist to Supabase
   const updatePrivacySetting = async (key: string, value: any) => {
     if (!user?.uid) return;
     try {
-      await setDoc(doc(db, `users/${user.uid}`), { [key]: value }, { merge: true });
+      await supabase.from('profiles').update({ [key]: value }).eq('id', user.uid);
     } catch (e) {
       console.warn('Failed to save setting:', e);
     }
@@ -160,11 +158,8 @@ export default function PrivacySecurityScreen() {
     }
     setPwdLoading(true);
     try {
-      const firebaseUser = auth.currentUser;
-      if (!firebaseUser || !user?.email) throw new Error('Not signed in');
-      const credential = EmailAuthProvider.credential(user.email, currentPwd);
-      await reauthenticateWithCredential(firebaseUser, credential);
-      await updatePassword(firebaseUser, newPwd);
+      const { error } = await supabase.auth.updateUser({ password: newPwd });
+      if (error) throw error;
       Alert.alert('Success', 'Password updated successfully.');
       setShowChangePwd(false);
       setCurrentPwd(''); setNewPwd(''); setConfirmPwd('');
@@ -182,10 +177,11 @@ export default function PrivacySecurityScreen() {
     }
     try {
       if (user?.uid) {
-        await deleteDoc(doc(db, `users/${user.uid}`));
+        await supabase.from('profiles').delete().eq('id', user.uid);
       }
-      await auth.currentUser?.delete();
-      await signOut(auth);
+      // Supabase doesn't allow client-side account deletion by default
+      // Sign out instead; use an Edge Function for full deletion in production
+      await supabase.auth.signOut();
     } catch (e: any) {
       Alert.alert('Error', e.message);
     }

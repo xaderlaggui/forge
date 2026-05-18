@@ -1,8 +1,7 @@
 import dayjs from 'dayjs';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
-import { db } from '../../../services/firebase';
+import { supabase } from '../../../services/supabase';
 import { useWorkouts } from '../../../hooks/useWorkouts';
 import type { Exercise } from '../../../types';
 import type { GeneratedPlan } from '../../../services/GeneratorEngine';
@@ -28,8 +27,9 @@ export function usePlannerData() {
   const { data: exercises, isLoading: isLoadingExercises } = useQuery({
     queryKey: ['exercises'],
     queryFn: async () => {
-      const snap = await getDocs(collection(db, 'exercises'));
-      return snap.docs.map(doc => doc.data() as Exercise);
+      const { data, error } = await supabase.from('exercises').select('*');
+      if (error) throw error;
+      return (data || []) as Exercise[];
     }
   });
 
@@ -41,9 +41,15 @@ export function usePlannerData() {
     queryKey: ['activePlan', user?.uid],
     queryFn: async () => {
       if (!user?.uid) return null;
-      const snap = await getDoc(doc(db, `users/${user.uid}/generatedPlans/active`));
-      if (!snap.exists()) return null;
-      return snap.data() as GeneratedPlan;
+      const { data } = await supabase
+        .from('generated_plans')
+        .select('plan')
+        .eq('user_id', user.uid)
+        .order('date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!data) return null;
+      return data.plan as GeneratedPlan;
     },
     enabled: !!user?.uid,
   });
@@ -73,7 +79,7 @@ export function usePlannerData() {
       }
     }
     // 2. Fallback to legacy static plan
-    return (user as any)?.plan?.weeklySchedule?.[activeDayIdx];
+    return (user as any)?.plan_weekly_schedule || (user as any)?.plan?.weeklySchedule?.[activeDayIdx];
   }, [activePlan, activeDayIdx, user]);
 
   return {

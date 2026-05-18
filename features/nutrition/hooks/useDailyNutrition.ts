@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../../services/firebase';
+import { supabase } from '../../../services/supabase';
 import { useNutrition } from '../../../hooks/useNutrition';
 import { useAuthStore } from '../../../stores/authStore';
 import { DailyAggregates } from '../types';
@@ -17,9 +16,15 @@ export function useDailyNutrition() {
     queryKey: ['activePlan', user?.uid],
     queryFn: async () => {
       if (!user?.uid) return null;
-      const snap = await getDoc(doc(db, `users/${user.uid}/generatedPlans/active`));
-      if (!snap.exists()) return null;
-      return snap.data() as GeneratedPlan;
+      const { data } = await supabase
+        .from('generated_plans')
+        .select('plan')
+        .eq('user_id', user.uid)
+        .order('date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!data) return null;
+      return data.plan as GeneratedPlan;
     },
     enabled: !!user?.uid,
   });
@@ -38,7 +43,7 @@ export function useDailyNutrition() {
   const waterLiters  = waterMl / 1000;
 
   // Goals from AI Plan or User Profile Fallback
-  const targets = (user as any)?.targets?.nutrition;
+  const targets = (user as any)?.targets_nutrition || (user as any)?.targets?.nutrition;
   const goalCal     = activePlan?.mealPlan?.targetCalories ?? targets?.calories ?? 2500;
   const goalProtein = activePlan?.mealPlan?.targetProtein  ?? targets?.protein  ?? 180;
   const goalCarbs   = activePlan?.mealPlan?.targetCarbs    ?? targets?.carbs    ?? 250;

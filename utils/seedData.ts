@@ -1,5 +1,4 @@
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { supabase } from '../services/supabase';
 import type { Exercise } from '../types';
 
 const SAMPLE_EXERCISES: Omit<Exercise, 'id'>[] = [
@@ -64,8 +63,8 @@ export async function seedExercises() {
   let count = 0;
   for (const ex of SAMPLE_EXERCISES) {
     const id = ex.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    const docRef = doc(db, 'exercises', id);
-    await setDoc(docRef, { ...ex, id });
+    const { error } = await supabase.from('exercises').upsert({ ...ex, id }, { onConflict: 'id' });
+    if (error) console.error(error);
     count++;
   }
   return count;

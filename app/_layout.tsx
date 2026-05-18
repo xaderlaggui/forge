@@ -4,10 +4,8 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
 
-import { auth, db } from '@/services/firebase';
+import { supabase } from '@/services/supabase';
 import { useAuthStore } from '@/stores/authStore';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -34,27 +32,33 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        try {
-          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-          const userData = userDoc.exists() ? userDoc.data() : {};
-          setUser({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email || '',
-            displayName: firebaseUser.displayName || '',
-            isOnboarded: userData.isOnboarded || false,
-            ...userData,
-          } as any);
-        } catch (e) {
-          console.error('Error fetching user data:', e);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (session?.user) {
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            setUser({
+              uid: session.user.id,
+              email: session.user.email || '',
+              displayName: profile?.display_name || '',
+              isOnboarded: profile?.is_onboarded || false,
+              ...profile,
+            } as any);
+          } catch (e) {
+            console.error('Error fetching user profile:', e);
+            setUser({ uid: session.user.id, email: session.user.email || '', displayName: '', isOnboarded: false } as any);
+          }
+        } else {
+          setUser(null);
         }
-      } else {
-        setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
-    });
-    return unsubscribe;
+    );
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {

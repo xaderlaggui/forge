@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { supabase } from '../services/supabase';
 import { useAuthStore } from '../stores/authStore';
 
 export default function MeasurementsScreen() {
@@ -20,20 +19,27 @@ export default function MeasurementsScreen() {
       Alert.alert('Incomplete', 'Please enter at least one measurement.');
       return;
     }
-
     setIsSaving(true);
     try {
-      const userDocRef = doc(db, 'users', user?.uid as string);
-      await updateDoc(userDocRef, {
-        measurements: arrayUnion({
-          chest: chest ? Number(chest) : undefined,
-          waist: waist ? Number(waist) : undefined,
-          arms: arms ? Number(arms) : undefined,
-          legs: legs ? Number(legs) : undefined,
-          date: new Date().toISOString()
-        })
-      });
-
+      const newEntry = {
+        chest: chest ? Number(chest) : undefined,
+        waist: waist ? Number(waist) : undefined,
+        arms:  arms  ? Number(arms)  : undefined,
+        legs:  legs  ? Number(legs)  : undefined,
+        date: new Date().toISOString(),
+      };
+      // Fetch current measurements array and append
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('measurements')
+        .eq('id', user?.uid)
+        .single();
+      const existing = profile?.measurements || [];
+      const { error } = await supabase
+        .from('profiles')
+        .update({ measurements: [...existing, newEntry] })
+        .eq('id', user?.uid);
+      if (error) throw error;
       router.back();
     } catch (e) {
       Alert.alert('Error', 'Failed to save measurements.');

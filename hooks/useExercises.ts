@@ -1,15 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../services/firebase';
-import type { Exercise } from '../types';
+import { supabase } from '../services/supabase';
 
 export function useExercises() {
   return useQuery({
     queryKey: ['exercises'],
     queryFn: async () => {
-      const snap = await getDocs(collection(db, 'exercises'));
-      return snap.docs.map(doc => doc.data() as Exercise);
+      const { data, error } = await supabase
+        .from('exercises')
+        .select('*')
+        .order('name');
+      if (error) throw error;
+      return data || [];
     },
-    staleTime: 1000 * 60 * 60, // Cache for an hour
+    staleTime: 1000 * 60 * 60, // 1 hour — exercise list rarely changes
   });
 }

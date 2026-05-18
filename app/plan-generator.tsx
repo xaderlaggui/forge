@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { supabase } from '../services/supabase';
 import { useAuthStore } from '../stores/authStore';
 import { ForgeButton } from '../components/forge/ForgeButton';
 import { calculateNutritionTargets, Goal, ActivityLevel } from '../utils/nutritionEngine';
@@ -33,13 +32,16 @@ export default function PlanGeneratorScreen() {
       // 2. Run Workout Engine
       const weeklySchedule = generateWeeklySchedule(days);
 
-      // 3. Save to Firebase
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, {
-        'targets.nutrition': nutritionTargets,
-        'targets.workoutSplit': `${days}_DAY_SPLIT`,
-        'plan.weeklySchedule': weeklySchedule,
-      });
+      // 3. Save to Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          targets_nutrition: nutritionTargets,
+          targets_workout_split: `${days}_DAY_SPLIT`,
+          plan_weekly_schedule: weeklySchedule,
+        })
+        .eq('id', user.uid);
+      if (error) throw error;
 
       // 4. Success & Redirect
       Alert.alert('Plan Generated!', 'Your new PPL split and Macro targets have been locked in.', [

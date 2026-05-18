@@ -1,23 +1,23 @@
+import { useForgeTheme } from "@/hooks/useForgeTheme";
+import { TrendingDown, TrendingUp } from 'lucide-react-native';
 import React from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
-import { TrendingDown, TrendingUp } from 'lucide-react-native';
-import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 // Card padding (16px each side) + page margin (16px each side)
-const SCREEN_W    = Dimensions.get('window').width;
+const SCREEN_W = Dimensions.get('window').width;
 const PAGE_MARGIN = 32;  // marginHorizontal: 16 each side
-const CARD_PAD    = 32;  // padding: 16 each side
+const CARD_PAD = 32;  // padding: 16 each side
 const GIFTED_LEFT = 0;   // yAxisLabelWidth override = 0
-const CHART_W     = SCREEN_W - PAGE_MARGIN - CARD_PAD - 2; // -2 for border
+const CHART_W = SCREEN_W - PAGE_MARGIN - CARD_PAD - 2; // -2 for border
 
 const BAR_SPACING = 8;
-const NUM_BARS    = 7;
-const BAR_W       = Math.floor((CHART_W - BAR_SPACING * (NUM_BARS - 1)) / NUM_BARS);
+const NUM_BARS = 7;
+const BAR_W = Math.floor((CHART_W - BAR_SPACING * (NUM_BARS - 1)) / NUM_BARS);
 
 // Calendar constants
-const CAL_GAP     = 4;
-const CELL_SIZE   = Math.floor((CHART_W - CAL_GAP * 6) / 7); // 7 columns, 6 gaps
+const CAL_GAP = 4;
+const CELL_SIZE = Math.floor((CHART_W - CAL_GAP * 6) / 7); // 7 columns, 6 gaps
 
 interface DayData {
   value: number;
@@ -53,7 +53,7 @@ export function VolumeChart({
 
   // ── Weekly: 7-bar chart, fits container exactly ──────────────────────────
   const renderWeekly = () => (
-    <View style={{ marginTop: 16 }}>
+    <View style={{ marginTop: 17, left: -6 }}>
       <BarChart
         data={weeklyVolumeData.map(d => ({
           value: d.value,
@@ -183,7 +183,7 @@ export function VolumeChart({
           </View>
           <View style={[s.deltaBadge, isUp ? s.deltaBadgeUp : s.deltaBadgeDown]}>
             {isUp
-              ? <TrendingUp  size={12} color={T.colors.forge} />
+              ? <TrendingUp size={12} color={T.colors.forge} />
               : <TrendingDown size={12} color={T.colors.t3} />}
             <Text style={[s.deltaBadgeText, { color: isUp ? T.colors.forge : T.colors.t3 }]}>
               {isUp ? '+' : ''}{volumeDiff.toLocaleString()}
@@ -226,14 +226,14 @@ const useS = (T: any) => StyleSheet.create({
   },
   chartHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   chartTitle: { fontSize: T.typography.sizes.body, fontWeight: '700', color: T.colors.t1, marginBottom: 2 },
-  chartSub:   { fontSize: 12, color: T.colors.t3 },
+  chartSub: { fontSize: 12, color: T.colors.t3 },
 
   deltaBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 8, paddingVertical: 4,
     borderRadius: T.radii.full, borderWidth: 0.5, borderColor: T.colors.b1,
   },
-  deltaBadgeUp:   { backgroundColor: T.colors.forgeDim, borderColor: 'transparent' },
+  deltaBadgeUp: { backgroundColor: T.colors.forgeDim, borderColor: 'transparent' },
   deltaBadgeDown: { backgroundColor: T.colors.bg2 },
   deltaBadgeText: { fontSize: T.typography.sizes.label, fontWeight: '700' },
 
@@ -242,17 +242,17 @@ const useS = (T: any) => StyleSheet.create({
     borderRadius: T.radii.md, padding: 3,
     marginTop: 14, alignSelf: 'flex-start',
   },
-  toggleBtn:       { paddingHorizontal: 14, paddingVertical: 5, borderRadius: T.radii.sm },
+  toggleBtn: { paddingHorizontal: 14, paddingVertical: 5, borderRadius: T.radii.sm },
   toggleBtnActive: { backgroundColor: T.colors.forge },
-  toggleText:      { fontSize: 12, fontWeight: '700', color: T.colors.t3 },
-  toggleTextActive:{ color: '#000' },
+  toggleText: { fontSize: 12, fontWeight: '700', color: T.colors.t3 },
+  toggleTextActive: { color: '#000' },
 
   legend: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-end' },
-  legendDot:   { width: 8, height: 8, borderRadius: 4 },
+  legendDot: { width: 8, height: 8, borderRadius: 4 },
   legendLabel: { fontSize: 10, color: T.colors.t3, fontWeight: '600' },
 
   // Calendar
-  calRow:  { flexDirection: 'row', gap: CAL_GAP },
+  calRow: { flexDirection: 'row', gap: CAL_GAP },
   calCell: { width: CELL_SIZE, height: CELL_SIZE, alignItems: 'center', justifyContent: 'center' },
   calCellBase: {
     borderRadius: 6,
