@@ -30,6 +30,17 @@ export default function ActiveWorkoutScreen() {
   const { id, date, routineId, title } = useLocalSearchParams();
   
   const session = useActiveSession(id, date, routineId, title);
+  const [summary, setSummary] = useState<{ mins: number, volume: number, id: string } | null>(null);
+  const [rpe, setRpe] = useState<string | null>(null);
+
+  const handleFinish = async () => {
+    try {
+      const res = await session.finishWorkout();
+      if (res) setSummary({ ...res, id: (id as string) || `workout_${Date.now()}` }); // roughly, or get id from session
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   const handleBack = () => {
     if (session.workoutStarted && !session.allSetsComplete) {
@@ -47,6 +58,56 @@ export default function ActiveWorkoutScreen() {
   };
 
   const currentExercise = session.exercises[session.currentExerciseIndex];
+
+  if (summary) {
+    return (
+      <View style={[styles.container, { padding: 24, justifyContent: 'center', alignItems: 'center' }]}>
+        <BearMascot variant="HYPED" size="xl" animate />
+        <Text style={{ fontSize: 36, fontWeight: '900', color: T.colors.t1, marginTop: 32, letterSpacing: 1 }}>WORKOUT</Text>
+        <Text style={{ fontSize: 36, fontWeight: '900', color: T.colors.forge, letterSpacing: 1 }}>COMPLETE!</Text>
+        
+        <View style={{ flexDirection: 'row', gap: 32, marginVertical: 32, backgroundColor: T.colors.bg1, padding: 24, borderRadius: 24, borderWidth: 0.5, borderColor: T.colors.b1 }}>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={{ fontSize: 28, fontWeight: '900', color: T.colors.t1 }}>{summary.mins}</Text>
+            <Text style={{ fontSize: 11, fontWeight: '800', color: T.colors.t3, marginTop: 4, letterSpacing: 1 }}>MINUTES</Text>
+          </View>
+          <View style={{ width: 1, backgroundColor: T.colors.b1 }} />
+          <View style={{ alignItems: 'center' }}>
+            <Text style={{ fontSize: 28, fontWeight: '900', color: T.colors.t1 }}>{summary.volume.toLocaleString()}</Text>
+            <Text style={{ fontSize: 11, fontWeight: '800', color: T.colors.t3, marginTop: 4, letterSpacing: 1 }}>LBS VOL</Text>
+          </View>
+        </View>
+
+        <Text style={{ fontSize: 14, fontWeight: '700', color: T.colors.t2, marginBottom: 16 }}>How did it feel?</Text>
+        <View style={{ flexDirection: 'row', gap: 12, marginBottom: 32 }}>
+          {['Easy', 'Just Right', 'Hard'].map(level => (
+            <TouchableOpacity
+              key={level}
+              onPress={() => setRpe(level)}
+              style={{
+                paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12,
+                backgroundColor: rpe === level ? T.colors.forge : T.colors.bg2,
+                borderWidth: 1, borderColor: rpe === level ? T.colors.forge : T.colors.b1
+              }}
+            >
+              <Text style={{ fontSize: 14, fontWeight: '700', color: rpe === level ? '#fff' : T.colors.t2 }}>{level}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <ForgeButton 
+          label="BACK TO HOME" 
+          onPress={() => {
+            // Ideally we save the RPE to Firebase here
+            router.back();
+          }} 
+          size="lg" 
+          style={{ width: '100%' }} 
+          pulse 
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -190,7 +251,7 @@ export default function ActiveWorkoutScreen() {
             />
             <ForgeButton
               label="COMPLETE"
-              onPress={session.finishWorkout}
+              onPress={handleFinish}
               size="lg"
               disabled={!session.allSetsComplete}
               variant={session.allSetsComplete ? 'primary' : 'secondary'}

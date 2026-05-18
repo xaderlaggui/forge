@@ -190,8 +190,8 @@ export function useActiveSession(id?: string | string[], date?: string | string[
     const mins = Math.floor(timer / 60);
     try {
       await saveWorkout({
-        id: (id && typeof id === 'string') ? id : `workout_${Date.now()}`,
-        date: (date && typeof date === 'string') ? date : dayjs().format('YYYY-MM-DD'),
+        id: (id as string) || `workout_${Date.now()}`,
+        date: (date as string) || dayjs().format('YYYY-MM-DD'),
         exercises: exercises.map(ex => ({
           exerciseId: 'custom',
           name: ex.name,
@@ -203,10 +203,10 @@ export function useActiveSession(id?: string | string[], date?: string | string[
         calories: Math.round(mins * 5),
         notes: workoutTitle,
       });
-      Alert.alert('Great Job! 🏆', `Workout saved — ${mins} minutes crushed.`);
-      router.back();
+      return { mins, volume: volumeStats.volume };
     } catch {
       Alert.alert('Error', 'Failed to save workout.');
+      throw new Error('Save failed');
     }
   };
 
