@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Camera } from 'lucide-react-native';
+import { Camera, History } from 'lucide-react-native';
 import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 // Feature Modules
@@ -35,11 +35,20 @@ export default function ProgressScreen() {
           <Text style={s.headerSub} maxFontSizeMultiplier={1.2}>Your Journey</Text>
           <Text style={s.headerTitle} maxFontSizeMultiplier={1.2}>Progress</Text>
         </View>
-        <TouchableOpacity style={s.cameraBtn} onPress={takePhoto} disabled={isUploading}>
-          {isUploading
-            ? <ActivityIndicator size="small" color={T.colors.forge} />
-            : <Camera size={18} color={T.colors.forge} />}
-        </TouchableOpacity>
+        {/* Camera button */}
+        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+          <TouchableOpacity
+            style={s.cameraBtn}
+            onPress={() => router.push('/workoutHistory')}
+          >
+            <History size={18} color={T.colors.t1} />
+          </TouchableOpacity>
+          <TouchableOpacity style={s.cameraBtn} onPress={takePhoto} disabled={isUploading}>
+            {isUploading
+              ? <ActivityIndicator size="small" color={T.colors.forge} />
+              : <Camera size={18} color={T.colors.forge} />}
+          </TouchableOpacity>
+        </View>
       </View>
       {/* ── Composition: Key Stats ── */}
       <View style={s.statsRow}>
@@ -79,19 +88,14 @@ export default function ProgressScreen() {
       />
 
       {/* ── Composition: Transformation ── */}
-      <ProgressPhotos
-        firstPhoto={firstPhoto}
-        lastPhoto={lastPhoto}
-        isUploading={isUploading}
-        onTakePhoto={takePhoto}
-      />
-
-      {/* ── Composition: Links ── */}
       <View style={s.section}>
-        <TouchableOpacity style={s.linkCard} onPress={() => router.push('/workoutHistory')}>
-          <Text style={s.linkTitle} maxFontSizeMultiplier={1.2}>Workout History</Text>
-          <Text style={s.linkSub} maxFontSizeMultiplier={1.2}>View your past sessions and volume</Text>
-        </TouchableOpacity>
+        <Text style={s.sectionLabel} maxFontSizeMultiplier={1.2}>Transformation</Text>
+        <ProgressPhotos
+          firstPhoto={firstPhoto}
+          lastPhoto={lastPhoto}
+          isUploading={isUploading}
+          onTakePhoto={takePhoto}
+        />
       </View>
 
     </ScrollView>

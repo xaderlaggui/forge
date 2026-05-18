@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, Alert, Platform, ActivityIndicator, Image,
+  TextInput, Alert, Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Camera, ChevronDown } from 'lucide-react-native';
+import { ChevronLeft, Camera } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { doc, setDoc } from 'firebase/firestore';
 import { useForgeTheme } from '@/hooks/useForgeTheme';

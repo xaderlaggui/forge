@@ -108,6 +108,12 @@ function RootLayoutNav() {
           <Stack.Screen name="chat"         options={{ presentation: 'modal' }} />
           <Stack.Screen name="activeWorkout" />
           <Stack.Screen name="workoutHistory" />
+          <Stack.Screen name="workoutDetail" />
+          <Stack.Screen name="editProfile" />
+          <Stack.Screen name="privacySecurity" />
+          <Stack.Screen name="aiPlan" />
+          <Stack.Screen name="buildRoutine" />
+          <Stack.Screen name="plan-generator" />
         </Stack>
       </QueryClientProvider>
     </GestureHandlerRootView>

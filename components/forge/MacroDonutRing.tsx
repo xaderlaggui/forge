@@ -57,15 +57,19 @@ const SingleDonut = ({
           />
         </Svg>
         <View style={StyleSheet.absoluteFillObject as any} pointerEvents="none">
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon size={14} color={color} style={{ marginBottom: 2 }} />
-            <Text style={{ fontSize: 10, fontWeight: '700', color: color }}>
-              {value > 0 ? value : '--'}
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+            <View style={{ marginBottom: 1 }}>
+              <Icon size={12} color={color} />
+            </View>
+            <Text style={{ fontSize: 9, fontWeight: '800', color: color, lineHeight: 10 }}>
+              {unit === 'L'
+                ? (value > 0 ? Number(value).toFixed(1) : '--')
+                : (value > 0 ? value : '--')}
             </Text>
           </View>
         </View>
       </View>
-      <Text style={{ fontSize: 10, color: '#888', marginTop: 4, fontWeight: '500' }}>{unit}</Text>
+      <Text style={{ fontSize: 10, color: '#888', marginTop: 4, fontWeight: '600' }}>{unit}</Text>
     </View>
   );
 };

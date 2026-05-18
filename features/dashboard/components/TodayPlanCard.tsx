@@ -66,7 +66,10 @@ export function TodayPlanCard({ isLoading, plannedWorkout, loggedWorkout, muscle
           {!isCompleted && !isRestDay && (
             <ForgeButton
               label="▶  Start Workout"
-              onPress={() => router.push('/activeWorkout')}
+              onPress={() => router.push({
+                pathname: '/activeWorkout',
+                params: { title: plannedWorkout?.title || 'Today\'s Workout' },
+              })}
               variant="primary"
               size="md"
               pulse

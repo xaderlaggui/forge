@@ -7,7 +7,7 @@ import { useWorkouts } from '../hooks/useWorkouts';
 import { MascotImage } from '../components/common/MascotImage';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 // Using lucide-react-native icons instead of SVG figures for simplicity
-import { Activity, Flame, Dumbbell } from 'lucide-react-native';
+import { Activity, Dumbbell } from 'lucide-react-native';
 
 export default function WorkoutHistoryScreen() {
   const { T } = useForgeTheme();

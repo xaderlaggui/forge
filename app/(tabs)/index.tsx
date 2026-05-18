@@ -2,7 +2,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AiCoachCard } from '../../components/forge/AiCoachCard';
-import { History } from 'lucide-react-native';
+import { Camera } from 'lucide-react-native';
 
 // Dashboard Feature Modules
 import { useDashboardData } from '../../features/dashboard/hooks/useDashboardData';
@@ -36,14 +36,14 @@ export default function HomeScreen() {
         muscleTags={data.muscleTags} 
       />
 
-      {/* ── Composition: Header & History Button ── */}
-      <View style={styles.journeyHeader}>
-        <Text style={styles.journeyTitle}>Your Journey Progress</Text>
-        <TouchableOpacity 
-          style={styles.historyBtn} 
-          onPress={() => router.push('/workoutHistory')}
-        >
-          <History size={20} color={T.colors.t1} />
+      {/* ── Composition: Transformation Teaser ── */}
+      <View style={styles.section}>
+        <TouchableOpacity style={styles.transformCard} onPress={() => router.push('/progress')}>
+          <View>
+            <Text style={styles.transformTitle}>Transformation</Text>
+            <Text style={styles.transformSub}>Track your physical progress</Text>
+          </View>
+          <Camera size={24} color={T.colors.forge} />
         </TouchableOpacity>
       </View>
 
@@ -83,26 +83,24 @@ const useStyles = (T: any) => StyleSheet.create({
     paddingHorizontal: T.spacing.page,
     marginBottom: T.spacing.px5,
   },
-  journeyHeader: {
+  transformCard: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    backgroundColor: T.colors.bg1,
+    borderRadius: T.radii.lg,
+    padding: T.spacing.px4,
     alignItems: 'center',
-    paddingHorizontal: T.spacing.page,
-    marginBottom: T.spacing.px4,
+    justifyContent: 'space-between',
+    borderWidth: 0.5,
+    borderColor: T.colors.b1,
   },
-  journeyTitle: {
-    fontSize: 18,
+  transformTitle: {
+    fontSize: 16,
     fontWeight: '700',
     color: T.colors.t1,
   },
-  historyBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: T.colors.bg1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 0.5,
-    borderColor: T.colors.b1,
+  transformSub: {
+    fontSize: 13,
+    color: T.colors.t3,
+    marginTop: 2,
   },
 });
