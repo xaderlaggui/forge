@@ -9,7 +9,9 @@ import { useForgeTheme } from '@/hooks/useForgeTheme';
 import { useAuthStore } from '../stores/authStore';
 import { supabase } from '../services/supabase';
 import { generateFullPlan, GeneratedPlan, GeneratedWorkoutDay } from '../services/GeneratorEngine';
+import dayjs from 'dayjs';
 import { BearMascot } from '../components/forge/BearMascot';
+import { useQueryClient } from '@tanstack/react-query';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const GOALS = ['Weight Loss', 'Muscle Gain', 'Endurance', 'Flexibility', 'General Fitness'];
@@ -224,6 +226,7 @@ export default function AIPlanScreen() {
   const { T } = useForgeTheme();
   const s = useStyles(T);
   const { user } = useAuthStore();
+  const queryClient = useQueryClient();
 
   // Form state
   const [selectedGoals, setSelectedGoals] = useState<string[]>(['General Fitness']);
@@ -279,11 +282,15 @@ export default function AIPlanScreen() {
     try {
       const { error } = await supabase.from('generated_plans').upsert({
         user_id: user.uid,
-        date: new Date().toISOString(),
+        date: dayjs().format('YYYY-MM-DD'),
         plan: plan,
         saved_at: new Date().toISOString(),
-      });
+      }, { onConflict: 'user_id,date' });
       if (error) throw error;
+      
+      // Invalidate the activePlan query so the Dashboard and Planner instantly update
+      await queryClient.invalidateQueries({ queryKey: ['activePlan', user.uid] });
+      
       Alert.alert('Plan Activated!', 'Your personalized plan is now live in the Planner.', [
         { text: "Let's go!", onPress: () => router.back() },
       ]);
