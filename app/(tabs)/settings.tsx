@@ -54,7 +54,7 @@ function ThemeToggle({ T }: { T: any }) {
 function SettingRow({ T, icon, label, onPress, isDanger = false }: { T: any; icon: React.ReactNode; label: string; onPress: () => void; isDanger?: boolean }) {
   const s = useS(T);
   return (
-    <View style={s.row}>
+    <TouchableOpacity style={s.row} onPress={onPress} activeOpacity={0.7}>
       <View style={[s.iconWrap, isDanger && { backgroundColor: T.colors.redDim }]}>
         {icon}
       </View>
@@ -63,7 +63,7 @@ function SettingRow({ T, icon, label, onPress, isDanger = false }: { T: any; ico
           {label}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 

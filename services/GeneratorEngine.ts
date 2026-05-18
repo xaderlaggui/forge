@@ -26,6 +26,10 @@ export interface UserMetrics {
   fitnessGoal: FitnessGoal;
   dietPreference: DietPreference;
   equipmentAccess: EquipmentAccess;
+  experienceLevel?: string;
+  daysPerWeek?: number;
+  sessionMin?: number;
+  customGoals?: string[];
 }
 
 export interface GeneratedWorkoutDay {
@@ -121,7 +125,8 @@ async function generateExercisesForDay(
   focus: string,
   muscleGroups: string[],
   equipment: EquipmentAccess,
-  goal: FitnessGoal
+  goal: FitnessGoal,
+  metrics?: UserMetrics
 ): Promise<GeneratedWorkoutDay['exercises']> {
   if (muscleGroups.length === 0) return []; // rest day
 
@@ -225,7 +230,8 @@ export async function generateFullPlan(metrics: UserMetrics): Promise<GeneratedP
         focus,
         muscleGroups,
         metrics.equipmentAccess,
-        metrics.fitnessGoal
+        metrics.fitnessGoal,
+        metrics
       );
       return { day, focus, exercises };
     })
