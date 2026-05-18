@@ -51,10 +51,17 @@ export interface WorkoutExercise {
 export interface Workout {
   id: string;
   date: string;           // ISO date string
+  type?: 'strength' | 'run' | 'walk' | 'cardio';
   exercises: WorkoutExercise[];
   durationMin: number;
   calories: number;
   notes?: string;
+  // Cardio fields
+  distanceKm?: number;
+  steps?: number;
+  elevationGain?: number;
+  mapThumbnail?: string;
+  photoUrl?: string;
 }
 
 export interface FoodItem {
