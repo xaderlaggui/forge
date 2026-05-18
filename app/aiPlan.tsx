@@ -257,6 +257,10 @@ export default function AIPlanScreen() {
           : selectedEquipment.includes('Barbell') ? 'full'
           : selectedEquipment.includes('Dumbbells') ? 'dumbbells'
           : 'bodyweight',
+        experienceLevel: experience,
+        daysPerWeek,
+        sessionMin,
+        customGoals: selectedGoals,
       });
       setPlan(result);
     } catch (e: any) {

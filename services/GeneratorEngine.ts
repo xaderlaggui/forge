@@ -147,6 +147,9 @@ Generate exactly 4-5 exercises for a ${focus} workout day.
 Available equipment: ${equipmentDesc}.
 Target muscle groups: ${muscleGroups.join(', ')}.
 Rep scheme guidance: ${repScheme}.
+${metrics?.experienceLevel ? `User experience level: ${metrics.experienceLevel}.` : ''}
+${metrics?.sessionMin ? `Target session length: ${metrics.sessionMin} minutes.` : ''}
+${metrics?.customGoals?.length ? `Custom user goals: ${metrics.customGoals.join(', ')}.` : ''}
 
 Respond ONLY with a valid JSON array. Each element must have exactly these keys:
 "name" (string), "sets" (number), "reps" (string like "8-12"), "restSec" (number).

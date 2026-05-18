@@ -1,19 +1,32 @@
+import { useForgeTheme } from '@/hooks/useForgeTheme';
+import { useRouter } from 'expo-router';
+import { EmailAuthProvider, reauthenticateWithCredential, signOut, updatePassword } from 'firebase/auth';
+import { deleteDoc, doc, setDoc } from 'firebase/firestore';
+import {
+  BarChart2,
+  ChevronLeft, ChevronRight,
+  Download,
+  Eye,
+  Lock,
+  Shield,
+  Smartphone,
+  Trash2,
+} from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch,
-  Alert, TextInput, Modal,
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import {
-  ChevronLeft, ChevronRight, Lock, Smartphone, Download,
-  Trash2, Shield, Eye, BarChart2,
-} from 'lucide-react-native';
-import { signOut, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
-import { deleteDoc, doc } from 'firebase/firestore';
-import { useForgeTheme } from '@/hooks/useForgeTheme';
-import { useAuthStore } from '../stores/authStore';
-import { auth, db } from '../services/firebase';
 import { ForgeButton } from '../components/forge/ForgeButton';
+import { auth, db } from '../services/firebase';
+import { useAuthStore } from '../stores/authStore';
 
 type VisibilityOption = 'Public' | 'Friends Only' | 'Private';
 const VISIBILITY_OPTIONS: VisibilityOption[] = ['Public', 'Friends Only', 'Private'];
@@ -97,7 +110,6 @@ export default function PrivacySecurityScreen() {
   const { user } = useAuthStore();
 
   // Security state
-  const [twoFAEnabled, setTwoFAEnabled] = useState(false);
   const [showChangePwd, setShowChangePwd] = useState(false);
   const [currentPwd, setCurrentPwd] = useState('');
   const [newPwd, setNewPwd] = useState('');
@@ -105,10 +117,32 @@ export default function PrivacySecurityScreen() {
   const [pwdLoading, setPwdLoading] = useState(false);
 
   // Privacy state
-  const [profileVisibility, setProfileVisibility] = useState<VisibilityOption>('Public');
-  const [activityVisibility, setActivityVisibility] = useState<VisibilityOption>('Friends Only');
-  const [showLeaderboard, setShowLeaderboard] = useState(true);
-  const [allowFollow, setAllowFollow] = useState(true);
+  const [profileVisibility, setProfileVisibility] = useState<VisibilityOption>(
+    (user as any)?.profileVisibility || 'Public'
+  );
+  const [activityVisibility, setActivityVisibility] = useState<VisibilityOption>(
+    (user as any)?.activityVisibility || 'Friends Only'
+  );
+  const [showLeaderboard, setShowLeaderboard] = useState<boolean>(
+    (user as any)?.showLeaderboard ?? true
+  );
+  const [allowFollow, setAllowFollow] = useState<boolean>(
+    (user as any)?.allowFollow ?? true
+  );
+
+  const [twoFAEnabled, setTwoFAEnabled] = useState<boolean>(
+    (user as any)?.twoFAEnabled ?? false
+  );
+
+  // Helper to persist to Firestore
+  const updatePrivacySetting = async (key: string, value: any) => {
+    if (!user?.uid) return;
+    try {
+      await setDoc(doc(db, `users/${user.uid}`), { [key]: value }, { merge: true });
+    } catch (e) {
+      console.warn('Failed to save setting:', e);
+    }
+  };
 
   // Delete account state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -226,7 +260,10 @@ export default function PrivacySecurityScreen() {
             rightContent={
               <Switch
                 value={twoFAEnabled}
-                onValueChange={setTwoFAEnabled}
+                onValueChange={(val) => {
+                  setTwoFAEnabled(val);
+                  updatePrivacySetting('twoFAEnabled', val);
+                }}
                 trackColor={{ false: T.colors.bg3, true: T.colors.forge }}
                 thumbColor="#FFF"
               />
@@ -244,9 +281,19 @@ export default function PrivacySecurityScreen() {
         {/* Privacy */}
         <SectionHeader title="Privacy" T={T} />
         <View style={s.card}>
-          <VisibilityControl label="Profile Visibility" value={profileVisibility} onChange={setProfileVisibility} T={T} />
+          <VisibilityControl
+            label="Profile Visibility"
+            value={profileVisibility}
+            onChange={(val) => { setProfileVisibility(val); updatePrivacySetting('profileVisibility', val); }}
+            T={T}
+          />
           <Divider T={T} />
-          <VisibilityControl label="Activity Visibility" value={activityVisibility} onChange={setActivityVisibility} T={T} />
+          <VisibilityControl
+            label="Activity Visibility"
+            value={activityVisibility}
+            onChange={(val) => { setActivityVisibility(val); updatePrivacySetting('activityVisibility', val); }}
+            T={T}
+          />
           <Divider T={T} />
           <SettingRow
             T={T}
@@ -255,7 +302,7 @@ export default function PrivacySecurityScreen() {
             rightContent={
               <Switch
                 value={showLeaderboard}
-                onValueChange={setShowLeaderboard}
+                onValueChange={(val) => { setShowLeaderboard(val); updatePrivacySetting('showLeaderboard', val); }}
                 trackColor={{ false: T.colors.bg3, true: T.colors.forge }}
                 thumbColor="#FFF"
               />
@@ -269,7 +316,7 @@ export default function PrivacySecurityScreen() {
             rightContent={
               <Switch
                 value={allowFollow}
-                onValueChange={setAllowFollow}
+                onValueChange={(val) => { setAllowFollow(val); updatePrivacySetting('allowFollow', val); }}
                 trackColor={{ false: T.colors.bg3, true: T.colors.forge }}
                 thumbColor="#FFF"
               />
