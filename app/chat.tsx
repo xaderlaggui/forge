@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
 import { Flame, MapPin, Send, Timer, User as UserIcon, X } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
+import { TypewriterText } from '../components/forge/TypewriterText';
 import {
   FlatList,
   Image,
@@ -64,6 +65,8 @@ export default function ChatScreen() {
   // Chat history for multi-turn context
   const historyRef = useRef<GroqMessage[]>([]);
   const flatListRef = useRef<FlatList>(null);
+  // Track which AI message IDs have already finished typing (so they don't re-animate)
+  const animatedIds = useRef<Set<string>>(new Set(['1'])); // '1' = initial greeting, show instantly
 
   // ── Bouncing dots animation ──
   const dot1 = useSharedValue(0);
@@ -154,7 +157,8 @@ export default function ChatScreen() {
       }
 
       historyRef.current.push({ role: 'assistant', content: raw });
-      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), text: displayText, isAi: true, logged, activity }]);
+      const newMsgId = (Date.now() + 1).toString();
+      setMessages(prev => [...prev, { id: newMsgId, text: displayText, isAi: true, logged, activity }]);
 
     } catch (err: any) {
       const errMsg = err?.message?.includes('not set')
@@ -220,9 +224,22 @@ export default function ChatScreen() {
             </View>
           </View>
         )}
-        <Text style={[s.bubbleText, item.isAi ? s.bubbleTextAi : s.bubbleTextUser]} maxFontSizeMultiplier={1.2}>
-          {item.text}
-        </Text>
+        {item.isAi ? (
+          <TypewriterText
+            style={[s.bubbleText, s.bubbleTextAi]}
+            maxFontSizeMultiplier={1.2}
+            text={item.text}
+            delay={15}
+            animate={!animatedIds.current.has(item.id)}
+            onComplete={() => {
+              animatedIds.current.add(item.id);
+            }}
+          />
+        ) : (
+          <Text style={[s.bubbleText, s.bubbleTextUser]} maxFontSizeMultiplier={1.2}>
+            {item.text}
+          </Text>
+        )}
       </View>
       {!item.isAi && (
         <View style={[s.avatarWrap, { backgroundColor: T.colors.bg3 }]}>

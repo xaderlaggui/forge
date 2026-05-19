@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { MessageSquare, ChevronRight } from 'lucide-react-native';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
+import { TypewriterText } from './TypewriterText';
 
 interface AiCoachCardProps {
   tip: string | null | undefined;
@@ -29,9 +30,13 @@ export function AiCoachCard({ tip, isLoading, onChatPress }: AiCoachCardProps) {
           {isLoading ? (
             <ActivityIndicator size="small" color={T.colors.forge} style={{ alignSelf: 'flex-start', marginVertical: 4 }} />
           ) : (
-            <Text style={styles.tipText} numberOfLines={3}>
-              {tip || "You're doing great! Keep pushing your limits today."}
-            </Text>
+            <TypewriterText
+              style={styles.tipText}
+              numberOfLines={3}
+              text={tip || "You're doing great! Keep pushing your limits today."}
+              delay={18}
+              animate={!!tip}
+            />
           )}
 
           <TouchableOpacity style={styles.chatBtn} onPress={onChatPress} activeOpacity={0.7}>

@@ -70,10 +70,10 @@ export default function LoginScreen() {
       <View style={s.innerWrapper}>
         <Animated.View style={[s.inner, animStyle]}>
 
-          <View style={{ width: 180, height: 180, borderRadius: 90, backgroundColor: T.colors.forgeDim, alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+          <View style={{ width: 210, height: 210, borderRadius: 100, backgroundColor: T.colors.forgeDim, alignItems: 'center', justifyContent: 'center' }}>
             <Image
               source={MascotImages.welcome}
-              style={{ width: 150, height: 150, resizeMode: 'contain' }}
+              style={{ width: 210, height: 210, resizeMode: 'contain' }}
               accessibilityLabel="Forge the bear waving hello"
             />
           </View>
