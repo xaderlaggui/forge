@@ -93,11 +93,14 @@ export function TodayPlanCard({ isLoading, plannedWorkout, loggedWorkout, muscle
         size="lg"
         style={{
           position: 'absolute',
-          right: -20,
-          bottom: 2, // Overflow bottom slightly
+          right: -34,
+          bottom: -35, // Overflow bottom slightly
+          width: 193,
+          height: 193
         }}
         imageStyle={{
-          height: 178
+          width: '100%',
+          height: 193
         }}
       />
     </View>
@@ -121,9 +124,9 @@ const useS = (T: any) => StyleSheet.create({
   todayTagRow: {
     flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 8,
   },
-  todayWorkoutName: { fontSize: T.typography.sizes.h2, fontWeight: '700', color: T.colors.t1, marginBottom: 4 },
+  todayWorkoutName: { fontSize: T.typography.sizes.h3, fontWeight: '700', color: T.colors.t1, marginBottom: 4 },
   todayMeta: {
-    fontSize: T.typography.sizes.bodyS, color: T.colors.t2, marginBottom: T.spacing.px4,
+    fontSize: T.typography.sizes.h4, color: T.colors.t2, marginBottom: T.spacing.px4,
     lineHeight: T.typography.sizes.bodyS * 1.5,
   },
   chipRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: T.spacing.px4 },
