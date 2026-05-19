@@ -25,7 +25,7 @@ function ForgeFAB() {
   }));
 
   return (
-    <Animated.View style={[styles.fabWrapper, animatedStyle, { bottom: 104 }]}>
+    <Animated.View style={[styles.fabWrapper, animatedStyle, { bottom: 85 + insets.bottom }]}>
       <TouchableOpacity
         style={[styles.fab, { backgroundColor: aiColor, shadowColor: aiColor }]}
         onPress={() => router.push('/chat')}
@@ -38,6 +38,21 @@ function ForgeFAB() {
     </Animated.View>
   );
 }
+
+const TabIcon = ({ Icon, color, focused, T }: { Icon: any, color: string, focused: boolean, T: any }) => (
+  <View style={{ alignItems: 'center', justifyContent: 'center', width: 48 }}>
+    {focused && (
+      <View style={{
+        position: 'absolute',
+        top: -20,
+        width: 80,
+        height: 3,
+        backgroundColor: T.colors.forge,
+      }} />
+    )}
+    <Icon size={22} color={color} strokeWidth={2.5} />
+  </View>
+);
 
 export default function TabLayout() {
   const { T } = useForgeTheme();
@@ -56,7 +71,7 @@ export default function TabLayout() {
     <View style={{ flex: 1, backgroundColor: T.colors.bg0 }}>
       <Tabs
         tabBar={(props) => (
-          <Animated.View style={[{ position: 'absolute', bottom: 24, left: 24, right: 24, zIndex: 50 }, animatedStyle]}>
+          <Animated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0 }, animatedStyle]}>
             <BottomTabBar {...props} />
           </Animated.View>
         )}
@@ -65,26 +80,21 @@ export default function TabLayout() {
           tabBarActiveTintColor: T.colors.forge,
           tabBarInactiveTintColor: T.colors.t3,
           tabBarStyle: {
-            backgroundColor: T.colors.bg1,
-            borderWidth: 1,
-            borderColor: T.colors.b1,
-            height: 64,
-            paddingBottom: 0,
-            paddingTop: 0,
-            borderRadius: 32,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.3,
-            shadowRadius: 12,
-            elevation: 10,
+            backgroundColor: T.colors.bg0, // bg0 with slight transparency for blur effect
+            borderTopWidth: 0.5,
+            borderTopColor: T.colors.b1,
+            height: 85,
+            paddingBottom: 24,
+            paddingTop: 12,
+            position: 'absolute', // Allows content to flow underneath if needed
+            bottom: 0,
+            left: 0,
+            right: 0,
           },
           tabBarLabelStyle: {
             fontSize: 10,
             fontWeight: '600',
-            paddingBottom: 8,
-          },
-          tabBarItemStyle: {
-            paddingTop: 8,
+            marginTop: 4,
           },
         }}
       >
@@ -92,35 +102,35 @@ export default function TabLayout() {
           name="index"
           options={{
             title: 'Home',
-            tabBarIcon: ({ color }) => <Home size={22} color={color} strokeWidth={2.5} />,
+            tabBarIcon: ({ color, focused }) => <TabIcon Icon={Home} color={color} focused={focused} T={T} />,
           }}
         />
         <Tabs.Screen
           name="workout"
           options={{
             title: 'Workout',
-            tabBarIcon: ({ color }) => <Dumbbell size={22} color={color} strokeWidth={2.5} />,
+            tabBarIcon: ({ color, focused }) => <TabIcon Icon={Dumbbell} color={color} focused={focused} T={T} />,
           }}
         />
         <Tabs.Screen
           name="nutrition"
           options={{
             title: 'Nutrition',
-            tabBarIcon: ({ color }) => <PieChart size={22} color={color} strokeWidth={2.5} />,
+            tabBarIcon: ({ color, focused }) => <TabIcon Icon={PieChart} color={color} focused={focused} T={T} />,
           }}
         />
         <Tabs.Screen
           name="progress"
           options={{
             title: 'Progress',
-            tabBarIcon: ({ color }) => <TrendingUp size={22} color={color} strokeWidth={2.5} />,
+            tabBarIcon: ({ color, focused }) => <TabIcon Icon={TrendingUp} color={color} focused={focused} T={T} />,
           }}
         />
         <Tabs.Screen
           name="settings"
           options={{
             title: 'Settings',
-            tabBarIcon: ({ color }) => <Settings size={22} color={color} strokeWidth={2.5} />,
+            tabBarIcon: ({ color, focused }) => <TabIcon Icon={Settings} color={color} focused={focused} T={T} />,
           }}
         />
       </Tabs>
