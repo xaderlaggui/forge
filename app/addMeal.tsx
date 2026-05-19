@@ -6,6 +6,7 @@ import { useNutrition } from '../hooks/useNutrition';
 import { groqComplete } from '../services/groq';
 import type { Meal } from '../types';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
+import { MEAL_ANALYSIS_SYSTEM_PROMPT } from '../constants/prompts';
 
 export default function AddMealScreen() {
     const { T } = useForgeTheme();
@@ -67,19 +68,7 @@ export default function AddMealScreen() {
       const content = await groqComplete([
         {
           role: 'system',
-          content: `You are a world-class sports nutritionist. The user will describe a meal. 
-Estimate the nutritional content. If no portion is provided, estimate based on a standard serving and specify it.
-Respond ONLY with a valid, parsable JSON object containing exactly these keys: 
-"foodName" (string, short summary of meal),
-"portion" (string, estimated or provided amount),
-"calories" (number),
-"protein" (number, in grams),
-"carbs" (number, in grams),
-"fat" (number, in grams),
-"fiber" (number, in grams),
-"sugar" (number, in grams),
-"waterMl" (number, in milliliters. Convert glasses/cups to ml. 1 glass = ~250ml).
-No markdown formatting, no backticks, just raw JSON.`
+          content: MEAL_ANALYSIS_SYSTEM_PROMPT
         },
         {
           role: 'user',

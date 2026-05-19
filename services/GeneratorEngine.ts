@@ -10,6 +10,7 @@
 import { supabase } from './supabase';
 import { groqComplete } from './groq';
 import dayjs from 'dayjs';
+import { generateExercisesPrompt, generateMealPlanPrompt } from '../constants/prompts';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -142,18 +143,15 @@ async function generateExercisesForDay(
       ? '6-10 reps (heavy compound focus)'
       : '8-12 reps (hypertrophy focus)';
 
-  const prompt = `You are an elite strength and conditioning coach.
-Generate exactly 4-5 exercises for a ${focus} workout day.
-Available equipment: ${equipmentDesc}.
-Target muscle groups: ${muscleGroups.join(', ')}.
-Rep scheme guidance: ${repScheme}.
-${metrics?.experienceLevel ? `User experience level: ${metrics.experienceLevel}.` : ''}
-${metrics?.sessionMin ? `Target session length: ${metrics.sessionMin} minutes.` : ''}
-${metrics?.customGoals?.length ? `Custom user goals: ${metrics.customGoals.join(', ')}.` : ''}
-
-Respond ONLY with a valid JSON array. Each element must have exactly these keys:
-"name" (string), "sets" (number), "reps" (string like "8-12"), "restSec" (number).
-No markdown, no backticks, no explanation. Raw JSON array only.`;
+  const prompt = generateExercisesPrompt(
+    focus,
+    muscleGroups,
+    equipmentDesc,
+    repScheme,
+    metrics?.experienceLevel,
+    metrics?.sessionMin,
+    metrics?.customGoals
+  );
 
   const content = await groqComplete(
     [{ role: 'user', content: prompt }],
@@ -191,27 +189,14 @@ async function generateMealPlan(
     bulk:     'bulking (muscle gain) — calorie-dense, easy to eat in volume',
   }[goal];
 
-  const prompt = `You are a world-class sports dietitian and fitness coach.
-Create a full daily meal plan for someone with these exact nutritional targets:
-- Total Calories: ${macros.targetCalories} kcal
-- Protein: ${macros.targetProtein}g
-- Carbs: ${macros.targetCarbs}g
-- Fat: ${macros.targetFat}g
-Dietary preference: ${dietDesc}.
-Goal: ${goalDesc}.
-Include exactly 4 meals: Breakfast, Lunch, Dinner, Snacks.
-The sum of each meal's calories MUST equal ${macros.targetCalories} total.
-
-Also provide a "coachMessage" (string) explaining your strategy. Address the user directly (e.g., "Hey Athlete!"). Explain why this specific workout split and nutrition plan fits their goal, experience level, and any injuries/conditions they mentioned. Keep it concise, highly motivational, and conversational like a text message.
-User Experience: ${metrics.experienceLevel || 'Beginner'}
-User Injuries/Conditions: ${metrics.customGoals?.join(', ') || 'None'}
-Workout Split Used: ${split.map(s => s.focus).join(', ')}
-
-Respond ONLY with a valid JSON object with keys:
-- "meals" (array of exactly 4 meal objects)
-- "coachMessage" (string)
-Each meal object must have: "name" (string), "description" (string), "calories" (number), "protein" (number), "carbs" (number), "fat" (number).
-No markdown, no backticks. Raw JSON only.`;
+  const prompt = generateMealPlanPrompt(
+    macros,
+    dietDesc,
+    goalDesc,
+    metrics.experienceLevel || 'Beginner',
+    metrics.customGoals || [],
+    split.map(s => s.focus)
+  );
 
   const content = await groqComplete(
     [{ role: 'user', content: prompt }],

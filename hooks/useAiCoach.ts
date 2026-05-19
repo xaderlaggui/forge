@@ -4,6 +4,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useNutrition } from './useNutrition';
 import { useWorkouts } from './useWorkouts';
 import { groqComplete } from '../services/groq';
+import { AI_COACH_TIP_SYSTEM_PROMPT } from '../constants/prompts';
 
 export function useAiCoach() {
   const { user } = useAuthStore();
@@ -28,10 +29,7 @@ export function useAiCoach() {
         return await groqComplete([
           {
             role: 'system',
-            content:
-              'You are an elite, highly motivating personal fitness coach. ' +
-              'Reply in 1–2 short punchy sentences. No markdown. No emojis. ' +
-              'Be specific to the data provided — reference the athlete\'s name, streak, or stats directly.',
+            content: AI_COACH_TIP_SYSTEM_PROMPT,
           },
           {
             role: 'user',

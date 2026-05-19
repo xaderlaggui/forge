@@ -9,6 +9,7 @@ import { groqComplete } from '../services/groq';
 import { ExerciseLibrary, ExercisePreviewModal } from '../features/planner/components/ExerciseLibrary';
 import type { Exercise } from '../types';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
+import { buildRoutinePrompt } from '../constants/prompts';
 
 // ── Types ──────────────────────────────────────────────────────────────
 type SplitType   = 'push' | 'pull' | 'legs' | 'full';
@@ -120,12 +121,7 @@ export default function BuildRoutineScreen() {
       const splitLabel  = SPLITS[split].label;
       const cap = purpose === 'strength' ? 4 : 5;
 
-      const prompt = `You are an expert strength coach building a ${splitLabel} workout.
-Training purpose: ${PURPOSES[purpose].label} — ${purposeDesc}
-Available equipment: ${equipmentDesc}
-Generate exactly ${cap} exercises appropriate for a ${splitLabel} session with a ${purpose} focus.
-Respond ONLY with a valid JSON array. Each element: { "name": string, "sets": number, "reps": string }
-No markdown, no explanation. Raw JSON array only.`;
+      const prompt = buildRoutinePrompt(splitLabel, PURPOSES[purpose].label, purposeDesc, equipmentDesc, cap, purpose);
 
       const content = await groqComplete(
         [{ role: 'user', content: prompt }],
