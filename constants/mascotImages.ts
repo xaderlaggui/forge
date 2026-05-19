@@ -5,7 +5,7 @@ export const MascotImages = {
   progress:  require('../assets/images/progress-removebg.png'),
   welcome:   require('../assets/images/welcome-removebg.png'),
   workout:   require('../assets/images/workout-removebg.png'),
-  app_icon:  require('../assets/images/app_icon-removebg.png'),
+  app_icon:  require('../assets/images/mascot/bear-4/bear-4-4.png'),
 } as const;
 
 export type MascotKey = keyof typeof MascotImages;
