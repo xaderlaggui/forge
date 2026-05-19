@@ -98,7 +98,7 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
             variant="secondary"
           />
         </View>
-        <BearMascot variant="APPROVING" size="lg" style={{ position: 'absolute', right: -8, top: -1, zIndex: 10 }} />
+        <BearMascot variant="APPROVING" size="lg" style={{ position: 'absolute', right: -8, bottom: 46, zIndex: 10 }} />
       </View>
     );
   }
@@ -167,7 +167,7 @@ const useS = (T: any) => StyleSheet.create({
     fontSize: T.typography.sizes.label, color: T.colors.t3, marginBottom: 6,
     fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase',
   },
-  todaySub: { fontSize: T.typography.sizes.h2, fontWeight: '700', color: T.colors.t1, marginBottom: T.spacing.px2 },
+  todaySub: { fontSize: T.typography.sizes.h3, fontWeight: '700', color: T.colors.t1, marginBottom: T.spacing.px2 },
   todayMeta: { color: T.colors.t2, marginBottom: T.spacing.px6, fontSize: T.typography.sizes.bodyS },
   todayMetaCenter: { color: T.colors.t2, marginBottom: T.spacing.px6, fontSize: T.typography.sizes.bodyS, textAlign: 'center' },
   heatmapFigures: { flexDirection: 'row', justifyContent: 'center', gap: 20, marginBottom: T.spacing.px6 },

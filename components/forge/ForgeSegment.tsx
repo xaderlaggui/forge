@@ -19,7 +19,11 @@ export function ForgeSegment({ options, value, onChange }: ForgeSegmentProps) {
 
   useEffect(() => {
     if (tabWidth > 0) {
-      translateX.value = withSpring(activeIdx * tabWidth, T.motion.spring);
+      translateX.value = withSpring(activeIdx * tabWidth, {
+        damping: 12,
+        stiffness: 100,
+        mass: 0.5
+      });
     }
   }, [activeIdx, tabWidth]);
 
