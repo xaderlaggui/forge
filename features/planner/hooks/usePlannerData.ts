@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import dayjs from 'dayjs';
+// Removed dayjs from top import since we are using raw Date math for timezone accuracy
 import { useMemo, useState } from 'react';
 import { useWorkouts } from '../../../hooks/useWorkouts';
 import type { GeneratedPlan } from '../../../services/GeneratorEngine';
@@ -12,15 +12,31 @@ export function usePlannerData() {
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState('Planner');
 
-  // Dynamic weekly dates starting from Monday
-  const today = dayjs();
-  const startOfWeek = today.startOf('week').add(1, 'day'); // Monday
-  const days = Array.from({ length: 7 }).map((_, i) => {
-    const d = startOfWeek.add(i, 'day');
-    return { label: d.format('dd').charAt(0), date: d.date(), fullDate: d.format('YYYY-MM-DD') };
-  });
+  const { days, todayIdx } = useMemo(() => {
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const todayPH = new Date(utc + (3600000 * 8)); // UTC+8
+    
+    const dayOfWeek = todayPH.getDay();
+    const currentIdx = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    
+    const startOfWeek = new Date(todayPH);
+    startOfWeek.setDate(todayPH.getDate() - currentIdx);
 
-  const [activeDayIdx, setActiveDayIdx] = useState(today.day() === 0 ? 6 : today.day() - 1);
+    const weekDays = Array.from({ length: 7 }).map((_, i) => {
+      const d = new Date(startOfWeek);
+      d.setDate(startOfWeek.getDate() + i);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const date = String(d.getDate()).padStart(2, '0');
+      const label = ['M', 'T', 'W', 'T', 'F', 'S', 'S'][i];
+      return { label, date: d.getDate(), fullDate: `${year}-${month}-${date}` };
+    });
+
+    return { days: weekDays, todayIdx: currentIdx };
+  }, []);
+
+  const [activeDayIdx, setActiveDayIdx] = useState(todayIdx);
   const activeDateStr = days[activeDayIdx].fullDate;
 
   // Exercise Library Fetch
@@ -84,7 +100,7 @@ export function usePlannerData() {
 
   return {
     activeTab, setActiveTab,
-    days, activeDayIdx, setActiveDayIdx, activeDateStr,
+    days, activeDayIdx, setActiveDayIdx, activeDateStr, todayIdx,
     exercises, isLoadingExercises,
     loggedWorkout, plannedWorkout, isLoadingWorkouts: isLoadingWorkouts || isLoadingActivePlan
   };

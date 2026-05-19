@@ -57,21 +57,13 @@ export function WeeklyProgressDots({ weekActivity, streak }: WeeklyProgressDotsP
           const dayLabel = ['M', 'T', 'W', 'T', 'F', 'S', 'S'][idx];
 
           return (
-            <TouchableOpacity 
+            <View 
               key={idx} 
               style={[
                 s.dayPill, 
                 isToday && s.dayPillToday,
                 isDone && !isToday && s.dayPillDone
               ]}
-              disabled={!isToday} // ONLY today can be clicked/started
-              activeOpacity={0.7}
-              onPress={() => {
-                if (isToday) {
-                  // Navigate to the active workout screen
-                  router.push('/activeWorkout');
-                }
-              }}
             >
               <Text style={[
                 s.dayLabel, 
@@ -99,7 +91,7 @@ export function WeeklyProgressDots({ weekActivity, streak }: WeeklyProgressDotsP
                   <View style={s.dotEmpty} />
                 )}
               </View>
-            </TouchableOpacity>
+            </View>
           );
         })}
       </View>

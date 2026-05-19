@@ -74,6 +74,16 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
     return mapMusclesToSlugs(Array.from(allMuscles)).map((slug: any) => ({ slug: slug.slug, intensity: 2 }));
   };
 
+  // Only allow starting workouts on exactly today's date (Manila Time)
+  const now = new Date();
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const todayPH = new Date(utc + (3600000 * 8)); // UTC+8
+  const year = todayPH.getFullYear();
+  const month = String(todayPH.getMonth() + 1).padStart(2, '0');
+  const date = String(todayPH.getDate()).padStart(2, '0');
+  const todayDateStr = `${year}-${month}-${date}`;
+  const isToday = activeDateStr === todayDateStr;
+
   if (isCompleted) {
     const data = getHeatmapData(loggedWorkout);
     return (
@@ -127,11 +137,13 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
               </View>
             </View>
           )}
-          <ForgeButton
-            label="▶ Start Routine"
-            onPress={() => router.push({ pathname: '/activeWorkout', params: { date: activeDateStr, title: plannedWorkout.title } })}
-            pulse
-          />
+          {isToday && (
+            <ForgeButton
+              label="▶ Start Routine"
+              onPress={() => router.push({ pathname: '/activeWorkout', params: { date: activeDateStr, title: plannedWorkout.title } })}
+              pulse
+            />
+          )}
         </View>
       </View>
     );
@@ -148,11 +160,13 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
       <Text style={s.todayMetaCenter} maxFontSizeMultiplier={1.2}>
         No formal training scheduled. Rest up or do light cardio.
       </Text>
-      <ForgeButton
-        label="+ Log Extra Workout"
-        onPress={() => router.push({ pathname: '/activeWorkout', params: { date: activeDateStr } })}
-        variant="secondary"
-      />
+      {isToday && (
+        <ForgeButton
+          label="+ Log Extra Workout"
+          onPress={() => router.push({ pathname: '/activeWorkout', params: { date: activeDateStr } })}
+          variant="secondary"
+        />
+      )}
     </View>
   );
 }
