@@ -234,8 +234,12 @@ export default function ChatScreen() {
         )}
       </View>
       {!item.isAi && (
-        <View style={[s.avatarWrap, { backgroundColor: T.colors.bg3 }]}>
-          <UserIcon size={15} color={T.colors.t1} />
+        <View style={[s.avatarWrap, { backgroundColor: T.colors.bg3, overflow: 'hidden' }]}>
+          {user?.photoURL ? (
+            <Image source={{ uri: user.photoURL }} style={{ width: '100%', height: '100%', resizeMode: 'cover' }} />
+          ) : (
+            <UserIcon size={15} color={T.colors.t1} />
+          )}
         </View>
       )}
     </View>
