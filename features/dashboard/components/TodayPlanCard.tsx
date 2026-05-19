@@ -93,8 +93,8 @@ export function TodayPlanCard({ isLoading, plannedWorkout, loggedWorkout, muscle
         size="lg"
         style={{
           position: 'absolute',
-          right: -10,
-          bottom: 22, // Overflow bottom slightly
+          right: -20,
+          bottom: 2, // Overflow bottom slightly
         }}
         imageStyle={{
           height: 178
