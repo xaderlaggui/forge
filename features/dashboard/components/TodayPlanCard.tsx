@@ -1,3 +1,4 @@
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { CalendarDays, CheckCircle2 } from 'lucide-react-native';
@@ -7,7 +8,6 @@ import { BearMascot } from '../../../components/forge/BearMascot';
 import { ForgeButton } from '../../../components/forge/ForgeButton';
 import { SkeletonHeroCard } from '../../../components/forge/ForgeSkeleton';
 import { MuscleTagChip } from '../../../components/forge/WorkoutAtoms';
-import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { useBearMood } from '../../../hooks/useBearMood';
 
 interface TodayPlanCardProps {
