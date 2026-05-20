@@ -31,7 +31,7 @@ interface StickerShareModalProps {
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const PHONE_WIDTH = SCREEN_WIDTH * 0.7;
-const PHONE_HEIGHT = PHONE_WIDTH * (19.5 / 9);
+const PHONE_HEIGHT = PHONE_WIDTH * (16 / 9);
 const ITEM_WIDTH = SCREEN_WIDTH;
 
 const themes: StickerTheme[] = ['white', 'dark', 'orange'];
@@ -112,26 +112,28 @@ export function StickerShareModal({
 
     return (
       <View style={localStyles.carouselItem}>
-        <View
-          style={[
-            localStyles.phoneMockup,
-            {
-              borderColor: isDark ? '#333' : '#D8D8DA',
-            },
-          ]}
-        >
-          {/* Dynamic Island / Notch */}
+        <View style={localStyles.phoneShadowContainer}>
           <View
             style={[
-              localStyles.dynamicIsland,
-              { backgroundColor: isDark ? '#333' : '#D8D8DA' },
+              localStyles.phoneMockup,
+              {
+                borderColor: isDark ? '#333' : '#D8D8DA',
+              },
             ]}
-          />
+          >
+            {/* Dynamic Island / Notch */}
+            <View
+              style={[
+                localStyles.dynamicIsland,
+                { backgroundColor: isDark ? '#333' : '#D8D8DA' },
+              ]}
+            />
 
-          {/* Phone Screen */}
-          <View style={[localStyles.phoneScreen, { backgroundColor: screenBg }]}>
-            <View style={localStyles.stickerScaleWrapper}>
-              <StickerPreviewUI workout={workout} stickerTheme={theme} />
+            {/* Phone Screen */}
+            <View style={[localStyles.phoneScreen, { backgroundColor: screenBg }]}>
+              <View style={localStyles.stickerScaleWrapper}>
+                <StickerPreviewUI workout={workout} stickerTheme={theme} />
+              </View>
             </View>
           </View>
         </View>
@@ -333,18 +335,24 @@ const localStyles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 8,
   },
-  phoneMockup: {
+  phoneShadowContainer: {
     width: PHONE_WIDTH,
     height: PHONE_HEIGHT,
+    borderRadius: 36,
+    backgroundColor: 'transparent',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.35,
+    shadowRadius: 28,
+    elevation: 20,
+  },
+  phoneMockup: {
+    width: '100%',
+    height: '100%',
     borderRadius: 36,
     borderWidth: 6,
     overflow: 'hidden',
     position: 'relative',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.25,
-    shadowRadius: 24,
-    elevation: 15,
   },
   dynamicIsland: {
     position: 'absolute',
