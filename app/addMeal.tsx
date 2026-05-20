@@ -1,6 +1,6 @@
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Save, Sparkles, X } from 'lucide-react-native';
+import { Save, Sparkles, X, Droplets, Wheat, Leaf, Candy, Flame, Dumbbell, Star, AlertCircle } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { MEAL_ANALYSIS_SYSTEM_PROMPT } from '../constants/prompts';
@@ -167,12 +167,12 @@ export default function AddMealScreen() {
       if (mealIdx >= 0) {
         updatedMeals[mealIdx] = {
           name: resolvedMealName,
-          calories: updatedMeals[mealIdx].calories + newMealData.calories,
-          protein: updatedMeals[mealIdx].protein + newMealData.protein,
-          carbs: updatedMeals[mealIdx].carbs + newMealData.carbs,
-          fat: updatedMeals[mealIdx].fat + newMealData.fat,
-          fiber: (updatedMeals[mealIdx].fiber || 0) + (newMealData.fiber || 0),
-          sugar: (updatedMeals[mealIdx].sugar || 0) + (newMealData.sugar || 0),
+          calories: (Number(updatedMeals[mealIdx].calories) || 0) + newMealData.calories,
+          protein: (Number(updatedMeals[mealIdx].protein) || 0) + newMealData.protein,
+          carbs: (Number(updatedMeals[mealIdx].carbs) || 0) + newMealData.carbs,
+          fat: (Number(updatedMeals[mealIdx].fat) || 0) + newMealData.fat,
+          fiber: (Number(updatedMeals[mealIdx].fiber) || 0) + (newMealData.fiber || 0),
+          sugar: (Number(updatedMeals[mealIdx].sugar) || 0) + (newMealData.sugar || 0),
           isAiParsed: (updatedMeals[mealIdx] as any).isAiParsed || wasAiAnalyzed,
           items: [...(updatedMeals[mealIdx].items || []), newItem],
         };
@@ -182,13 +182,14 @@ export default function AddMealScreen() {
 
       await updateNutrition({
         meals: updatedMeals,
-        totalCalories: (nutrition?.totalCalories || 0) + newMealData.calories,
-        waterMl: (nutrition?.waterMl || 0) + (Number(waterMl) || 0),
+        totalCalories: (Number(nutrition?.totalCalories) || 0) + newMealData.calories,
+        waterMl: (Number(nutrition?.waterMl) || 0) + (Number(waterMl) || 0),
       });
 
       router.back();
-    } catch (e) {
-      Alert.alert('Error', 'Failed to save meal.');
+    } catch (e: any) {
+      console.error('Save Meal Error:', e);
+      Alert.alert('Error', e?.message || 'Failed to save meal.');
     }
   };
 
@@ -205,12 +206,12 @@ export default function AddMealScreen() {
           <X size={24} color={T.colors.t1} />
         </TouchableOpacity>
         <Text style={s.title}>
-          LOG <Text style={{ color: T.colors.forge }}>{resolvedMealName.toUpperCase()}</Text>
+          LOG {resolvedMealName.toUpperCase()}
         </Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
         {!analyzed ? (
           <View style={s.analyzeWrap}>
             <Text style={s.aiPrompt}>What did you eat?</Text>
@@ -248,74 +249,98 @@ export default function AddMealScreen() {
           <View style={s.formWrap}>
             {/* AI confidence badge */}
             {wasAiAnalyzed && confidence && (
-              <View style={[s.infoBanner, { borderColor: confidenceColor[confidence] + '40', backgroundColor: confidenceColor[confidence] + '12' }]}>
-                <Sparkles size={16} color={confidenceColor[confidence]} />
-                <View style={{ flex: 1 }}>
-                  <Text style={[s.infoText, { color: confidenceColor[confidence] }]}>
-                    {confidence === 'high' && 'High confidence — values match known food data.'}
-                    {confidence === 'medium' && 'Medium confidence — mixed dish, edit if needed.'}
-                    {confidence === 'low' && 'Low confidence — unusual item, please verify.'}
-                  </Text>
-                  {!!analysisNotes && (
-                    <Text style={[s.infoText, { color: T.colors.t3, marginTop: 2, fontSize: 11 }]}>
-                      {analysisNotes}
-                    </Text>
-                  )}
-                </View>
+              <View style={[s.badgePill, { borderColor: confidenceColor[confidence], shadowColor: confidenceColor[confidence] }]}>
+                <Star size={12} color={confidenceColor[confidence]} fill={confidenceColor[confidence]} />
+                <Text style={[s.badgeText, { color: confidenceColor[confidence] }]}>
+                  {confidence.toUpperCase()} CONFIDENCE
+                </Text>
               </View>
             )}
 
-            <View style={s.receiptCard}>
-              <Text style={s.receiptTitle}>MEAL RECEIPT</Text>
-              <View style={s.receiptDivider} />
-              
-              <View style={s.receiptRow}>
-                <Text style={s.receiptLabel}>Item</Text>
-                <TextInput style={[s.receiptInput, { flex: 1, marginLeft: 16 }]} value={foodName} onChangeText={setFoodName} placeholder="---" placeholderTextColor={T.colors.t3} />
-              </View>
-              <View style={s.receiptRow}>
-                <Text style={s.receiptLabel}>Qty</Text>
-                <TextInput style={[s.receiptInput, { flex: 1, marginLeft: 16 }]} value={portion} onChangeText={setPortion} placeholder="---" placeholderTextColor={T.colors.t3} />
-              </View>
-              <View style={s.receiptDivider} />
-              
-              <View style={s.receiptRow}>
-                <Text style={s.receiptCaloriesTitle}>Calories</Text>
-                <TextInput style={s.receiptCaloriesInput} value={cals} onChangeText={setCals} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
-              </View>
-              <View style={s.receiptDivider} />
-              
-              <View style={s.receiptRow}>
-                <Text style={s.receiptLabel}>Fat (g)</Text>
-                <TextInput style={s.receiptInput} value={fat} onChangeText={setFat} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+            <View style={s.headerWrap}>
+              <TextInput style={s.foodNameInput} value={foodName} onChangeText={setFoodName} placeholder="FOOD NAME" placeholderTextColor={T.colors.t3} textAlign="center" />
+              <TextInput style={s.portionInput} value={portion} onChangeText={setPortion} placeholder="portion" placeholderTextColor={T.colors.t3} textAlign="center" />
+            </View>
+
+            <View style={s.caloriesRing}>
+              <TextInput style={s.caloriesValue} value={cals} onChangeText={setCals} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} textAlign="center" />
+              <Text style={s.caloriesLabel}>CALORIES</Text>
+            </View>
+
+            <View style={s.grid}>
+              <View style={s.card}>
+                <View style={s.cardHeader}>
+                  <Flame size={16} color={T.colors.forge} />
+                  <Text style={s.cardLabel}>FAT</Text>
+                </View>
+                <View style={s.cardValueRow}>
+                  <TextInput style={s.cardValue} value={fat} onChangeText={setFat} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+                  <Text style={s.cardUnit}>g</Text>
+                </View>
               </View>
               
-              <View style={s.receiptRow}>
-                <Text style={s.receiptLabel}>Carbs (g)</Text>
-                <TextInput style={s.receiptInput} value={carbs} onChangeText={setCarbs} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+              <View style={s.card}>
+                <View style={s.cardHeader}>
+                  <Dumbbell size={16} color="#A29E9A" />
+                  <Text style={s.cardLabel}>PROTEIN</Text>
+                </View>
+                <View style={s.cardValueRow}>
+                  <TextInput style={s.cardValue} value={pro} onChangeText={setPro} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+                  <Text style={s.cardUnit}>g</Text>
+                </View>
               </View>
 
-              <View style={[s.receiptRow, { paddingLeft: 16 }]}>
-                <Text style={[s.receiptLabel, { fontSize: 12 }]}>Fiber (g)</Text>
-                <TextInput style={[s.receiptInput, { fontSize: 14 }]} value={fiber} onChangeText={setFiber} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+              <View style={s.card}>
+                <View style={s.cardHeader}>
+                  <Wheat size={16} color="#D4A373" />
+                  <Text style={s.cardLabel}>CARBS</Text>
+                </View>
+                <View style={s.cardValueRow}>
+                  <TextInput style={s.cardValue} value={carbs} onChangeText={setCarbs} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+                  <Text style={s.cardUnit}>g</Text>
+                </View>
               </View>
 
-              <View style={[s.receiptRow, { paddingLeft: 16 }]}>
-                <Text style={[s.receiptLabel, { fontSize: 12 }]}>Sugars (g)</Text>
-                <TextInput style={[s.receiptInput, { fontSize: 14 }]} value={sugar} onChangeText={setSugar} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+              <View style={s.card}>
+                <View style={s.cardHeader}>
+                  <Leaf size={16} color="#4CAF50" />
+                  <Text style={s.cardLabel}>FIBER</Text>
+                </View>
+                <View style={s.cardValueRow}>
+                  <TextInput style={s.cardValue} value={fiber} onChangeText={setFiber} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+                  <Text style={s.cardUnit}>g</Text>
+                </View>
               </View>
 
-              <View style={s.receiptRow}>
-                <Text style={s.receiptLabel}>Protein (g)</Text>
-                <TextInput style={s.receiptInput} value={pro} onChangeText={setPro} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+              <View style={s.card}>
+                <View style={s.cardHeader}>
+                  <Candy size={16} color="#FF9A8B" />
+                  <Text style={s.cardLabel}>SUGARS</Text>
+                </View>
+                <View style={s.cardValueRow}>
+                  <TextInput style={s.cardValue} value={sugar} onChangeText={setSugar} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+                  <Text style={s.cardUnit}>g</Text>
+                </View>
               </View>
-              <View style={s.receiptDivider} />
-              
-              <View style={s.receiptRow}>
-                <Text style={s.receiptLabel}>Water (ml)</Text>
-                <TextInput style={s.receiptInput} value={waterMl} onChangeText={setWaterMl} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+
+              <View style={s.card}>
+                <View style={s.cardHeader}>
+                  <Droplets size={16} color="#42A5F5" />
+                  <Text style={s.cardLabel}>WATER</Text>
+                </View>
+                <View style={s.cardValueRow}>
+                  <TextInput style={s.cardValue} value={waterMl} onChangeText={setWaterMl} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+                  <Text style={s.cardUnit}>ML</Text>
+                </View>
               </View>
             </View>
+
+            {!!analysisNotes && (
+              <View style={s.notesRow}>
+                <AlertCircle size={14} color={T.colors.forge} />
+                <Text style={s.notesText}>{analysisNotes}</Text>
+              </View>
+            )}
 
             <TouchableOpacity style={s.saveBtn} onPress={handleSave}>
               <Save size={18} color="#000" strokeWidth={2.5} />
@@ -332,107 +357,79 @@ const useS = (T: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: T.colors.bg0 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: 16,
-    borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
+    paddingHorizontal: 16, paddingTop: 50, paddingBottom: 12,
   },
   iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 20, fontWeight: '900', color: T.colors.t1, letterSpacing: 1 },
-  scroll: { padding: T.spacing.page, paddingBottom: 60 },
+  title: { fontSize: 14, fontWeight: '700', color: T.colors.t3, letterSpacing: 1 },
+  scroll: { padding: 16, paddingBottom: 40 },
 
-  analyzeWrap: { marginTop: 40 },
-  aiPrompt: { fontSize: 28, fontWeight: '700', color: T.colors.t1, marginBottom: 20 },
+  analyzeWrap: { marginTop: 24 },
+  aiPrompt: { fontSize: 24, fontWeight: '700', color: T.colors.t1, marginBottom: 16 },
   aiInput: {
     backgroundColor: T.colors.bg1, borderWidth: 1, borderColor: T.colors.b1,
-    borderRadius: T.radii.lg, padding: 20, color: T.colors.t1,
-    fontSize: 18, minHeight: 150, marginBottom: 24, lineHeight: 26,
+    borderRadius: 16, padding: 16, color: T.colors.t1,
+    fontSize: 16, minHeight: 120, marginBottom: 20, lineHeight: 24,
   },
   aiBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: T.colors.forge, padding: 20, borderRadius: T.radii.lg,
+    backgroundColor: T.colors.forge, padding: 16, borderRadius: 999,
     shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 15, elevation: 8,
   },
-  aiBtnText: { color: '#000', fontSize: 18, fontWeight: '800', letterSpacing: 1 },
+  aiBtnText: { color: '#000', fontSize: 16, fontWeight: '800', letterSpacing: 1 },
 
-  formWrap: { flex: 1 },
-  infoBanner: {
+  formWrap: { flex: 1, alignItems: 'center' },
+  
+  badgePill: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999,
+    borderWidth: 1, marginBottom: 12, backgroundColor: T.colors.bg1,
+    shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 10, elevation: 4
+  },
+  badgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 1 },
+  
+  headerWrap: { alignItems: 'center', marginBottom: 16, width: '100%' },
+  foodNameInput: { fontSize: 24, fontWeight: '900', color: T.colors.t1, textTransform: 'uppercase', textAlign: 'center', width: '100%' },
+  portionInput: { fontSize: 14, fontWeight: '600', color: T.colors.t3, textAlign: 'center', width: '100%', marginTop: 2 },
+
+  caloriesRing: {
+    alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 16, paddingHorizontal: 32,
+    borderRadius: 999,
+    borderWidth: 1, borderColor: T.colors.forge + '4D',
+    marginBottom: 20,
+    shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 24, elevation: 12,
+    backgroundColor: T.colors.bg1
+  },
+  caloriesValue: { fontSize: 42, fontWeight: '900', color: T.colors.forge, textAlign: 'center', minWidth: 80, padding: 0 },
+  caloriesLabel: { fontSize: 10, fontWeight: '800', color: T.colors.t2, letterSpacing: 2, marginTop: -4 },
+
+  grid: {
+    flexDirection: 'row', flexWrap: 'wrap', gap: 8, width: '100%', marginBottom: 16
+  },
+  card: {
+    flex: 1, minWidth: '45%',
+    backgroundColor: T.colors.bg1,
+    borderRadius: 12, padding: 12,
+    borderWidth: 1, borderColor: T.colors.b1
+  },
+  cardHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8
+  },
+  cardLabel: { fontSize: 10, fontWeight: '700', color: T.colors.t2, letterSpacing: 1 },
+  cardValueRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 4 },
+  cardValue: { fontSize: 20, fontWeight: '900', color: T.colors.t1, textAlign: 'center', minWidth: 30, padding: 0 },
+  cardUnit: { fontSize: 11, fontWeight: '600', color: T.colors.t3, marginBottom: 2 },
+
+  notesRow: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 8,
-    padding: 12, borderRadius: T.radii.md,
-    borderWidth: 1, marginBottom: 24,
+    width: '100%', paddingHorizontal: 8, marginBottom: 20
   },
-  infoText: { fontSize: 13, fontWeight: '600' },
-  label: { fontSize: 11, fontWeight: '800', color: T.colors.t3, letterSpacing: 1, marginBottom: 8 },
-  input: {
-    backgroundColor: T.colors.bg2, borderWidth: 1, borderColor: T.colors.b1,
-    borderRadius: T.radii.md, padding: 16, color: T.colors.t1,
-    fontSize: 16, fontWeight: '600', marginBottom: 20,
-  },
-  macroRow: { flexDirection: 'row', gap: 12 },
-  macroCol: { flex: 1 },
+  notesText: { flex: 1, fontSize: 11, fontWeight: '500', color: T.colors.t3, lineHeight: 16 },
+
   saveBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: T.colors.forge, padding: 20, borderRadius: T.radii.lg, marginTop: 12,
-    shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 15, elevation: 8,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, width: '100%',
+    backgroundColor: T.colors.forge, padding: 16, borderRadius: 999, marginTop: 8,
+    shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 20, elevation: 10,
   },
   saveBtnText: { color: '#000', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
-
-  // Receipt styles
-  receiptCard: {
-    backgroundColor: T.colors.bg1,
-    borderWidth: 1,
-    borderColor: T.colors.b1,
-    borderStyle: 'dashed',
-    padding: 16,
-    marginBottom: 24,
-    borderRadius: T.radii.sm,
-  },
-  receiptTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: T.colors.t1,
-    textAlign: 'center',
-    letterSpacing: 2,
-    marginBottom: 12,
-  },
-  receiptDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: T.colors.b1,
-    borderStyle: 'dashed',
-    marginVertical: 8,
-  },
-  receiptRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 6,
-  },
-  receiptLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: T.colors.t2,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  receiptInput: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: T.colors.t1,
-    textAlign: 'right',
-    minWidth: 60,
-    padding: 0,
-  },
-  receiptCaloriesTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: T.colors.t1,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  receiptCaloriesInput: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: T.colors.t1,
-    textAlign: 'right',
-    minWidth: 80,
-    padding: 0,
-  },
 });
