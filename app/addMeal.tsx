@@ -265,62 +265,55 @@ export default function AddMealScreen() {
               </View>
             )}
 
-            <View style={s.nfCard}>
-              <Text style={s.nfTitle}>Nutrition Facts</Text>
-              <View style={s.nfThickDivider} />
+            <View style={s.receiptCard}>
+              <Text style={s.receiptTitle}>MEAL RECEIPT</Text>
+              <View style={s.receiptDivider} />
               
-              <View style={s.nfRow}>
-                <Text style={s.nfLabel}>Food Name</Text>
-                <TextInput style={[s.nfInput, { flex: 1, marginLeft: 16 }]} value={foodName} onChangeText={setFoodName} placeholder="---" placeholderTextColor="#999" />
+              <View style={s.receiptRow}>
+                <Text style={s.receiptLabel}>Item</Text>
+                <TextInput style={[s.receiptInput, { flex: 1, marginLeft: 16 }]} value={foodName} onChangeText={setFoodName} placeholder="---" placeholderTextColor={T.colors.t3} />
               </View>
-              <View style={s.nfRow}>
-                <Text style={s.nfLabel}>Serving Size</Text>
-                <TextInput style={[s.nfInput, { flex: 1, marginLeft: 16 }]} value={portion} onChangeText={setPortion} placeholder="---" placeholderTextColor="#999" />
+              <View style={s.receiptRow}>
+                <Text style={s.receiptLabel}>Qty</Text>
+                <TextInput style={[s.receiptInput, { flex: 1, marginLeft: 16 }]} value={portion} onChangeText={setPortion} placeholder="---" placeholderTextColor={T.colors.t3} />
               </View>
-              <View style={[s.nfThickDivider, { borderBottomWidth: 10 }]} />
+              <View style={s.receiptDivider} />
               
-              <View style={s.nfRow}>
-                <View>
-                  <Text style={[s.nfLabel, { fontSize: 14 }]}>Amount Per Serving</Text>
-                  <Text style={s.nfCaloriesTitle}>Calories</Text>
-                </View>
-                <TextInput style={s.nfCaloriesInput} value={cals} onChangeText={setCals} keyboardType="numeric" placeholder="0" placeholderTextColor="#999" />
+              <View style={s.receiptRow}>
+                <Text style={s.receiptCaloriesTitle}>Calories</Text>
+                <TextInput style={s.receiptCaloriesInput} value={cals} onChangeText={setCals} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
               </View>
-              <View style={[s.nfThickDivider, { borderBottomWidth: 5 }]} />
+              <View style={s.receiptDivider} />
               
-              <View style={s.nfRow}>
-                <Text style={[s.nfLabel, { fontWeight: '900' }]}>Total Fat <Text style={{fontWeight: '500'}}>g</Text></Text>
-                <TextInput style={s.nfInput} value={fat} onChangeText={setFat} keyboardType="numeric" placeholder="0" placeholderTextColor="#999" />
+              <View style={s.receiptRow}>
+                <Text style={s.receiptLabel}>Fat (g)</Text>
+                <TextInput style={s.receiptInput} value={fat} onChangeText={setFat} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
               </View>
-              <View style={s.nfThinDivider} />
               
-              <View style={s.nfRow}>
-                <Text style={[s.nfLabel, { fontWeight: '900' }]}>Total Carbohydrate <Text style={{fontWeight: '500'}}>g</Text></Text>
-                <TextInput style={s.nfInput} value={carbs} onChangeText={setCarbs} keyboardType="numeric" placeholder="0" placeholderTextColor="#999" />
+              <View style={s.receiptRow}>
+                <Text style={s.receiptLabel}>Carbs (g)</Text>
+                <TextInput style={s.receiptInput} value={carbs} onChangeText={setCarbs} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
               </View>
-              <View style={s.nfThinDivider} />
 
-              <View style={[s.nfRow, { paddingLeft: 16 }]}>
-                <Text style={s.nfLabel}>Dietary Fiber <Text style={{fontWeight: '500'}}>g</Text></Text>
-                <TextInput style={s.nfInput} value={fiber} onChangeText={setFiber} keyboardType="numeric" placeholder="0" placeholderTextColor="#999" />
+              <View style={[s.receiptRow, { paddingLeft: 16 }]}>
+                <Text style={[s.receiptLabel, { fontSize: 12 }]}>Fiber (g)</Text>
+                <TextInput style={[s.receiptInput, { fontSize: 14 }]} value={fiber} onChangeText={setFiber} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
               </View>
-              <View style={s.nfThinDivider} />
 
-              <View style={[s.nfRow, { paddingLeft: 16 }]}>
-                <Text style={s.nfLabel}>Total Sugars <Text style={{fontWeight: '500'}}>g</Text></Text>
-                <TextInput style={s.nfInput} value={sugar} onChangeText={setSugar} keyboardType="numeric" placeholder="0" placeholderTextColor="#999" />
+              <View style={[s.receiptRow, { paddingLeft: 16 }]}>
+                <Text style={[s.receiptLabel, { fontSize: 12 }]}>Sugars (g)</Text>
+                <TextInput style={[s.receiptInput, { fontSize: 14 }]} value={sugar} onChangeText={setSugar} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
               </View>
-              <View style={s.nfThinDivider} />
 
-              <View style={s.nfRow}>
-                <Text style={[s.nfLabel, { fontWeight: '900' }]}>Protein <Text style={{fontWeight: '500'}}>g</Text></Text>
-                <TextInput style={s.nfInput} value={pro} onChangeText={setPro} keyboardType="numeric" placeholder="0" placeholderTextColor="#999" />
+              <View style={s.receiptRow}>
+                <Text style={s.receiptLabel}>Protein (g)</Text>
+                <TextInput style={s.receiptInput} value={pro} onChangeText={setPro} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
               </View>
-              <View style={[s.nfThickDivider, { borderBottomWidth: 10 }]} />
+              <View style={s.receiptDivider} />
               
-              <View style={s.nfRow}>
-                <Text style={s.nfLabel}>Water Intake <Text style={{fontWeight: '500'}}>ml</Text></Text>
-                <TextInput style={s.nfInput} value={waterMl} onChangeText={setWaterMl} keyboardType="numeric" placeholder="0" placeholderTextColor="#999" />
+              <View style={s.receiptRow}>
+                <Text style={s.receiptLabel}>Water (ml)</Text>
+                <TextInput style={s.receiptInput} value={waterMl} onChangeText={setWaterMl} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
               </View>
             </View>
 
@@ -382,61 +375,64 @@ const useS = (T: any) => StyleSheet.create({
   },
   saveBtnText: { color: '#000', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
 
-  // Nutrition Facts receipt styles
-  nfCard: {
-    backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: '#000',
-    padding: 12,
+  // Receipt styles
+  receiptCard: {
+    backgroundColor: T.colors.bg1,
+    borderWidth: 1,
+    borderColor: T.colors.b1,
+    borderStyle: 'dashed',
+    padding: 16,
     marginBottom: 24,
+    borderRadius: T.radii.sm,
   },
-  nfTitle: {
-    fontSize: 36,
-    fontWeight: '900',
-    color: '#000',
-    letterSpacing: -1,
-    marginBottom: 4,
+  receiptTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: T.colors.t1,
+    textAlign: 'center',
+    letterSpacing: 2,
+    marginBottom: 12,
   },
-  nfThickDivider: {
-    borderBottomWidth: 5,
-    borderBottomColor: '#000',
-    marginVertical: 4,
-  },
-  nfThinDivider: {
+  receiptDivider: {
     borderBottomWidth: 1,
-    borderBottomColor: '#000',
+    borderBottomColor: T.colors.b1,
+    borderStyle: 'dashed',
+    marginVertical: 8,
   },
-  nfRow: {
+  receiptRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 4,
+    paddingVertical: 6,
   },
-  nfLabel: {
+  receiptLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: T.colors.t2,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  receiptInput: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#000',
-  },
-  nfInput: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#000',
-    textAlign: 'right',
-    minWidth: 40,
-    padding: 0,
-  },
-  nfCaloriesTitle: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#000',
-    marginTop: -4,
-  },
-  nfCaloriesInput: {
-    fontSize: 36,
-    fontWeight: '900',
-    color: '#000',
+    color: T.colors.t1,
     textAlign: 'right',
     minWidth: 60,
+    padding: 0,
+  },
+  receiptCaloriesTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: T.colors.t1,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  receiptCaloriesInput: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: T.colors.t1,
+    textAlign: 'right',
+    minWidth: 80,
     padding: 0,
   },
 });
