@@ -1,5 +1,6 @@
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 import dayjs from 'dayjs';
+import { formatDuration } from '../utils/format';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
@@ -103,7 +104,7 @@ export default function WorkoutDetailScreen() {
               </View>
               <View style={s.shareCol}>
                 <Text style={s.shareLabel}>TIME</Text>
-                <Text style={s.shareVal}>{workout.durationMin} min</Text>
+                <Text style={s.shareVal}>{formatDuration(workout.durationMin)}</Text>
               </View>
             </View>
             <Text style={s.brandText}>Tracked with FORGE</Text>
@@ -126,7 +127,7 @@ export default function WorkoutDetailScreen() {
           </View>
           <View style={s.cGridItem}>
             <Text style={s.cLabel}>Moving Time</Text>
-            <Text style={s.cVal}>{workout.durationMin}m 00s</Text>
+            <Text style={s.cVal}>{formatDuration(workout.durationMin)}</Text>
           </View>
           <View style={s.cGridItem}>
             <Text style={s.cLabel}>Steps</Text>
@@ -171,8 +172,10 @@ export default function WorkoutDetailScreen() {
       {/* Stats Grid */}
       <View style={s.sStatsGrid}>
         <View style={s.sStatCard}>
-          <Text style={s.sStatVal}>{workout.durationMin ?? 0}</Text>
-          <Text style={s.sStatLbl}>MIN</Text>
+          <Text style={[s.sStatVal, (workout.durationMin ?? 0) >= 60 && { fontSize: 16 }]}>
+            {formatDuration(workout.durationMin ?? 0)}
+          </Text>
+          <Text style={s.sStatLbl}>DURATION</Text>
         </View>
         <View style={s.sStatCard}>
           <Text style={s.sStatVal}>{totalVolume.toLocaleString()}</Text>

@@ -2,6 +2,7 @@ import { BEAR } from '@/constants/bearAssets';
 import { useAllNutritionLogs } from '@/hooks/useAllNutritionLogs';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 import dayjs from 'dayjs';
+import { formatDuration } from '../utils/format';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React, { useMemo } from 'react';
@@ -58,7 +59,7 @@ export default function WorkoutHistoryScreen() {
       });
 
       const pills: ActivityItem['pills'] = [];
-      if (w.durationMin) pills.push({ label: `${w.durationMin} min` });
+      if (w.durationMin) pills.push({ label: formatDuration(w.durationMin) });
 
       if (isCardio && w.distanceKm) {
         pills.push({ label: `${w.distanceKm} km`, accent: true });

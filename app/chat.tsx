@@ -257,7 +257,7 @@ export default function ChatScreen() {
             <Text style={s.headerTitle} maxFontSizeMultiplier={1.2}>FORGE Coach</Text>
             <View style={s.onlineDot}>
               <View style={s.onlineDotCircle} />
-              <Text style={s.onlineText} maxFontSizeMultiplier={1.2}>Online · Groq AI (Llama 3.3)</Text>
+              <Text style={s.onlineText} maxFontSizeMultiplier={1.2}>Online</Text>
             </View>
           </View>
         </View>
