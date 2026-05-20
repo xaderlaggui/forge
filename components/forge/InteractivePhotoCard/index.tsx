@@ -1,20 +1,20 @@
+import { ChevronUp, Sparkles } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
-import { View, Image, StyleSheet, Dimensions, LayoutChangeEvent, Text, TouchableOpacity } from 'react-native';
+import { Dimensions, Image, LayoutChangeEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  interpolate,
   Extrapolate,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
 } from 'react-native-reanimated';
-import { ChevronUp, Sparkles } from 'lucide-react-native';
 
 import { useForgeTheme } from '@/hooks/useForgeTheme';
-import { InteractivePhotoCardProps, StickerTheme } from './InteractivePhotoCardTypes';
 import { useStyles } from './InteractivePhotoCardStyles';
-import { StatsPanel } from './StatsPanel';
+import { InteractivePhotoCardProps, StickerTheme } from './InteractivePhotoCardTypes';
 import { OffScreenStickerTemplate } from './OffScreenStickerTemplate';
+import { StatsPanel } from './StatsPanel';
 import { StickerShareModal } from './StickerShareModal';
 
 export function InteractivePhotoCard({
@@ -32,6 +32,7 @@ export function InteractivePhotoCard({
   const [imageAspect, setImageAspect] = useState<number | null>(null);
   const [stickerTheme, setStickerTheme] = useState<StickerTheme>('white');
   const [isShareModalVisible, setIsShareModalVisible] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   // Animation values
   const swipeProgress = useSharedValue(0);
@@ -192,10 +193,16 @@ export function InteractivePhotoCard({
     };
   });
 
-  const handleShareExport = () => {
-    // This executes the actual ViewShot export via workoutDetail.tsx reference
-    shareImage();
-    setIsShareModalVisible(false);
+  const handleShareExport = async () => {
+    setIsSharing(true);
+    try {
+      await new Promise(resolve => requestAnimationFrame(resolve)); // let ViewShot render
+      await shareImage();
+    } catch (e) {
+      console.error('Share failed:', e);
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   return (
@@ -260,6 +267,7 @@ export function InteractivePhotoCard({
         shareImage={handleShareExport}
         isSharing={false}
         shareViewShotRef={shareViewShotRef}
+
       />
     </>
   );

@@ -1,19 +1,19 @@
 import { useForgeTheme } from "@/hooks/useForgeTheme";
+import { supabase } from '@/services/supabase';
+import { useAuthStore } from '@/stores/authStore';
 import dayjs from 'dayjs';
-import { formatDuration } from '../utils/format';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { Camera, ChevronLeft, Share as ShareIcon } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ViewShot from 'react-native-view-shot';
 import { ForgeButton } from '../components/forge/ForgeButton';
-import { useWorkouts } from '../hooks/useWorkouts';
-import * as FileSystem from 'expo-file-system/legacy';
-import { supabase } from '@/services/supabase';
-import { useAuthStore } from '@/stores/authStore';
 import { InteractivePhotoCard } from '../components/forge/InteractivePhotoCard';
+import { useWorkouts } from '../hooks/useWorkouts';
+import { formatDuration } from '../utils/format';
 
 export default function WorkoutDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -110,15 +110,11 @@ export default function WorkoutDetailScreen() {
     }
   };
 
-  const shareImage = async () => {
-    try {
-      if (shareViewShotRef.current && shareViewShotRef.current.capture) {
-        const uri = await shareViewShotRef.current.capture();
-        await Sharing.shareAsync(uri, { dialogTitle: 'Share Workout' });
-      }
-    } catch (e) {
-      console.log('Error sharing', e);
-    }
+  // AFTER
+  const shareImage = async (): Promise<void> => {
+    if (!shareViewShotRef.current?.capture) return;
+    const uri = await shareViewShotRef.current.capture();
+    await Sharing.shareAsync(uri, { dialogTitle: 'Share Workout' });
   };
 
   // Calculations for Strength
