@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Alert } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../../../services/supabase';
@@ -119,7 +120,7 @@ export function useProgressData() {
   const maxVol  = Math.max(...allVols);
 
   // ── Camera ──
-  const uploadPhoto = async (uri: string) => {
+  const uploadPhoto = async (uri: string, targetIndex?: number) => {
     if (!user?.uid) { alert('You must be logged in to upload photos.'); return; }
     setIsUploading(true);
     try {
@@ -153,7 +154,13 @@ export function useProgressData() {
         .single();
         
       const existing = profile?.progress_photos || [];
-      const updatedPhotos = [...existing, { url: publicUrl, date: new Date().toISOString() }];
+      const updatedPhotos = [...existing];
+      
+      if (targetIndex !== undefined && targetIndex >= 0 && targetIndex < updatedPhotos.length) {
+        updatedPhotos[targetIndex] = { url: publicUrl, date: new Date().toISOString() };
+      } else {
+        updatedPhotos.push({ url: publicUrl, date: new Date().toISOString() });
+      }
       
       await supabase.from('profiles').update({
         progress_photos: updatedPhotos
@@ -171,11 +178,35 @@ export function useProgressData() {
     }
   };
 
-  const takePhoto = async () => {
-    const perm = await ImagePicker.requestCameraPermissionsAsync();
-    if (!perm.granted) { alert('Camera permission required.'); return; }
-    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [3, 4], quality: 0.6 });
-    if (!result.canceled) uploadPhoto(result.assets[0].uri);
+  const takePhoto = async (targetIndex?: number) => {
+    Alert.alert(
+      'Upload Progress Photo',
+      'Select a source for your photo:',
+      [
+        {
+          text: 'Take Photo (Camera)',
+          onPress: async () => {
+            const perm = await ImagePicker.requestCameraPermissionsAsync();
+            if (!perm.granted) { alert('Camera permission required.'); return; }
+            const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [3, 4], quality: 0.6 });
+            if (!result.canceled) uploadPhoto(result.assets[0].uri, targetIndex);
+          }
+        },
+        {
+          text: 'Choose from Album (Library)',
+          onPress: async () => {
+            const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!perm.granted) { alert('Photo library permission required.'); return; }
+            const result = await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [3, 4], quality: 0.6 });
+            if (!result.canceled) uploadPhoto(result.assets[0].uri, targetIndex);
+          }
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        }
+      ]
+    );
   };
 
   return {

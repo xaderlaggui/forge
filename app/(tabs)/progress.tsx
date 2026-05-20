@@ -106,6 +106,7 @@ export default function ProgressScreen() {
         <ProgressPhotos
           firstPhoto={firstPhoto}
           lastPhoto={lastPhoto}
+          photosLength={(user as any)?.progress_photos?.length || 0}
           isUploading={isUploading}
           onTakePhoto={takePhoto}
         />
