@@ -4,12 +4,16 @@ import { formatDuration } from '../utils/format';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
-import { Camera, ChevronLeft, MapPin, Share as ShareIcon } from 'lucide-react-native';
+import { Camera, ChevronLeft, Share as ShareIcon } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ViewShot from 'react-native-view-shot';
 import { ForgeButton } from '../components/forge/ForgeButton';
 import { useWorkouts } from '../hooks/useWorkouts';
+import * as FileSystem from 'expo-file-system/legacy';
+import { supabase } from '@/services/supabase';
+import { useAuthStore } from '@/stores/authStore';
+import { InteractivePhotoCard } from '../components/forge/InteractivePhotoCard';
 
 export default function WorkoutDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -17,11 +21,13 @@ export default function WorkoutDetailScreen() {
   const { T } = useForgeTheme();
   const s = useStyles(T);
   const { workouts, updateWorkout } = useWorkouts();
+  const { user } = useAuthStore();
 
   const workout = workouts.find((w) => w.id === id);
   const viewShotRef = useRef<ViewShot>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(workout?.photoUrl || null);
   const [useLbs, setUseLbs] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     if (workout && workout.photoUrl) {
@@ -32,9 +38,9 @@ export default function WorkoutDetailScreen() {
   if (!workout) {
     return (
       <View style={s.container}>
-        <View style={s.header}>
-          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-            <ChevronLeft size={24} color={T.colors.t1} />
+        <View style={s.headerMinimal}>
+          <TouchableOpacity onPress={() => router.back()} style={s.borderedBackBtn}>
+            <ChevronLeft size={20} color={T.colors.t1} />
           </TouchableOpacity>
         </View>
         <Text style={[s.title, { padding: 20 }]}>Workout not found</Text>
@@ -47,13 +53,58 @@ export default function WorkoutDetailScreen() {
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      allowsEditing: true,
+      allowsEditing: false, // PRESERVE ORIGINAL DIMENSIONS
       quality: 1,
     });
     if (!result.canceled && result.assets[0]) {
-      setPhotoUri(result.assets[0].uri);
-      if (updateWorkout) {
-        updateWorkout({ ...workout, photoUrl: result.assets[0].uri });
+      const uri = result.assets[0].uri;
+      setPhotoUri(uri);
+
+      if (user?.uid) {
+        setIsUploading(true);
+        try {
+          // 1. Read local file as base64
+          const base64 = await FileSystem.readAsStringAsync(uri, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+
+          // 2. Decode base64 to bytes
+          const binaryStr = atob(base64);
+          const bytes = new Uint8Array(binaryStr.length);
+          for (let i = 0; i < binaryStr.length; i++) {
+            bytes[i] = binaryStr.charCodeAt(i);
+          }
+
+          // 3. Upload to Supabase Storage bucket 'progress'
+          const path = `workouts/${user.uid}/${Date.now()}.jpg`;
+          const { error: uploadError } = await supabase.storage
+            .from('progress')
+            .upload(path, bytes, { contentType: 'image/jpeg' });
+
+          if (uploadError) throw uploadError;
+
+          // 4. Retrieve remote URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('progress')
+            .getPublicUrl(path);
+
+          setPhotoUri(publicUrl);
+          if (updateWorkout) {
+            await updateWorkout({ ...workout, photoUrl: publicUrl });
+          }
+        } catch (e) {
+          console.error('Error uploading photo to Supabase:', e);
+          alert('Failed to save to cloud. Saved locally instead.');
+          if (updateWorkout) {
+            updateWorkout({ ...workout, photoUrl: uri });
+          }
+        } finally {
+          setIsUploading(false);
+        }
+      } else {
+        if (updateWorkout) {
+          updateWorkout({ ...workout, photoUrl: uri });
+        }
       }
     }
   };
@@ -79,83 +130,68 @@ export default function WorkoutDetailScreen() {
   const totalVolume = useLbs ? Math.round(totalVolumeKg * 2.20462) : totalVolumeKg;
 
   const renderCardioView = () => (
-    <View style={s.cardioContainer}>
-      <ViewShot ref={viewShotRef} style={{ backgroundColor: T.colors.bg1 }} options={{ format: 'jpg', quality: 0.9 }}>
-        {photoUri ? (
-          <View style={s.shareCard}>
-            <Image source={{ uri: photoUri }} style={StyleSheet.absoluteFillObject} />
-            <View style={s.darkGradient} />
+    <View style={{ flex: 1 }}>
+      {photoUri ? (
+        <ViewShot ref={viewShotRef} style={{ flex: 1, backgroundColor: '#0F0F12' }} options={{ format: 'jpg', quality: 0.9 }}>
+          <InteractivePhotoCard
+            photoUri={photoUri}
+            workout={workout}
+            pickImage={pickImage}
+            shareImage={shareImage}
+            isUploading={isUploading}
+          />
+        </ViewShot>
+      ) : (
+        <View style={s.cardioContainer}>
+          <ViewShot ref={viewShotRef} style={{ backgroundColor: T.colors.bg1 }} options={{ format: 'jpg', quality: 0.9 }}>
+            <View style={[s.shareCard, { backgroundColor: T.colors.bg2, justifyContent: 'center', alignItems: 'center' }]}>
+              <Text style={{ color: T.colors.t3 }}>Add a photo to generate share card</Text>
+            </View>
+          </ViewShot>
 
-            {/* Pseudo Route Line */}
-            <View style={s.routeLineOverlay}>
-              <MapPin size={32} color="#FFF" style={{ position: 'absolute', top: 60, left: 60 }} />
-              {/* Just a placeholder line */}
-              <View style={{ width: 150, height: 4, backgroundColor: '#FFF', position: 'absolute', top: 76, left: 76, transform: [{ rotate: '45deg' }] }} />
+          <View style={s.cardioDetails}>
+            <Text style={s.cTitle}>{workout.notes || 'Morning Activity'}</Text>
+            <Text style={s.cDate}>{dayjs(workout.date).format('MMM D, YYYY')}</Text>
+
+            <View style={s.cGrid}>
+              <View style={s.cGridItem}>
+                <Text style={s.cLabel}>Distance</Text>
+                <Text style={s.cMainVal}>{workout.distanceKm || 0} km</Text>
+              </View>
+              <View style={s.cGridItem}>
+                <Text style={s.cLabel}>Moving Time</Text>
+                <Text style={s.cVal}>{formatDuration(workout.durationMin)}</Text>
+              </View>
+              <View style={s.cGridItem}>
+                <Text style={s.cLabel}>Steps</Text>
+                <Text style={s.cVal}>{workout.steps || 0}</Text>
+              </View>
+              <View style={s.cGridItem}>
+                <Text style={s.cLabel}>Elevation Gain</Text>
+                <Text style={s.cVal}>{workout.elevationGain || 0} m</Text>
+              </View>
             </View>
 
-            <View style={s.shareStatsRow}>
-              <View style={s.shareCol}>
-                <Text style={s.shareLabel}>{workout.type?.toUpperCase() || 'ACTIVITY'}</Text>
-                <Text style={s.shareVal}>{workout.distanceKm || 0} km</Text>
-              </View>
-              <View style={s.shareCol}>
-                <Text style={s.shareLabel}>STEPS</Text>
-                <Text style={s.shareVal}>{workout.steps || 0}</Text>
-              </View>
-              <View style={s.shareCol}>
-                <Text style={s.shareLabel}>TIME</Text>
-                <Text style={s.shareVal}>{formatDuration(workout.durationMin)}</Text>
-              </View>
+            <View style={s.actions}>
+              <ForgeButton
+                label="Add Photo"
+                leftIcon={<Camera size={18} color={T.colors.forge} />}
+                onPress={pickImage}
+                variant="secondary"
+                style={{ flex: 1, marginRight: 8 }}
+                disabled={isUploading}
+              />
+              <ForgeButton
+                label="Share"
+                leftIcon={<ShareIcon size={18} color="#000" />}
+                onPress={shareImage}
+                disabled={true}
+                style={{ flex: 1, marginLeft: 8 }}
+              />
             </View>
-            <Text style={s.brandText}>Tracked with FORGE</Text>
-          </View>
-        ) : (
-          <View style={[s.shareCard, { backgroundColor: T.colors.bg2, justifyContent: 'center', alignItems: 'center' }]}>
-            <Text style={{ color: T.colors.t3 }}>Add a photo to generate share card</Text>
-          </View>
-        )}
-      </ViewShot>
-
-      <View style={s.cardioDetails}>
-        <Text style={s.cTitle}>{workout.notes || 'Morning Activity'}</Text>
-        <Text style={s.cDate}>{dayjs(workout.date).format('MMM D, YYYY')}</Text>
-
-        <View style={s.cGrid}>
-          <View style={s.cGridItem}>
-            <Text style={s.cLabel}>Distance</Text>
-            <Text style={s.cMainVal}>{workout.distanceKm || 0} km</Text>
-          </View>
-          <View style={s.cGridItem}>
-            <Text style={s.cLabel}>Moving Time</Text>
-            <Text style={s.cVal}>{formatDuration(workout.durationMin)}</Text>
-          </View>
-          <View style={s.cGridItem}>
-            <Text style={s.cLabel}>Steps</Text>
-            <Text style={s.cVal}>{workout.steps || 0}</Text>
-          </View>
-          <View style={s.cGridItem}>
-            <Text style={s.cLabel}>Elevation Gain</Text>
-            <Text style={s.cVal}>{workout.elevationGain || 0} m</Text>
           </View>
         </View>
-
-        <View style={s.actions}>
-          <ForgeButton
-            label={photoUri ? "Change Photo" : "Add Photo"}
-            leftIcon={<Camera size={18} color={T.colors.forge} />}
-            onPress={pickImage}
-            variant="secondary"
-            style={{ flex: 1, marginRight: 8 }}
-          />
-          <ForgeButton
-            label="Share"
-            leftIcon={<ShareIcon size={18} color="#000" />}
-            onPress={shareImage}
-            disabled={!photoUri}
-            style={{ flex: 1, marginLeft: 8 }}
-          />
-        </View>
-      </View>
+      )}
     </View>
   );
 
@@ -223,29 +259,45 @@ export default function WorkoutDetailScreen() {
 
   return (
     <View style={s.container}>
-      <View style={s.header}>
-        <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
-          <ChevronLeft size={24} color={T.colors.t1} />
+      <View style={s.headerMinimal}>
+        <TouchableOpacity style={s.borderedBackBtn} onPress={() => router.back()}>
+          <ChevronLeft size={20} color={T.colors.t1} />
         </TouchableOpacity>
-        <Text style={s.headerTitle}>Details</Text>
-        <View style={{ width: 40 }} />
       </View>
-      <ScrollView contentContainerStyle={s.content}>
-        {isCardio ? renderCardioView() : renderStrengthView()}
-      </ScrollView>
+      {isCardio && photoUri ? (
+        renderCardioView()
+      ) : (
+        <ScrollView contentContainerStyle={[s.content, { paddingTop: 110 }]}>
+          {isCardio ? renderCardioView() : renderStrengthView()}
+        </ScrollView>
+      )}
     </View>
   );
 }
 
 const useStyles = (T: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: T.colors.bg0 },
-  header: {
-    flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
-    paddingTop: 60, paddingBottom: 16, paddingHorizontal: 16,
-    backgroundColor: T.colors.bg1, borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
+  headerMinimal: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0,
+    paddingTop: 54, paddingBottom: 12, paddingHorizontal: 20,
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 99,
   },
-  backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: T.colors.t1, paddingBottom: 8 },
+  borderedBackBtn: {
+    width: 38, height: 38,
+    borderRadius: 19,
+    borderWidth: 1, borderColor: T.colors.b1,
+    backgroundColor: T.colors.bg1 + 'CC', // slightly translucent
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   title: { fontSize: 24, fontWeight: '700', color: T.colors.t1 },
   content: { paddingBottom: 40 },
 
