@@ -67,6 +67,7 @@ export default function HomeScreen() {
       {/* ── Composition: Quick Stats ── */}
       <QuickStatsRow 
         volumeLbs={data.totalVolumeLbs}
+        volumeChangePct={data.volumeChangePct}
         streak={data.streak}
         workoutsThisWeek={data.workoutsThisWeek}
       />

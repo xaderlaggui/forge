@@ -97,16 +97,32 @@ export function useDashboardData() {
     return isDone;
   });
 
-  let totalVolumeLbs = 0;
-  workouts?.forEach(w => {
-    w.exercises?.forEach((ex: any) => {
-      ex.sets?.forEach((s: any) => {
-        const wt = s.weight || 0;
-        const r = s.reps || 0;
-        totalVolumeLbs += (wt * r); // Assumes mostly lbs, adjust if needed
-      });
+  const getVolumeForDate = (dateStr: string) => {
+    let vol = 0;
+    workouts?.forEach(w => {
+      if (w.date === dateStr) {
+        w.exercises?.forEach((ex: any) => {
+          ex.sets?.forEach((s: any) => {
+            const wt = s.weight || 0;
+            const r = s.reps || 0;
+            vol += (wt * r);
+          });
+        });
+      }
     });
-  });
+    return vol;
+  };
+
+  const todayVolumeLbs = getVolumeForDate(todayDate);
+  const yesterdayDate = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+  const yesterdayVolumeLbs = getVolumeForDate(yesterdayDate);
+
+  let volumeChangePct = 0;
+  if (yesterdayVolumeLbs > 0) {
+    volumeChangePct = Math.round(((todayVolumeLbs - yesterdayVolumeLbs) / yesterdayVolumeLbs) * 100);
+  } else if (todayVolumeLbs > 0) {
+    volumeChangePct = 100;
+  }
 
   return {
     user,
@@ -123,7 +139,8 @@ export function useDashboardData() {
     recentWorkouts,
     weekActivity,
     workoutsThisWeek,
-    totalVolumeLbs,
+    totalVolumeLbs: todayVolumeLbs,
+    volumeChangePct,
     streak,
     restDayIndices,
   };

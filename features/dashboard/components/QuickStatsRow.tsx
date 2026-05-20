@@ -4,11 +4,12 @@ import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 interface QuickStatsRowProps {
   volumeLbs: number;
+  volumeChangePct: number;
   streak: number;
   workoutsThisWeek: number;
 }
 
-export function QuickStatsRow({ volumeLbs, streak, workoutsThisWeek }: QuickStatsRowProps) {
+export function QuickStatsRow({ volumeLbs, volumeChangePct, streak, workoutsThisWeek }: QuickStatsRowProps) {
   const { T } = useForgeTheme();
   const s = useStyles(T);
 
@@ -18,12 +19,22 @@ export function QuickStatsRow({ volumeLbs, streak, workoutsThisWeek }: QuickStat
     return vol.toString();
   };
 
+  const renderPctChange = () => {
+    if (volumeChangePct > 0) {
+      return <Text style={[s.sub, { color: T.colors.green }]}>+{volumeChangePct}%</Text>;
+    }
+    if (volumeChangePct < 0) {
+      return <Text style={[s.sub, { color: T.colors.red }]}>{volumeChangePct}%</Text>;
+    }
+    return <Text style={[s.sub, { color: T.colors.t3 }]}>0%</Text>;
+  };
+
   return (
     <View style={s.container}>
       <View style={s.statCard}>
         <Text style={s.label}>VOLUME</Text>
         <Text style={s.value}>{formatVol(volumeLbs)}</Text>
-        <Text style={[s.sub, { color: T.colors.green }]}>+12%</Text>
+        {renderPctChange()}
       </View>
       <View style={s.statCard}>
         <Text style={s.label}>STREAK</Text>
