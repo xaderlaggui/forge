@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { Check, Flame, Play } from 'lucide-react-native';
+import React, { useMemo } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 interface WeeklyProgressDotsProps {
   weekActivity: boolean[]; // Array of 7 booleans (Mon-Sun), true if worked out
@@ -18,10 +18,10 @@ export function WeeklyProgressDots({ weekActivity, streak, restDayIndices = [] }
     const now = new Date();
     const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
     const todayPH = new Date(utc + (3600000 * 8)); // UTC+8
-    
+
     const dayOfWeek = todayPH.getDay();
     const currentIdx = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    
+
     const startOfWeek = new Date(todayPH);
     startOfWeek.setDate(todayPH.getDate() - currentIdx);
 
@@ -31,7 +31,7 @@ export function WeeklyProgressDots({ weekActivity, streak, restDayIndices = [] }
       d.setDate(startOfWeek.getDate() + i);
       dates.push(d);
     }
-    
+
     return { weekDates: dates, todayIdx: currentIdx };
   }, []);
 
@@ -46,7 +46,7 @@ export function WeeklyProgressDots({ weekActivity, streak, restDayIndices = [] }
           <Flame size={14} color={T.colors.forge} />
         </View>
       </View>
-      
+
       <View style={s.card}>
         {weekDates.map((dateObj, idx) => {
           const isDone = weekActivity[idx];
@@ -65,18 +65,18 @@ export function WeeklyProgressDots({ weekActivity, streak, restDayIndices = [] }
           // Determine text colors
           const labelColor = isToday ? T.colors.bg0
             : isRest && !isDone ? '#6B8EBF'
-            : T.colors.t3;
+              : T.colors.t3;
           const dateColor = isToday ? T.colors.bg0
             : isDone ? T.colors.forge
-            : isRest && !isFuture ? '#6B8EBF'
-            : T.colors.t1;
+              : isRest && !isFuture ? '#6B8EBF'
+                : T.colors.t1;
 
           return (
             <View key={idx} style={pillStyle}>
               <Text style={[s.dayLabel, { color: labelColor }]}>
                 {dayLabel}
               </Text>
-              
+
               <Text style={[s.dateNum, { color: dateColor }]}>
                 {dateNum}
               </Text>
@@ -137,7 +137,7 @@ const useStyles = (T: any) => StyleSheet.create({
   dayPill: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
+    paddingVertical: 5,
     width: 40,
     borderRadius: 20,
     gap: 4,
@@ -151,7 +151,7 @@ const useStyles = (T: any) => StyleSheet.create({
     elevation: 4,
   },
   dayPillDone: {
-    backgroundColor: 'rgba(255, 92, 46, 0.08)', 
+    backgroundColor: 'rgba(255, 92, 46, 0.08)',
   },
   dayPillRest: {
     backgroundColor: 'rgba(107, 142, 191, 0.12)',
