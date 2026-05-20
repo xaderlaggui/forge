@@ -1,8 +1,8 @@
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { useUIStore } from '@/stores/uiStore';
 import { BottomTabBar } from '@react-navigation/bottom-tabs';
-import { Tabs, useRouter } from 'expo-router';
-import { Dumbbell, Home, PieChart, Settings, Sparkles, TrendingUp } from 'lucide-react-native';
+import { Tabs, usePathname, useRouter } from 'expo-router';
+import { Dumbbell, Home, PieChart, Settings, Sparkles, TrendingUp, UtensilsCrossed } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useDerivedValue, withTiming } from 'react-native-reanimated';
@@ -13,31 +13,54 @@ function ForgeFAB() {
   const styles = useStyles(T);
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
 
-  const aiColor = '#BF5AF2'; // Distinct purple for AI Coach
+  const aiColor = '#BF5AF2';
+  const isHome = pathname === '/' || pathname === '/index';
+  const isNutrition = pathname === '/nutrition';
+  const isVisible = isHome || isNutrition;
 
   const isTabBarVisible = useUIStore(s => s.isTabBarVisible);
   const translateY = useDerivedValue(() => {
-    // FAB starts at bottom 85 + insets. We need a larger translation to push it fully offscreen
-    return withTiming(isTabBarVisible ? 0 : 250, { duration: 300, easing: Easing.out(Easing.exp) });
-  }, [isTabBarVisible]);
+    return withTiming(!isTabBarVisible || !isVisible ? 250 : 0, { duration: 300, easing: Easing.out(Easing.exp) });
+  }, [isTabBarVisible, isVisible]);
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }]
   }));
 
-  return (
-    <Animated.View style={[styles.fabWrapper, animatedStyle, { bottom: 85 + insets.bottom }]}>
-      <TouchableOpacity
-        style={[styles.fab, { backgroundColor: aiColor, shadowColor: aiColor }]}
-        onPress={() => router.push('/chat')}
-        activeOpacity={0.85}
-        accessibilityLabel="AI Coach"
-        accessibilityRole="button"
-      >
-        <Sparkles size={24} color="#fff" strokeWidth={2.5} />
-      </TouchableOpacity>
-    </Animated.View>
-  );
+  if (isNutrition) {
+    return (
+      <Animated.View style={[styles.fabWrapper, animatedStyle, { bottom: 85 + insets.bottom }]}>
+        <TouchableOpacity
+          style={[styles.fab, { backgroundColor: T.colors.forge, shadowColor: T.colors.forge }]}
+          onPress={() => router.push('/addMeal')}
+          activeOpacity={0.85}
+          accessibilityLabel="Add Meal"
+          accessibilityRole="button"
+        >
+          <UtensilsCrossed size={24} color="#fff" strokeWidth={2.5} />
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  }
+
+  if (isHome) {
+    return (
+      <Animated.View style={[styles.fabWrapper, animatedStyle, { bottom: 85 + insets.bottom }]}>
+        <TouchableOpacity
+          style={[styles.fab, { backgroundColor: aiColor, shadowColor: aiColor }]}
+          onPress={() => router.push('/chat')}
+          activeOpacity={0.85}
+          accessibilityLabel="AI Coach"
+          accessibilityRole="button"
+        >
+          <Sparkles size={24} color="#fff" strokeWidth={2.5} />
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  }
+
+  return null;
 }
 
 const TabIcon = ({ Icon, color, focused, T }: { Icon: any, color: string, focused: boolean, T: any }) => (

@@ -357,7 +357,7 @@ const useS = (T: any) => StyleSheet.create({
   container: { backgroundColor: T.colors.bg0 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingTop: 16, paddingBottom: 7,
+    paddingHorizontal: 16, paddingTop: 16, paddingBottom: 2,
   },
   iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 14, fontWeight: '700', color: T.colors.t3, letterSpacing: 1 },
@@ -393,7 +393,7 @@ const useS = (T: any) => StyleSheet.create({
 
   caloriesRing: {
     alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 20, paddingHorizontal: 32,
+    paddingVertical: 25, paddingHorizontal: 32,
     borderRadius: 999,
     borderWidth: 1, borderColor: T.colors.forge + '4D',
     marginBottom: 20,
@@ -409,20 +409,20 @@ const useS = (T: any) => StyleSheet.create({
   card: {
     flex: 1, minWidth: '45%',
     backgroundColor: T.colors.bg1,
-    borderRadius: 12, padding: 12,
+    borderRadius: 12, padding: 25,
     borderWidth: 1, borderColor: T.colors.b1
   },
   cardHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8
   },
-  cardLabel: { fontSize: 10, fontWeight: '700', color: T.colors.t2, letterSpacing: 1 },
+  cardLabel: { fontSize: 11, fontWeight: '700', color: T.colors.t2, letterSpacing: 1 },
   cardValueRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 4 },
-  cardValue: { fontSize: 20, fontWeight: '900', color: T.colors.t1, textAlign: 'center', minWidth: 30, padding: 0 },
+  cardValue: { fontSize: 23, fontWeight: '900', color: T.colors.t1, textAlign: 'center', minWidth: 30, padding: 0 },
   cardUnit: { fontSize: 11, fontWeight: '600', color: T.colors.t3, marginBottom: 2 },
 
   notesRow: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 8,
-    width: '100%', paddingHorizontal: 8, marginBottom: 20
+    width: '100%', paddingHorizontal: 8, marginBottom: 15
   },
   notesText: { flex: 1, fontSize: 11, fontWeight: '500', color: T.colors.t3, lineHeight: 16 },
 

@@ -1,22 +1,21 @@
 import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ForgeSegment } from '../../components/forge/ForgeSegment';
-import { MascotImages } from '../../constants/mascotImages';
 
 // Feature Modules
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { DailyPlanCard } from '../../features/planner/components/DailyPlanCard';
 import { ExerciseLibrary } from '../../features/planner/components/ExerciseLibrary';
 import { RoutineList } from '../../features/planner/components/RoutineList';
 import { WeeklyCalendar } from '../../features/planner/components/WeeklyCalendar';
 import { usePlannerData } from '../../features/planner/hooks/usePlannerData';
-import { useForgeTheme } from "@/hooks/useForgeTheme";
 
 import { useScrollToHideNav } from '../../hooks/useScrollToHideNav';
 
 export default function WorkoutScreen() {
-    const { T } = useForgeTheme();
-    const s = useS(T);
-    const { onScroll } = useScrollToHideNav();
+  const { T } = useForgeTheme();
+  const s = useS(T);
+  const { onScroll } = useScrollToHideNav();
   // Clean Architecture: Hook handles all state, formatting, and fetching
   const {
     activeTab, setActiveTab,
@@ -30,7 +29,10 @@ export default function WorkoutScreen() {
       {/* ── Composition: Header ── */}
       <View style={s.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: T.spacing.px4 }}>
-          <Text style={s.title} maxFontSizeMultiplier={1.2}>Workout Planner</Text>
+          <View>
+            <Text style={s.headerSub} maxFontSizeMultiplier={1.2}>Your Training</Text>
+            <Text style={s.title} maxFontSizeMultiplier={1.2}>Workout Planner</Text>
+          </View>
         </View>
         <ForgeSegment
           options={['Planner', 'Routines', 'Library']}
@@ -68,11 +70,12 @@ export default function WorkoutScreen() {
 }
 
 const useS = (T: any) => StyleSheet.create({
-          container: { flex: 1, backgroundColor: T.colors.bg0 },
-          header: {
-            paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: T.spacing.px4,
-            backgroundColor: T.colors.bg0, borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
-          },
-          title: { fontSize: T.typography.sizes.h1, fontWeight: '700', color: T.colors.t1 },
-          plannerContainer: { padding: T.spacing.page, paddingBottom: 100 },
-        });
+  container: { flex: 1, backgroundColor: T.colors.bg0 },
+  header: {
+    paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: T.spacing.px4,
+    backgroundColor: T.colors.bg0, borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
+  },
+  headerSub: { fontSize: T.typography.sizes.bodyS, color: T.colors.t2, fontWeight: '500', marginBottom: 2 },
+  title: { fontSize: T.typography.sizes.h1, fontWeight: '700', color: T.colors.t1 },
+  plannerContainer: { padding: T.spacing.page, paddingBottom: 100 },
+});

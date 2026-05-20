@@ -1,7 +1,5 @@
-import { useRouter } from 'expo-router';
-import { Plus } from 'lucide-react-native';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 // Feature dependencies
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { MascotImage } from '../../components/common/MascotImage';
@@ -17,7 +15,6 @@ import { useScrollToHideNav } from '../../hooks/useScrollToHideNav';
 export default function NutritionScreen() {
   const { T } = useForgeTheme();
   const s = useS(T);
-  const router = useRouter();
   const { onScroll } = useScrollToHideNav();
 
   // Clean Architecture: Logic and data fetching are handled by the hook
@@ -49,13 +46,6 @@ export default function NutritionScreen() {
             <Text style={s.headerTitle} maxFontSizeMultiplier={1.2}>Nutrition</Text>
           </View>
         </View>
-        <TouchableOpacity
-          style={s.addBtn}
-          onPress={() => router.push('/addMeal')}
-          activeOpacity={0.8}
-        >
-          <Plus size={18} color="#fff" strokeWidth={2.5} />
-        </TouchableOpacity>
       </View>
 
       {/* ── Composition: Daily Stats ── */}
@@ -103,11 +93,4 @@ const useS = (T: any) => StyleSheet.create({
   },
   headerSub: { fontSize: T.typography.sizes.bodyS, color: T.colors.t2, fontWeight: '500', marginBottom: 2 },
   headerTitle: { fontSize: T.typography.sizes.h1, fontWeight: '700', color: T.colors.t1 },
-  addBtn: {
-    width: 40, height: 40, borderRadius: T.radii.full,
-    backgroundColor: T.colors.forge,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: T.colors.forge,
-    shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6,
-  },
 });
