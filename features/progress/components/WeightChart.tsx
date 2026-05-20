@@ -21,6 +21,45 @@ export function WeightChart({
 }: WeightChartProps) {
   const { T } = useForgeTheme();
   const s = useS(T);
+
+  // Calculate clean Y-axis parameters
+  let yAxisOffset = 0;
+  let stepValue = 5;
+  let noOfSections = 4;
+
+  if (minVal === maxVal) {
+    // Constant weight case (e.g., 200 lbs)
+    stepValue = 4;
+    noOfSections = 4;
+    yAxisOffset = minVal - 8; // Center it: 2 sections below, 2 sections above (e.g., 192, 196, 200, 204, 208)
+  } else {
+    const diff = maxVal - minVal;
+    
+    // Choose a clean step value
+    if (diff <= 4) {
+      stepValue = 1;
+    } else if (diff <= 8) {
+      stepValue = 2;
+    } else if (diff <= 16) {
+      stepValue = 4;
+    } else if (diff <= 25) {
+      stepValue = 5;
+    } else if (diff <= 50) {
+      stepValue = 10;
+    } else {
+      stepValue = Math.ceil(diff / 4);
+    }
+
+    // Floor the yAxisOffset to a multiple of stepValue for clean labels
+    yAxisOffset = Math.floor((minVal - 2) / stepValue) * stepValue;
+    
+    // Calculate sections needed to cover maxVal
+    const neededSections = Math.ceil((maxVal + 2 - yAxisOffset) / stepValue);
+    noOfSections = Math.max(3, neededSections);
+  }
+
+  const maxValueRange = stepValue * noOfSections;
+
   return (
     <View style={s.section}>
       {/* Timeframe pills */}
@@ -65,10 +104,10 @@ export function WeightChart({
               yAxisTextStyle={{ color: T.colors.t3, fontSize: 10 }}
               xAxisLabelTextStyle={{ color: T.colors.t3, fontSize: 10 }}
               hideRules
-              yAxisOffset={minVal - 5}
-              maxValue={maxVal - minVal + 10}
-              noOfSections={4}
-              stepValue={Math.max(1, Math.ceil((maxVal - minVal) / 4))}
+              yAxisOffset={yAxisOffset}
+              maxValue={maxValueRange}
+              noOfSections={noOfSections}
+              stepValue={stepValue}
               height={140}
               width={SCREEN_W - 72}
               spacing={Math.max(2, (SCREEN_W - 105) / (lineData.length - 1 || 1))}
