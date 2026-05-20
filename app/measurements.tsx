@@ -3,10 +3,13 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'reac
 import { useRouter } from 'expo-router';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../stores/authStore';
+import { useForgeTheme } from '../hooks/useForgeTheme';
 
 export default function MeasurementsScreen() {
   const router = useRouter();
   const { user, setUser } = useAuthStore();
+  const { T } = useForgeTheme();
+  const s = useS(T);
 
   const [chest, setChest] = useState('');
   const [waist, setWaist] = useState('');
@@ -54,60 +57,60 @@ export default function MeasurementsScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>LOG <Text style={{ color: '#D2FF00' }}>MEASUREMENTS</Text></Text>
-      <Text style={styles.subtitle}>Enter values in inches.</Text>
+    <View style={s.container}>
+      <Text style={s.title}>LOG <Text style={{ color: T.colors.forge }}>MEASUREMENTS</Text></Text>
+      <Text style={s.subtitle}>Enter values in inches.</Text>
 
-      <View style={styles.form}>
-        <View style={styles.row}>
-          <View style={styles.col}>
-            <Text style={styles.label}>CHEST (in)</Text>
-            <TextInput style={styles.input} placeholder="0.0" placeholderTextColor="#8A8A93" keyboardType="numeric" value={chest} onChangeText={setChest} />
+      <View style={s.form}>
+        <View style={s.row}>
+          <View style={s.col}>
+            <Text style={s.label}>CHEST (in)</Text>
+            <TextInput style={s.input} placeholder="0.0" placeholderTextColor={T.colors.t3} keyboardType="numeric" value={chest} onChangeText={setChest} />
           </View>
-          <View style={styles.col}>
-            <Text style={styles.label}>WAIST (in)</Text>
-            <TextInput style={styles.input} placeholder="0.0" placeholderTextColor="#8A8A93" keyboardType="numeric" value={waist} onChangeText={setWaist} />
+          <View style={s.col}>
+            <Text style={s.label}>WAIST (in)</Text>
+            <TextInput style={s.input} placeholder="0.0" placeholderTextColor={T.colors.t3} keyboardType="numeric" value={waist} onChangeText={setWaist} />
           </View>
         </View>
 
-        <View style={styles.row}>
-          <View style={styles.col}>
-            <Text style={styles.label}>ARMS (in)</Text>
-            <TextInput style={styles.input} placeholder="0.0" placeholderTextColor="#8A8A93" keyboardType="numeric" value={arms} onChangeText={setArms} />
+        <View style={s.row}>
+          <View style={s.col}>
+            <Text style={s.label}>ARMS (in)</Text>
+            <TextInput style={s.input} placeholder="0.0" placeholderTextColor={T.colors.t3} keyboardType="numeric" value={arms} onChangeText={setArms} />
           </View>
-          <View style={styles.col}>
-            <Text style={styles.label}>LEGS (in)</Text>
-            <TextInput style={styles.input} placeholder="0.0" placeholderTextColor="#8A8A93" keyboardType="numeric" value={legs} onChangeText={setLegs} />
+          <View style={s.col}>
+            <Text style={s.label}>LEGS (in)</Text>
+            <TextInput style={s.input} placeholder="0.0" placeholderTextColor={T.colors.t3} keyboardType="numeric" value={legs} onChangeText={setLegs} />
           </View>
         </View>
 
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={isSaving}>
-          <Text style={styles.saveBtnText}>{isSaving ? 'SAVING...' : 'SAVE MEASUREMENTS'}</Text>
+        <TouchableOpacity style={s.saveBtn} onPress={handleSave} disabled={isSaving}>
+          <Text style={s.saveBtnText}>{isSaving ? 'SAVING...' : 'SAVE MEASUREMENTS'}</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.cancelBtn} onPress={() => router.back()} disabled={isSaving}>
-          <Text style={styles.cancelBtnText}>CANCEL</Text>
+        <TouchableOpacity style={s.cancelBtn} onPress={() => router.back()} disabled={isSaving}>
+          <Text style={s.cancelBtnText}>CANCEL</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0C0C0E', padding: 24, paddingTop: 40 },
-  title: { fontSize: 24, fontWeight: '900', color: '#FFF', letterSpacing: 1, marginBottom: 4 },
-  subtitle: { fontSize: 12, color: '#8A8A93', marginBottom: 32 },
+const useS = (T: any) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: T.colors.bg1, padding: 24, paddingTop: 40 },
+  title: { fontSize: 24, fontWeight: '900', color: T.colors.t1, letterSpacing: 1, marginBottom: 4 },
+  subtitle: { fontSize: 12, color: T.colors.t3, marginBottom: 32 },
   
   form: { flex: 1 },
   row: { flexDirection: 'row', gap: 16, marginBottom: 24 },
   col: { flex: 1 },
   
-  label: { fontSize: 10, fontWeight: '800', color: '#8A8A93', letterSpacing: 1, marginBottom: 8 },
-  input: { backgroundColor: '#16161A', borderWidth: 1, borderColor: '#242429', borderRadius: 12, padding: 16, color: '#FFF', fontSize: 16, fontWeight: '700' },
+  label: { fontSize: 10, fontWeight: '800', color: T.colors.t3, letterSpacing: 1, marginBottom: 8 },
+  input: { backgroundColor: T.colors.bg2, borderWidth: 1, borderColor: T.colors.b1, borderRadius: 12, padding: 16, color: T.colors.t1, fontSize: 16, fontWeight: '700' },
   
-  saveBtn: { backgroundColor: '#D2FF00', padding: 18, borderRadius: 12, alignItems: 'center', marginTop: 12, shadowColor: '#D2FF00', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 5 },
+  saveBtn: { backgroundColor: T.colors.forge, padding: 18, borderRadius: 12, alignItems: 'center', marginTop: 12, shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 5 },
   saveBtnText: { color: '#000', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
   
   cancelBtn: { padding: 18, alignItems: 'center', marginTop: 8 },
-  cancelBtnText: { color: '#8A8A93', fontSize: 12, fontWeight: '800', letterSpacing: 1 }
+  cancelBtnText: { color: T.colors.t3, fontSize: 12, fontWeight: '800', letterSpacing: 1 }
 });

@@ -29,12 +29,12 @@ export function WeightChart({
 
   if (minVal === maxVal) {
     // Constant weight case (e.g., 200 lbs)
-    stepValue = 4;
+    stepValue = 5;
     noOfSections = 4;
     yAxisOffset = minVal - 8; // Center it: 2 sections below, 2 sections above (e.g., 192, 196, 200, 204, 208)
   } else {
     const diff = maxVal - minVal;
-    
+
     // Choose a clean step value
     if (diff <= 4) {
       stepValue = 1;
@@ -52,7 +52,7 @@ export function WeightChart({
 
     // Floor the yAxisOffset to a multiple of stepValue for clean labels
     yAxisOffset = Math.floor((minVal - 2) / stepValue) * stepValue;
-    
+
     // Calculate sections needed to cover maxVal
     const neededSections = Math.ceil((maxVal + 2 - yAxisOffset) / stepValue);
     noOfSections = Math.max(3, neededSections);
