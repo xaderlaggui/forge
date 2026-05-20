@@ -5,24 +5,20 @@ import { Camera, Share2 } from 'lucide-react-native';
 import dayjs from 'dayjs';
 import { useForgeTheme } from '@/hooks/useForgeTheme';
 import { useStyles } from './InteractivePhotoCardStyles';
-import { StickerTheme } from './InteractivePhotoCardTypes';
+import { formatDuration } from '../../../utils/format';
 
 interface StatsPanelProps {
   workout: any;
-  stickerTheme: StickerTheme;
-  setStickerTheme: (theme: StickerTheme) => void;
   pickImage: () => void;
-  shareImage: () => void;
+  openShareModal: () => void;
   isUploading: boolean;
   animatedStatsStyle: any;
 }
 
 export function StatsPanel({
   workout,
-  stickerTheme,
-  setStickerTheme,
   pickImage,
-  shareImage,
+  openShareModal,
   isUploading,
   animatedStatsStyle,
 }: StatsPanelProps) {
@@ -31,47 +27,25 @@ export function StatsPanel({
 
   return (
     <Animated.View style={[styles.statsPanel, animatedStatsStyle]}>
+      <Text style={styles.workoutNotes}>{workout.notes || 'Morning Workout'}</Text>
       <Text style={styles.workoutDate}>{dayjs(workout.date).format('dddd, MMM D, YYYY')}</Text>
 
-      {/* Sticker Style Selector */}
-      <View style={styles.selectorContainer}>
-        <Text style={styles.selectorLabel}>Sticker Theme Style</Text>
-        <View style={styles.selectorRow}>
-          {(['white', 'dark', 'orange'] as const).map((theme) => (
-            <TouchableOpacity
-              key={theme}
-              style={[
-                styles.selectorPill,
-                stickerTheme === theme && styles.selectorPillActive,
-              ]}
-              onPress={() => setStickerTheme(theme)}
-            >
-              <View
-                style={[
-                  styles.colorDot,
-                  {
-                    backgroundColor:
-                      theme === 'white'
-                        ? '#FFFFFF'
-                        : theme === 'dark'
-                          ? '#111113'
-                          : '#FF5C2E',
-                    borderWidth: theme === 'white' ? 0.5 : 0,
-                    borderColor: '#CCCCCC',
-                  },
-                ]}
-              />
-              <Text
-                style={[
-                  styles.selectorPillText,
-                  stickerTheme === theme && styles.selectorPillTextActive,
-                ]}
-              >
-                {theme === 'white' ? 'White' : theme === 'dark' ? 'Slate' : 'Orange'}
-              </Text>
-            </TouchableOpacity>
-          ))}
+      {/* Reverted Stats Grid layout */}
+      <View style={styles.statsGrid}>
+        <View style={styles.statBox}>
+          <Text style={styles.statLabel}>DISTANCE</Text>
+          <Text style={styles.statValue}>{workout.distanceKm || '0.00'} km</Text>
         </View>
+        <View style={styles.statBox}>
+          <Text style={styles.statLabel}>TIME</Text>
+          <Text style={styles.statValue}>{formatDuration(workout.durationMin)}</Text>
+        </View>
+        {workout.steps ? (
+          <View style={styles.statBox}>
+            <Text style={styles.statLabel}>STEPS</Text>
+            <Text style={styles.statValue}>{Number(workout.steps).toLocaleString()}</Text>
+          </View>
+        ) : null}
       </View>
 
       {/* Premium CTA Action Buttons */}
@@ -87,7 +61,7 @@ export function StatsPanel({
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionBtnPrimary} onPress={shareImage}>
+        <TouchableOpacity style={styles.actionBtnPrimary} onPress={openShareModal}>
           <Share2 size={16} color="#000" style={{ marginRight: 6 }} />
           <Text style={styles.btnTextPrimary}>Share Sticker</Text>
         </TouchableOpacity>

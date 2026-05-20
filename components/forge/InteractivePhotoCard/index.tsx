@@ -13,9 +13,9 @@ import { ChevronUp, Sparkles } from 'lucide-react-native';
 import { useForgeTheme } from '@/hooks/useForgeTheme';
 import { InteractivePhotoCardProps, StickerTheme } from './InteractivePhotoCardTypes';
 import { useStyles } from './InteractivePhotoCardStyles';
-import { LiveStickerOverlay } from './LiveStickerOverlay';
 import { StatsPanel } from './StatsPanel';
 import { OffScreenStickerTemplate } from './OffScreenStickerTemplate';
+import { StickerShareModal } from './StickerShareModal';
 
 export function InteractivePhotoCard({
   photoUri,
@@ -31,6 +31,7 @@ export function InteractivePhotoCard({
   const [layout, setLayout] = useState({ width: 0, height: 0 });
   const [imageAspect, setImageAspect] = useState<number | null>(null);
   const [stickerTheme, setStickerTheme] = useState<StickerTheme>('white');
+  const [isShareModalVisible, setIsShareModalVisible] = useState(false);
 
   // Animation values
   const swipeProgress = useSharedValue(0);
@@ -191,75 +192,74 @@ export function InteractivePhotoCard({
     };
   });
 
-  const animatedLiveStickerStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      swipeProgress.value,
-      [0.6, 1], // Fade in during the final half of swiping up
-      [0, 1],
-      Extrapolate.CLAMP
-    );
-    return {
-      opacity,
-    };
-  });
+  const handleShareExport = () => {
+    // This executes the actual ViewShot export via workoutDetail.tsx reference
+    shareImage();
+    setIsShareModalVisible(false);
+  };
 
   return (
-    <GestureDetector gesture={panGesture}>
-      <View style={styles.cardContainer} onLayout={onLayout}>
-        {/* Background Layer: Blurred same image for premium context framing */}
-        <Image
-          source={{ uri: photoUri }}
-          style={StyleSheet.absoluteFillObject}
-          blurRadius={18}
-        />
-        {/* Semi-transparent Dark Tint Layer */}
-        <View style={styles.blurTint} />
-
-        {/* Foreground Layer: Crisp Crisp image transitioning cover -> contain */}
-        <Animated.View style={[styles.imageContainer, animatedImageStyle]}>
+    <>
+      <GestureDetector gesture={panGesture}>
+        <View style={styles.cardContainer} onLayout={onLayout}>
+          {/* Background Layer: Blurred same image for premium context framing */}
           <Image
             source={{ uri: photoUri }}
-            style={styles.foregroundImage}
-            resizeMode="contain"
+            style={StyleSheet.absoluteFillObject}
+            blurRadius={18}
+          />
+          {/* Semi-transparent Dark Tint Layer */}
+          <View style={styles.blurTint} />
+
+          {/* Foreground Layer: Crisp Crisp image transitioning cover -> contain */}
+          <Animated.View style={[styles.imageContainer, animatedImageStyle]}>
+            <Image
+              source={{ uri: photoUri }}
+              style={styles.foregroundImage}
+              resizeMode="contain"
+            />
+          </Animated.View>
+
+          {/* Preview Button overlay in resting state */}
+          <Animated.View style={[styles.previewBtnWrapper, animatedHintStyle]}>
+            <TouchableOpacity style={styles.previewBtn} onPress={togglePreview} activeOpacity={0.7}>
+              <Text style={styles.previewBtnText}>Show Stats</Text>
+              <ChevronUp size={16} color={T.colors.t1} />
+            </TouchableOpacity>
+          </Animated.View>
+
+          {/* Floating brand text */}
+          <View style={styles.brandOverlay}>
+            <Sparkles size={11} color={T.colors.forge} />
+            <Text style={styles.brandText}>Tracked with FORGE</Text>
+          </View>
+
+          <StatsPanel
+            workout={workout}
+            pickImage={pickImage}
+            openShareModal={() => setIsShareModalVisible(true)}
+            isUploading={isUploading}
+            animatedStatsStyle={animatedStatsStyle}
           />
 
-          <LiveStickerOverlay
+          <OffScreenStickerTemplate
             workout={workout}
             stickerTheme={stickerTheme}
-            animatedLiveStickerStyle={animatedLiveStickerStyle}
+            shareViewShotRef={shareViewShotRef}
           />
-        </Animated.View>
-
-        {/* Preview Button overlay in resting state */}
-        <Animated.View style={[styles.previewBtnWrapper, animatedHintStyle]}>
-          <TouchableOpacity style={styles.previewBtn} onPress={togglePreview} activeOpacity={0.7}>
-            <Text style={styles.previewBtnText}>Show Preview</Text>
-            <ChevronUp size={16} color={T.colors.t1} />
-          </TouchableOpacity>
-        </Animated.View>
-
-        {/* Floating brand text */}
-        <View style={styles.brandOverlay}>
-          <Sparkles size={11} color={T.colors.forge} />
-          <Text style={styles.brandText}>Tracked with FORGE</Text>
         </View>
+      </GestureDetector>
 
-        <StatsPanel
-          workout={workout}
-          stickerTheme={stickerTheme}
-          setStickerTheme={setStickerTheme}
-          pickImage={pickImage}
-          shareImage={shareImage}
-          isUploading={isUploading}
-          animatedStatsStyle={animatedStatsStyle}
-        />
-
-        <OffScreenStickerTemplate
-          workout={workout}
-          stickerTheme={stickerTheme}
-          shareViewShotRef={shareViewShotRef}
-        />
-      </View>
-    </GestureDetector>
+      {/* New Sticker Share Modal */}
+      <StickerShareModal
+        isVisible={isShareModalVisible}
+        onClose={() => setIsShareModalVisible(false)}
+        workout={workout}
+        stickerTheme={stickerTheme}
+        setStickerTheme={setStickerTheme}
+        shareImage={handleShareExport}
+        isSharing={false} // could map this to an exporting state if needed
+      />
+    </>
   );
 }
