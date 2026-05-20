@@ -113,6 +113,9 @@ export function StickerShareModal({
     return (
       <View style={localStyles.carouselItem}>
         <View style={localStyles.phoneShadowContainer}>
+          {/* Solid narrow view that casts shadows outwards only to the left and right sides */}
+          <View style={localStyles.phoneSideShadow} />
+
           <View
             style={[
               localStyles.phoneMockup,
@@ -338,13 +341,21 @@ const localStyles = StyleSheet.create({
   phoneShadowContainer: {
     width: PHONE_WIDTH,
     height: PHONE_HEIGHT,
+    position: 'relative',
+  },
+  phoneSideShadow: {
+    position: 'absolute',
+    left: 8,
+    right: 8,
+    top: 36,
+    bottom: 36,
     borderRadius: 36,
-    backgroundColor: 'transparent',
+    backgroundColor: '#000',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.35,
-    shadowRadius: 28,
-    elevation: 20,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.38,
+    shadowRadius: 22,
+    elevation: 15,
   },
   phoneMockup: {
     width: '100%',
@@ -353,6 +364,7 @@ const localStyles = StyleSheet.create({
     borderWidth: 6,
     overflow: 'hidden',
     position: 'relative',
+    backgroundColor: '#000', // ensures solid masking
   },
   dynamicIsland: {
     position: 'absolute',
