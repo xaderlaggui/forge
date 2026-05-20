@@ -43,8 +43,7 @@ export default function OnboardingScreen() {
         fitness_goal: fitnessGoal,
         diet_preference: dietPreference,
         equipment_access: equipmentAccess,
-        bmi_history: [{ value: bmi, date: new Date().toISOString() }],
-        weight_history: [{ value: weightLbs, date: new Date().toISOString() }],
+        bmi_history: [{ value: bmi, weight: weightLbs, date: new Date().toISOString() }],
         is_onboarded: true,
       };
       const { error } = await supabase
