@@ -4,8 +4,11 @@ import { useRouter } from 'expo-router';
 import { supabase } from '../../services/supabase';
 import { calculateBMI } from '../../utils/bmi';
 import { useAuthStore } from '../../stores/authStore';
+import { useForgeTheme } from '@/hooks/useForgeTheme';
 
 export default function OnboardingScreen() {
+  const { T } = useForgeTheme();
+  const styles = useStyles(T);
   const router = useRouter();
   const [age, setAge] = useState('');
   const [height, setHeight] = useState(''); // cm
@@ -185,43 +188,45 @@ export default function OnboardingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+const useStyles = (T: any) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: T.colors.bg0 },
   scrollContent: { flexGrow: 1, padding: 24, justifyContent: 'center' },
   header: { marginBottom: 32 },
-  title: { fontSize: 32, fontWeight: 'bold', color: '#1A1A1A', marginBottom: 8 },
-  subtitle: { fontSize: 16, color: '#666', lineHeight: 24 },
+  title: { fontSize: 32, fontWeight: 'bold', color: T.colors.t1, marginBottom: 8 },
+  subtitle: { fontSize: 16, color: T.colors.t3, lineHeight: 24 },
   form: { marginBottom: 32 },
   inputGroup: { marginBottom: 20 },
-  label: { fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 8 },
+  label: { fontSize: 14, fontWeight: '600', color: T.colors.t3, marginBottom: 8 },
   input: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: T.colors.bg2,
     borderRadius: 12,
     padding: 16,
     fontSize: 18,
-    color: '#1A1A1A',
+    color: T.colors.t1,
+    borderWidth: 0.5,
+    borderColor: T.colors.b1,
   },
   sectionHeader: { marginTop: 8, marginBottom: 20 },
-  sectionTitle: { fontSize: 22, fontWeight: 'bold', color: '#1A1A1A', marginBottom: 4 },
-  sectionSubtitle: { fontSize: 14, color: '#666' },
+  sectionTitle: { fontSize: 22, fontWeight: 'bold', color: T.colors.t1, marginBottom: 4 },
+  sectionSubtitle: { fontSize: 14, color: T.colors.t3 },
   pickerGroup: { marginBottom: 24 },
   pillRow: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
   pill: {
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: T.colors.bg2,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: T.colors.b1,
   },
   pillActive: {
-    backgroundColor: '#C15A28',
-    borderColor: '#C15A28',
+    backgroundColor: T.colors.forge,
+    borderColor: T.colors.forge,
   },
-  pillText: { fontSize: 14, fontWeight: '600', color: '#666' },
+  pillText: { fontSize: 14, fontWeight: '600', color: T.colors.t3 },
   pillTextActive: { color: '#fff' },
   button: {
-    backgroundColor: '#C15A28', // Our primary color
+    backgroundColor: T.colors.forge, // Our primary color
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

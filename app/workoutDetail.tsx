@@ -25,6 +25,7 @@ export default function WorkoutDetailScreen() {
 
   const workout = workouts.find((w) => w.id === id);
   const viewShotRef = useRef<ViewShot>(null);
+  const shareViewShotRef = useRef<ViewShot>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(workout?.photoUrl || null);
   const [useLbs, setUseLbs] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -111,8 +112,8 @@ export default function WorkoutDetailScreen() {
 
   const shareImage = async () => {
     try {
-      if (viewShotRef.current && viewShotRef.current.capture) {
-        const uri = await viewShotRef.current.capture();
+      if (shareViewShotRef.current && shareViewShotRef.current.capture) {
+        const uri = await shareViewShotRef.current.capture();
         await Sharing.shareAsync(uri, { dialogTitle: 'Share Workout' });
       }
     } catch (e) {
@@ -139,6 +140,7 @@ export default function WorkoutDetailScreen() {
             pickImage={pickImage}
             shareImage={shareImage}
             isUploading={isUploading}
+            shareViewShotRef={shareViewShotRef}
           />
         </ViewShot>
       ) : (

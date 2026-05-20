@@ -9,6 +9,9 @@ import 'react-native-url-polyfill/auto';
 import { supabase } from '@/services/supabase';
 import { useAuthStore } from '@/stores/authStore';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useForgeTheme } from '@/hooks/useForgeTheme';
+import { ThemeProvider, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import { StatusBar } from 'expo-status-bar';
 
 const queryClient = new QueryClient();
 
@@ -77,6 +80,22 @@ function RootLayoutNav() {
   const { user, isLoading } = useAuthStore();
   const segments = useSegments();
   const router = useRouter();
+  const { T, isDark } = useForgeTheme();
+  const baseTheme = isDark ? DarkTheme : DefaultTheme;
+
+  const navTheme = {
+    ...baseTheme,
+    dark: isDark,
+    colors: {
+      ...baseTheme.colors,
+      primary: T.colors.forge,
+      background: T.colors.bg0,
+      card: T.colors.bg1,
+      text: T.colors.t1,
+      border: T.colors.b1,
+      notification: T.colors.forge,
+    },
+  };
 
   useEffect(() => {
     // Wait for both fonts and auth state to resolve
@@ -107,24 +126,27 @@ function RootLayoutNav() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="splash" />
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(onboarding)" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="+not-found" />
-          <Stack.Screen name="addMeal"      options={{ presentation: 'modal' }} />
-          <Stack.Screen name="measurements" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="chat"         options={{ presentation: 'modal' }} />
-          <Stack.Screen name="activeWorkout" />
-          <Stack.Screen name="workoutHistory" />
-          <Stack.Screen name="workoutDetail" />
-          <Stack.Screen name="editProfile" />
-          <Stack.Screen name="privacySecurity" />
-          <Stack.Screen name="aiPlan" />
-          <Stack.Screen name="buildRoutine" />
-          <Stack.Screen name="plan-generator" />
-        </Stack>
+        <ThemeProvider value={navTheme}>
+          <StatusBar style={isDark ? 'light' : 'dark'} />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="splash" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(onboarding)" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="+not-found" />
+            <Stack.Screen name="addMeal"      options={{ presentation: 'modal' }} />
+            <Stack.Screen name="measurements" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="chat"         options={{ presentation: 'modal' }} />
+            <Stack.Screen name="activeWorkout" />
+            <Stack.Screen name="workoutHistory" />
+            <Stack.Screen name="workoutDetail" />
+            <Stack.Screen name="editProfile" />
+            <Stack.Screen name="privacySecurity" />
+            <Stack.Screen name="aiPlan" />
+            <Stack.Screen name="buildRoutine" />
+            <Stack.Screen name="plan-generator" />
+          </Stack>
+        </ThemeProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );
