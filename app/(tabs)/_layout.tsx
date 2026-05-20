@@ -18,7 +18,8 @@ function ForgeFAB() {
 
   const isTabBarVisible = useUIStore(s => s.isTabBarVisible);
   const translateY = useDerivedValue(() => {
-    return withTiming(isTabBarVisible ? 0 : 150, { duration: 300, easing: Easing.out(Easing.exp) });
+    // FAB starts at bottom 85 + insets. We need a larger translation to push it fully offscreen
+    return withTiming(isTabBarVisible ? 0 : 250, { duration: 300, easing: Easing.out(Easing.exp) });
   }, [isTabBarVisible]);
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }]

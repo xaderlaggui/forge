@@ -1,24 +1,23 @@
+import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Save, Sparkles, X } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { MEAL_ANALYSIS_SYSTEM_PROMPT } from '../constants/prompts';
 import { useNutrition } from '../hooks/useNutrition';
 import { groqComplete } from '../services/groq';
 import type { Meal } from '../types';
-import { useForgeTheme } from "@/hooks/useForgeTheme";
-import { MEAL_ANALYSIS_SYSTEM_PROMPT } from '../constants/prompts';
 
 export default function AddMealScreen() {
-    const { T } = useForgeTheme();
-    const s = useS(T);
+  const { T } = useForgeTheme();
+  const s = useS(T);
   const router = useRouter();
   const { mealName: mealNameParam } = useLocalSearchParams();
   const { data: nutrition, updateNutrition } = useNutrition();
 
-  // Auto-detect meal slot from time of day if no param passed
   const getDefaultMealSlot = () => {
     const h = new Date().getHours();
-    if (h >= 5  && h < 11) return 'Breakfast';
+    if (h >= 5 && h < 11) return 'Breakfast';
     if (h >= 11 && h < 16) return 'Lunch';
     if (h >= 16 && h < 21) return 'Dinner';
     return 'Snacks';
@@ -29,20 +28,20 @@ export default function AddMealScreen() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzed, setAnalyzed] = useState(false);
   const [wasAiAnalyzed, setWasAiAnalyzed] = useState(false);
-  // Resolved meal slot — starts from param/time-of-day, can be overridden by description keywords
   const [resolvedMealName, setResolvedMealName] = useState(mealName);
+  const [confidence, setConfidence] = useState<'high' | 'medium' | 'low' | null>(null);
+  const [analysisNotes, setAnalysisNotes] = useState('');
 
-  /** Scan free-text for meal-slot keywords and return the canonical slot name, or null if none found */
   const detectMealSlotFromText = (text: string): string | null => {
     const lower = text.toLowerCase();
     if (/\bbreakfast\b/.test(lower)) return 'Breakfast';
-    if (/\blunch\b/.test(lower))     return 'Lunch';
-    if (/\bdinner\b/.test(lower))    return 'Dinner';
+    if (/\blunch\b/.test(lower)) return 'Lunch';
+    if (/\bdinner\b/.test(lower)) return 'Dinner';
     if (/\bsnack(s)?\b/.test(lower)) return 'Snacks';
     return null;
   };
 
-  // Form State
+  // Form state
   const [foodName, setFoodName] = useState('');
   const [portion, setPortion] = useState('');
   const [cals, setCals] = useState('');
@@ -53,52 +52,83 @@ export default function AddMealScreen() {
   const [sugar, setSugar] = useState('');
   const [waterMl, setWaterMl] = useState('');
 
+  /**
+   * Validates that calories are roughly consistent with macros.
+   * (protein * 4) + (carbs * 4) + (fat * 9) should be within 10% of reported calories.
+   * Returns corrected calorie value if significantly off, or original if fine.
+   */
+  const validateAndCorrectCalories = (
+    calories: number,
+    protein: number,
+    carbsG: number,
+    fatG: number
+  ): { corrected: number; wasOff: boolean } => {
+    const computed = protein * 4 + carbsG * 4 + fatG * 9;
+    const diff = Math.abs(calories - computed);
+    const threshold = calories * 0.12; // 12% tolerance
+    if (diff > threshold && computed > 0) {
+      return { corrected: Math.round(computed), wasOff: true };
+    }
+    return { corrected: calories, wasOff: false };
+  };
+
   const analyzeMeal = async () => {
     if (!description.trim()) {
       Alert.alert('Empty', 'Please describe what you ate first.');
       return;
     }
 
-    // Override meal slot if user mentioned it in the description
     const detectedSlot = detectMealSlotFromText(description);
     if (detectedSlot) setResolvedMealName(detectedSlot);
 
     setIsAnalyzing(true);
     try {
-      const content = await groqComplete([
+      const content = await groqComplete(
+        [
+          { role: 'system', content: MEAL_ANALYSIS_SYSTEM_PROMPT },
+          { role: 'user', content: description },
+        ],
         {
-          role: 'system',
-          content: MEAL_ANALYSIS_SYSTEM_PROMPT
-        },
-        {
-          role: 'user',
-          content: description
+          // ✅ 70B model — significantly better nutritional knowledge than 8B
+          model: 'llama-3.3-70b-versatile',
+          temperature: 0.1,   // low temp = more deterministic, fact-based output
+          max_tokens: 300,
+          response_format: { type: 'json_object' },
         }
-      ], {
-        model: 'llama-3.1-8b-instant',
-        temperature: 0.2,
-        max_tokens: 500,
-        response_format: { type: "json_object" }
-      });
+      );
 
       const parsed = JSON.parse(content);
 
+      const protein = Number(parsed.protein || 0);
+      const carbsVal = Number(parsed.carbs || 0);
+      const fatVal = Number(parsed.fat || 0);
+      const rawCals = Number(parsed.calories || 0);
+
+      // Validate macro-calorie consistency and auto-correct if needed
+      const { corrected: finalCals, wasOff } = validateAndCorrectCalories(rawCals, protein, carbsVal, fatVal);
+
       setFoodName(parsed.foodName || description);
       setPortion(parsed.portion || '1 serving');
-      setCals(String(parsed.calories || 0));
-      setPro(String(parsed.protein || 0));
-      setCarbs(String(parsed.carbs || 0));
-      setFat(String(parsed.fat || 0));
-      setFiber(String(parsed.fiber || 0));
-      setSugar(String(parsed.sugar || 0));
-      setWaterMl(String(parsed.waterMl || 0));
+      setCals(String(finalCals));
+      setPro(String(protein));
+      setCarbs(String(carbsVal));
+      setFat(String(fatVal));
+      setFiber(String(Number(parsed.fiber || 0)));
+      setSugar(String(Number(parsed.sugar || 0)));
+      setWaterMl(String(Number(parsed.waterMl || 0)));
+      setConfidence(parsed.confidence || 'medium');
+      setAnalysisNotes(
+        wasOff
+          ? `Calories adjusted from ${rawCals} to ${finalCals} to match macros.${parsed.notes ? ' ' + parsed.notes : ''}`
+          : parsed.notes || ''
+      );
 
       setAnalyzed(true);
       setWasAiAnalyzed(true);
     } catch (e) {
       console.error(e);
       Alert.alert('Analysis Failed', 'Could not estimate nutrition. You can still enter it manually.');
-      setAnalyzed(true); // Let them type manually
+      setAnalyzed(true);
     } finally {
       setIsAnalyzing(false);
     }
@@ -111,16 +141,12 @@ export default function AddMealScreen() {
     }
 
     try {
-      const targetMealName = resolvedMealName;
       const existingMeals = nutrition?.meals || [];
-
-      const mealIdx = existingMeals.findIndex(m => m.name === targetMealName);
+      const mealIdx = existingMeals.findIndex(m => m.name === resolvedMealName);
       let updatedMeals = [...existingMeals];
 
-      const finalName = portion ? `${foodName} (${portion})` : foodName;
-
       const newMealData: Meal = {
-        name: targetMealName,
+        name: resolvedMealName,
         calories: Number(cals),
         protein: Number(pro) || 0,
         carbs: Number(carbs) || 0,
@@ -139,18 +165,16 @@ export default function AddMealScreen() {
       };
 
       if (mealIdx >= 0) {
-        // Append macros to the existing meal category (e.g. "Breakfast")
         updatedMeals[mealIdx] = {
-          name: targetMealName,
+          name: resolvedMealName,
           calories: updatedMeals[mealIdx].calories + newMealData.calories,
           protein: updatedMeals[mealIdx].protein + newMealData.protein,
           carbs: updatedMeals[mealIdx].carbs + newMealData.carbs,
           fat: updatedMeals[mealIdx].fat + newMealData.fat,
           fiber: (updatedMeals[mealIdx].fiber || 0) + (newMealData.fiber || 0),
           sugar: (updatedMeals[mealIdx].sugar || 0) + (newMealData.sugar || 0),
-          // Keep isAiParsed true if either the existing or new entry was AI-analyzed
           isAiParsed: (updatedMeals[mealIdx] as any).isAiParsed || wasAiAnalyzed,
-          items: [...(updatedMeals[mealIdx].items || []), newItem]
+          items: [...(updatedMeals[mealIdx].items || []), newItem],
         };
       } else {
         updatedMeals.push({ ...newMealData, isAiParsed: wasAiAnalyzed, items: [newItem] });
@@ -159,7 +183,7 @@ export default function AddMealScreen() {
       await updateNutrition({
         meals: updatedMeals,
         totalCalories: (nutrition?.totalCalories || 0) + newMealData.calories,
-        waterMl: (nutrition?.waterMl || 0) + (Number(waterMl) || 0)
+        waterMl: (nutrition?.waterMl || 0) + (Number(waterMl) || 0),
       });
 
       router.back();
@@ -168,13 +192,21 @@ export default function AddMealScreen() {
     }
   };
 
+  const confidenceColor = {
+    high: '#4CAF50',
+    medium: '#FF9800',
+    low: '#F44336',
+  };
+
   return (
     <View style={s.container}>
       <View style={s.header}>
         <TouchableOpacity onPress={() => router.back()} style={s.iconBtn}>
           <X size={24} color={T.colors.t1} />
         </TouchableOpacity>
-        <Text style={s.title}>LOG <Text style={{ color: T.colors.forge }}>{resolvedMealName.toUpperCase()}</Text></Text>
+        <Text style={s.title}>
+          LOG <Text style={{ color: T.colors.forge }}>{resolvedMealName.toUpperCase()}</Text>
+        </Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -184,7 +216,7 @@ export default function AddMealScreen() {
             <Text style={s.aiPrompt}>What did you eat?</Text>
             <TextInput
               style={s.aiInput}
-              placeholder="e.g. 'I had a bowl of sinigang with 1 cup of white rice' or '2 eggs'"
+              placeholder="e.g. 'I had a bowl of sinigang with 1 cup of white rice' or '2 scrambled eggs'"
               placeholderTextColor={T.colors.t3}
               multiline
               textAlignVertical="top"
@@ -207,57 +239,89 @@ export default function AddMealScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setAnalyzed(true)} style={{ marginTop: 24, padding: 12 }}>
-              <Text style={{ color: T.colors.t3, textAlign: 'center', fontSize: 14, fontWeight: '600' }}>Or enter manually</Text>
+              <Text style={{ color: T.colors.t3, textAlign: 'center', fontSize: 14, fontWeight: '600' }}>
+                Or enter manually
+              </Text>
             </TouchableOpacity>
           </View>
         ) : (
           <View style={s.formWrap}>
-            <View style={s.infoBanner}>
-              <Sparkles size={16} color={T.colors.forge} />
-              <Text style={s.infoText}>You can edit these AI estimates if needed.</Text>
-            </View>
-
-            <Text style={s.label}>FOOD SUMMARY</Text>
-            <TextInput style={s.input} value={foodName} onChangeText={setFoodName} placeholder="Food name" placeholderTextColor={T.colors.t3} />
-
-            <Text style={s.label}>PORTION / AMOUNT</Text>
-            <TextInput style={s.input} value={portion} onChangeText={setPortion} placeholder="e.g. 1 cup, 200g" placeholderTextColor={T.colors.t3} />
-
-            <Text style={s.label}>CALORIES</Text>
-            <TextInput style={s.input} value={cals} onChangeText={setCals} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
-
-            <View style={s.macroRow}>
-              <View style={s.macroCol}>
-                <Text style={s.label}>PROTEIN (g)</Text>
-                <TextInput style={s.input} value={pro} onChangeText={setPro} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+            {/* AI confidence badge */}
+            {wasAiAnalyzed && confidence && (
+              <View style={[s.infoBanner, { borderColor: confidenceColor[confidence] + '40', backgroundColor: confidenceColor[confidence] + '12' }]}>
+                <Sparkles size={16} color={confidenceColor[confidence]} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[s.infoText, { color: confidenceColor[confidence] }]}>
+                    {confidence === 'high' && 'High confidence — values match known food data.'}
+                    {confidence === 'medium' && 'Medium confidence — mixed dish, edit if needed.'}
+                    {confidence === 'low' && 'Low confidence — unusual item, please verify.'}
+                  </Text>
+                  {!!analysisNotes && (
+                    <Text style={[s.infoText, { color: T.colors.t3, marginTop: 2, fontSize: 11 }]}>
+                      {analysisNotes}
+                    </Text>
+                  )}
+                </View>
               </View>
-              <View style={s.macroCol}>
-                <Text style={s.label}>CARBS (g)</Text>
-                <TextInput style={s.input} value={carbs} onChangeText={setCarbs} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
-              </View>
-              <View style={s.macroCol}>
-                <Text style={s.label}>FAT (g)</Text>
-                <TextInput style={s.input} value={fat} onChangeText={setFat} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
-              </View>
-            </View>
+            )}
 
-            <View style={s.macroRow}>
-              <View style={s.macroCol}>
-                <Text style={s.label}>FIBER (g)</Text>
-                <TextInput style={s.input} value={fiber} onChangeText={setFiber} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+            <View style={s.nfCard}>
+              <Text style={s.nfTitle}>Nutrition Facts</Text>
+              <View style={s.nfThickDivider} />
+              
+              <View style={s.nfRow}>
+                <Text style={s.nfLabel}>Food Name</Text>
+                <TextInput style={[s.nfInput, { flex: 1, marginLeft: 16 }]} value={foodName} onChangeText={setFoodName} placeholder="---" placeholderTextColor="#999" />
               </View>
-              <View style={s.macroCol}>
-                <Text style={s.label}>SUGAR (g)</Text>
-                <TextInput style={s.input} value={sugar} onChangeText={setSugar} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+              <View style={s.nfRow}>
+                <Text style={s.nfLabel}>Serving Size</Text>
+                <TextInput style={[s.nfInput, { flex: 1, marginLeft: 16 }]} value={portion} onChangeText={setPortion} placeholder="---" placeholderTextColor="#999" />
               </View>
-            </View>
+              <View style={[s.nfThickDivider, { borderBottomWidth: 10 }]} />
+              
+              <View style={s.nfRow}>
+                <View>
+                  <Text style={[s.nfLabel, { fontSize: 14 }]}>Amount Per Serving</Text>
+                  <Text style={s.nfCaloriesTitle}>Calories</Text>
+                </View>
+                <TextInput style={s.nfCaloriesInput} value={cals} onChangeText={setCals} keyboardType="numeric" placeholder="0" placeholderTextColor="#999" />
+              </View>
+              <View style={[s.nfThickDivider, { borderBottomWidth: 5 }]} />
+              
+              <View style={s.nfRow}>
+                <Text style={[s.nfLabel, { fontWeight: '900' }]}>Total Fat <Text style={{fontWeight: '500'}}>g</Text></Text>
+                <TextInput style={s.nfInput} value={fat} onChangeText={setFat} keyboardType="numeric" placeholder="0" placeholderTextColor="#999" />
+              </View>
+              <View style={s.nfThinDivider} />
+              
+              <View style={s.nfRow}>
+                <Text style={[s.nfLabel, { fontWeight: '900' }]}>Total Carbohydrate <Text style={{fontWeight: '500'}}>g</Text></Text>
+                <TextInput style={s.nfInput} value={carbs} onChangeText={setCarbs} keyboardType="numeric" placeholder="0" placeholderTextColor="#999" />
+              </View>
+              <View style={s.nfThinDivider} />
 
-            <View style={s.macroRow}>
-              <View style={s.macroCol}>
-                <Text style={s.label}>WATER (ml)</Text>
-                <TextInput style={s.input} value={waterMl} onChangeText={setWaterMl} keyboardType="numeric" placeholder="0" placeholderTextColor={T.colors.t3} />
+              <View style={[s.nfRow, { paddingLeft: 16 }]}>
+                <Text style={s.nfLabel}>Dietary Fiber <Text style={{fontWeight: '500'}}>g</Text></Text>
+                <TextInput style={s.nfInput} value={fiber} onChangeText={setFiber} keyboardType="numeric" placeholder="0" placeholderTextColor="#999" />
               </View>
-              <View style={s.macroCol} />
+              <View style={s.nfThinDivider} />
+
+              <View style={[s.nfRow, { paddingLeft: 16 }]}>
+                <Text style={s.nfLabel}>Total Sugars <Text style={{fontWeight: '500'}}>g</Text></Text>
+                <TextInput style={s.nfInput} value={sugar} onChangeText={setSugar} keyboardType="numeric" placeholder="0" placeholderTextColor="#999" />
+              </View>
+              <View style={s.nfThinDivider} />
+
+              <View style={s.nfRow}>
+                <Text style={[s.nfLabel, { fontWeight: '900' }]}>Protein <Text style={{fontWeight: '500'}}>g</Text></Text>
+                <TextInput style={s.nfInput} value={pro} onChangeText={setPro} keyboardType="numeric" placeholder="0" placeholderTextColor="#999" />
+              </View>
+              <View style={[s.nfThickDivider, { borderBottomWidth: 10 }]} />
+              
+              <View style={s.nfRow}>
+                <Text style={s.nfLabel}>Water Intake <Text style={{fontWeight: '500'}}>ml</Text></Text>
+                <TextInput style={s.nfInput} value={waterMl} onChangeText={setWaterMl} keyboardType="numeric" placeholder="0" placeholderTextColor="#999" />
+              </View>
             </View>
 
             <TouchableOpacity style={s.saveBtn} onPress={handleSave}>
@@ -272,49 +336,107 @@ export default function AddMealScreen() {
 }
 
 const useS = (T: any) => StyleSheet.create({
-          container: { flex: 1, backgroundColor: T.colors.bg0 },
-          header: {
-            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-            paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: 16,
-            borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
-          },
-          iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-          title: { fontSize: 20, fontWeight: '900', color: T.colors.t1, letterSpacing: 1 },
-          scroll: { padding: T.spacing.page, paddingBottom: 60 },
+  container: { flex: 1, backgroundColor: T.colors.bg0 },
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: T.spacing.page, paddingTop: 60, paddingBottom: 16,
+    borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
+  },
+  iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 20, fontWeight: '900', color: T.colors.t1, letterSpacing: 1 },
+  scroll: { padding: T.spacing.page, paddingBottom: 60 },
 
-          analyzeWrap: { marginTop: 40 },
-          aiPrompt: { fontSize: 28, fontWeight: '700', color: T.colors.t1, marginBottom: 20 },
-          aiInput: {
-            backgroundColor: T.colors.bg1, borderWidth: 1, borderColor: T.colors.b1,
-            borderRadius: T.radii.lg, padding: 20, color: T.colors.t1,
-            fontSize: 18, minHeight: 150, marginBottom: 24, lineHeight: 26,
-          },
-          aiBtn: {
-            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-            backgroundColor: T.colors.forge, padding: 20, borderRadius: T.radii.lg,
-            shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 15, elevation: 8,
-          },
-          aiBtnText: { color: '#000', fontSize: 18, fontWeight: '800', letterSpacing: 1 },
+  analyzeWrap: { marginTop: 40 },
+  aiPrompt: { fontSize: 28, fontWeight: '700', color: T.colors.t1, marginBottom: 20 },
+  aiInput: {
+    backgroundColor: T.colors.bg1, borderWidth: 1, borderColor: T.colors.b1,
+    borderRadius: T.radii.lg, padding: 20, color: T.colors.t1,
+    fontSize: 18, minHeight: 150, marginBottom: 24, lineHeight: 26,
+  },
+  aiBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    backgroundColor: T.colors.forge, padding: 20, borderRadius: T.radii.lg,
+    shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 15, elevation: 8,
+  },
+  aiBtnText: { color: '#000', fontSize: 18, fontWeight: '800', letterSpacing: 1 },
 
-          formWrap: { flex: 1 },
-          infoBanner: {
-            flexDirection: 'row', alignItems: 'center', gap: 8,
-            backgroundColor: 'rgba(178, 255, 36, 0.1)', padding: 12, borderRadius: T.radii.md,
-            borderWidth: 1, borderColor: 'rgba(178, 255, 36, 0.2)', marginBottom: 24,
-          },
-          infoText: { color: T.colors.forge, fontSize: 13, fontWeight: '600' },
-          label: { fontSize: 11, fontWeight: '800', color: T.colors.t3, letterSpacing: 1, marginBottom: 8 },
-          input: {
-            backgroundColor: T.colors.bg2, borderWidth: 1, borderColor: T.colors.b1,
-            borderRadius: T.radii.md, padding: 16, color: T.colors.t1,
-            fontSize: 16, fontWeight: '600', marginBottom: 20,
-          },
-          macroRow: { flexDirection: 'row', gap: 12 },
-          macroCol: { flex: 1 },
-          saveBtn: {
-            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-            backgroundColor: T.colors.forge, padding: 20, borderRadius: T.radii.lg, marginTop: 24,
-            shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 15, elevation: 8,
-          },
-          saveBtnText: { color: '#000', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
-        });
+  formWrap: { flex: 1 },
+  infoBanner: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: 8,
+    padding: 12, borderRadius: T.radii.md,
+    borderWidth: 1, marginBottom: 24,
+  },
+  infoText: { fontSize: 13, fontWeight: '600' },
+  label: { fontSize: 11, fontWeight: '800', color: T.colors.t3, letterSpacing: 1, marginBottom: 8 },
+  input: {
+    backgroundColor: T.colors.bg2, borderWidth: 1, borderColor: T.colors.b1,
+    borderRadius: T.radii.md, padding: 16, color: T.colors.t1,
+    fontSize: 16, fontWeight: '600', marginBottom: 20,
+  },
+  macroRow: { flexDirection: 'row', gap: 12 },
+  macroCol: { flex: 1 },
+  saveBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    backgroundColor: T.colors.forge, padding: 20, borderRadius: T.radii.lg, marginTop: 12,
+    shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 15, elevation: 8,
+  },
+  saveBtnText: { color: '#000', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
+
+  // Nutrition Facts receipt styles
+  nfCard: {
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#000',
+    padding: 12,
+    marginBottom: 24,
+  },
+  nfTitle: {
+    fontSize: 36,
+    fontWeight: '900',
+    color: '#000',
+    letterSpacing: -1,
+    marginBottom: 4,
+  },
+  nfThickDivider: {
+    borderBottomWidth: 5,
+    borderBottomColor: '#000',
+    marginVertical: 4,
+  },
+  nfThinDivider: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#000',
+  },
+  nfRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  nfLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000',
+  },
+  nfInput: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#000',
+    textAlign: 'right',
+    minWidth: 40,
+    padding: 0,
+  },
+  nfCaloriesTitle: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#000',
+    marginTop: -4,
+  },
+  nfCaloriesInput: {
+    fontSize: 36,
+    fontWeight: '900',
+    color: '#000',
+    textAlign: 'right',
+    minWidth: 60,
+    padding: 0,
+  },
+});
