@@ -118,7 +118,7 @@ export default function WorkoutDetailScreen() {
 
       <View style={s.cardioDetails}>
         <Text style={s.cTitle}>{workout.notes || 'Morning Activity'}</Text>
-        <Text style={s.cDate}>{dayjs(workout.date).format('MMM D, YYYY [at] h:mm A')} • City, Country</Text>
+        <Text style={s.cDate}>{dayjs(workout.date).format('MMM D, YYYY')}</Text>
 
         <View style={s.cGrid}>
           <View style={s.cGridItem}>

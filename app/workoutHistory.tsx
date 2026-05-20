@@ -26,6 +26,7 @@ interface ActivityItem {
   type: 'strength' | 'run' | 'walk' | 'cardio' | 'meal';
   title: string;
   subtitle?: string;
+  photoUrl?: string | null;
   pills: { label: string; accent?: boolean }[];
   navigateTo?: { pathname: string; params?: Record<string, string> };
 }
@@ -83,6 +84,7 @@ export default function WorkoutHistoryScreen() {
         type: wType,
         title: w.notes || (isCardio ? `${capitalize(wType)} Session` : 'Strength Workout'),
         subtitle: dayjs(w.date).format('ddd, MMM D YYYY'),
+        photoUrl: w.photoUrl,
         pills,
         navigateTo: { pathname: '/workoutDetail', params: { id: w.id } },
       });
@@ -162,9 +164,9 @@ export default function WorkoutHistoryScreen() {
               {/* Activity Image */}
               <View style={s.imageWrap}>
                 <Image
-                  source={ACTIVITY_IMAGES[item.type] || ACTIVITY_IMAGES.strength}
-                  style={s.activityImage}
-                  resizeMode="contain"
+                  source={item.photoUrl ? { uri: item.photoUrl } : (ACTIVITY_IMAGES[item.type] || ACTIVITY_IMAGES.strength)}
+                  style={item.photoUrl ? { width: '100%', height: '100%' } : s.activityImage}
+                  resizeMode={item.photoUrl ? 'cover' : 'contain'}
                 />
               </View>
 

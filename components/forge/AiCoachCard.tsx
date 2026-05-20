@@ -67,6 +67,7 @@ const useStyles = (T: any) => StyleSheet.create({
     width: 3,
     backgroundColor: T.colors.forge,
   },
+  coachIcon: { width: 24, height: 24, resizeMode: 'contain', tintColor: T.colors.forge },
   row: {
     flex: 1,
     flexDirection: 'row',
