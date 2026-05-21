@@ -2,7 +2,7 @@ import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { useUIStore } from '@/stores/uiStore';
 import { BottomTabBar } from '@react-navigation/bottom-tabs';
 import { Tabs, usePathname, useRouter } from 'expo-router';
-import { Dumbbell, Home, PieChart, Settings, Sparkles, TrendingUp, UtensilsCrossed } from 'lucide-react-native';
+import { Dumbbell, Home, PieChart, Sparkles, TrendingUp, User as UserIcon, UtensilsCrossed } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useDerivedValue, withTiming } from 'react-native-reanimated';
@@ -171,8 +171,8 @@ export default function TabLayout() {
         <Tabs.Screen
           name="settings"
           options={{
-            title: 'Settings',
-            tabBarIcon: ({ color, focused }) => <TabIcon Icon={Settings} color={color} focused={focused} T={T} />,
+            title: 'Profile',
+            tabBarIcon: ({ color, focused }) => <TabIcon Icon={UserIcon} color={color} focused={focused} T={T} />,
           }}
         />
       </Tabs>
