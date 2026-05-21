@@ -1,6 +1,5 @@
-import { ScreenType, SpriteMap } from './sprite-types';
-import spritesJson from '../../../assets/sprites/forge-bear-sprites.json';
-import { Sprite } from './sprite-types';
+import spritesJson from '../../assets/sprites/forge-bear-sprites.json';
+import { ScreenType, Sprite, SpriteMap } from './sprite-types';
 
 const sprites = spritesJson as Sprite[];
 
@@ -10,7 +9,7 @@ export const triggerToSpriteMap: SpriteMap = {};
 sprites.forEach(sprite => {
   sprite.triggers.forEach(trigger => {
     // If a trigger is claimed by multiple sprites, the last one in the JSON wins
-    triggerToSpriteMap[trigger] = sprite.id; 
+    triggerToSpriteMap[trigger] = sprite.id;
   });
 });
 

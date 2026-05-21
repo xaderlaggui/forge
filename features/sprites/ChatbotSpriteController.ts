@@ -3,33 +3,36 @@ import { spriteAssets } from './sprite-assets';
 
 // Intent keywords mapping to sprite IDs
 const intentMap: Record<string, string> = {
-  'swim': 'diver',
-  'swam': 'diver',
-  'swimming': 'diver',
-  'run': 'rocket',
-  'ran': 'rocket',
-  'running': 'rocket',
-  'bike': 'dasher',
-  'cycle': 'dasher',
-  'cycling': 'dasher',
-  'lift': 'ironback',
-  'weight': 'ironback',
-  'squat': 'squatter',
-  'bench': 'presser',
+  'swim': 'swimming',
+  'swam': 'swimming',
+  'swimming': 'swimming',
+  'walk': 'walking',
+  'walked': 'walking',
+  'walking': 'walking',
+  'run': 'running',
+  'ran': 'running',
+  'running': 'running',
+  'bike': 'cycling',
+  'cycle': 'cycling',
+  'cycling': 'cycling',
+  'lift': 'flex',
+  'weight': 'flex',
+  'squat': 'back_squat',
+  'bench': 'bench-press',
   'deadlift': 'deadlift',
-  'yoga': 'warrior',
-  'stretch': 'warrior',
-  'box': 'knockout',
-  'boxing': 'knockout',
-  'hiit': 'knockout',
-  'tennis': 'ace',
-  'volleyball': 'spiker',
-  'climb': 'scaler',
-  'skate': 'shredder',
-  'surf': 'surfer',
-  'golf': 'swinger',
-  'ski': 'snowcrusher',
-  'row': 'rower'
+  'yoga': 'yoga',
+  'stretch': 'yoga',
+  'box': 'boxing',
+  'boxing': 'boxing',
+  'hiit': 'boxing',
+  'tennis': 'tennis',
+  'volleyball': 'volleyball',
+  'climb': 'rock-climbing',
+  'skate': 'skateboarding',
+  'surf': 'surfing',
+  'golf': 'golf',
+  'ski': 'snowboarding',
+  'row': 'rowing'
 };
 
 export class ChatbotSpriteController {
@@ -37,13 +40,13 @@ export class ChatbotSpriteController {
   public enable_bear_chatbot_sprites: boolean = true;
 
   constructor() {
-    this.lastShownSprite = 'titan'; // Default idle
+    this.lastShownSprite = 'smiling-coach'; // Default idle
   }
 
   public getSpriteForMessage(message: string, isGreeting: boolean = false, isError: boolean = false): ChatbotSpriteConfig {
     if (!this.enable_bear_chatbot_sprites) {
       return {
-        spriteId: 'titan',
+        spriteId: 'smiling-coach',
         tone: 'neutral',
         messageSuggestion: '',
         animation: 'static',
@@ -51,12 +54,12 @@ export class ChatbotSpriteController {
       };
     }
 
-    let nextSpriteId = 'titan'; // Default idle
+    let nextSpriteId = 'smiling-coach'; // Default idle
 
     if (isError) {
-      nextSpriteId = 'forge';
+      nextSpriteId = 'pointing';
     } else if (isGreeting) {
-      nextSpriteId = 'blaze';
+      nextSpriteId = 'high-five';
     } else {
       // Intent matching
       const lowerMessage = message.toLowerCase();
@@ -71,9 +74,9 @@ export class ChatbotSpriteController {
     }
 
     // Prevent repeat
-    if (nextSpriteId === this.lastShownSprite && nextSpriteId !== 'titan') {
+    if (nextSpriteId === this.lastShownSprite && nextSpriteId !== 'smiling-coach') {
       // If repeat, fallback to a secondary related sprite or default
-      nextSpriteId = 'titan';
+      nextSpriteId = 'smiling-coach';
     }
 
     this.lastShownSprite = nextSpriteId;
@@ -88,7 +91,7 @@ export class ChatbotSpriteController {
   }
 
   public getAssetSource(spriteId: string) {
-    return spriteAssets[spriteId] || spriteAssets['titan'];
+    return spriteAssets[spriteId] || spriteAssets['smiling-coach'];
   }
 }
 
