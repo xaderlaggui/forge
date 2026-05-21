@@ -345,10 +345,11 @@ export const useStyles = (T: any, isDark: boolean) =>
       zIndex: 10,
     },
     modalStickerContainer: {
-      position: 'absolute',
-      bottom: 16,
-      left: 16,
-      right: 16,
+      bottom: -20,
+      left: 0,
+      right: 0,
+      width: 290,
+      alignSelf: 'center',
     },
     mockupLabel: {
       marginTop: 16,

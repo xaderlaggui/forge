@@ -19,6 +19,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 import { MascotImages } from '../../constants/mascotImages';
+import { SpriteMascot } from '../../components/forge/SpriteMascot';
+import { onboardingSpriteSequence } from '../../features/sprites/OnboardingSpriteSequence';
 import { supabase } from '../../services/supabase';
 
 export default function LoginScreen() {
@@ -29,6 +31,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  const spriteConfig = onboardingSpriteSequence.getSpriteForStep(3);
 
   // Entrance animation
   const opacity = useSharedValue(0);
@@ -70,13 +74,9 @@ export default function LoginScreen() {
       <View style={s.innerWrapper}>
         <Animated.View style={[s.inner, animStyle]}>
 
-          <View style={{ width: 210, height: 210, borderRadius: 100, backgroundColor: T.colors.forgeDim, alignItems: 'center', justifyContent: 'center' }}>
-            <Image
-              source={MascotImages.welcome}
-              style={{ width: 210, height: 210, resizeMode: 'contain' }}
-              accessibilityLabel="Forge the bear waving hello"
-            />
-          </View>
+          <TouchableOpacity style={{ width: 210, height: 210, borderRadius: 100, alignItems: 'center', justifyContent: 'center', marginBottom: 20 }} activeOpacity={0.8} onPress={() => alert(spriteConfig.messageSuggestion)}>
+            <SpriteMascot spriteId={spriteConfig.spriteId} animation={spriteConfig.animation} size="xl" />
+          </TouchableOpacity>
           {/* Brand */}
           <View style={s.brandRow}>
             <Text style={s.wordmark}>FORGE</Text>

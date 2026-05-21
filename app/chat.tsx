@@ -29,6 +29,8 @@ import { useAuthStore } from '../stores/authStore';
 
 
 
+import { chatbotSpriteController } from '../features/sprites/ChatbotSpriteController';
+
 interface LoggedActivity {
   activityName: string;
   type: string;
@@ -37,7 +39,7 @@ interface LoggedActivity {
   calories?: number;
 }
 
-type Message = { id: string; text: string; isAi: boolean; logged?: boolean; activity?: LoggedActivity };
+type Message = { id: string; text: string; isAi: boolean; logged?: boolean; activity?: LoggedActivity; spriteId?: string };
 
 export default function ChatScreen() {
   const { T } = useForgeTheme();
@@ -50,7 +52,12 @@ export default function ChatScreen() {
 
   const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', text: "Hey! I'm your FORGE Coach. Tell me what you did today — like 'I ran 5km' — and I'll log it for you!", isAi: true },
+    { 
+      id: '1', 
+      text: "Hey! I'm your FORGE Coach. Tell me what you did today — like 'I ran 5km' — and I'll log it for you!", 
+      isAi: true,
+      spriteId: chatbotSpriteController.getSpriteForMessage('', true, false).spriteId
+    },
   ]);
   const [isTyping, setIsTyping] = useState(false);
 
@@ -150,13 +157,28 @@ export default function ChatScreen() {
 
       historyRef.current.push({ role: 'assistant', content: raw });
       const newMsgId = (Date.now() + 1).toString();
-      setMessages(prev => [...prev, { id: newMsgId, text: displayText, isAi: true, logged, activity }]);
+      const spriteConfig = chatbotSpriteController.getSpriteForMessage(userMsg, false, false);
+      setMessages(prev => [...prev, { 
+        id: newMsgId, 
+        text: displayText, 
+        isAi: true, 
+        logged, 
+        activity, 
+        spriteId: spriteConfig.spriteId 
+      }]);
 
     } catch (err: any) {
       const errMsg = err?.message?.includes('not set')
         ? 'Add your EXPO_PUBLIC_GROQ_API_KEY in .env to chat with your coach!'
         : 'Sorry, I had trouble connecting. Try again in a moment!';
-      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), text: errMsg, isAi: true }]);
+      
+      const errorSpriteConfig = chatbotSpriteController.getSpriteForMessage(userMsg, false, true);
+      setMessages(prev => [...prev, { 
+        id: (Date.now() + 1).toString(), 
+        text: errMsg, 
+        isAi: true,
+        spriteId: errorSpriteConfig.spriteId
+      }]);
     } finally {
       setIsTyping(false);
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
@@ -178,7 +200,10 @@ export default function ChatScreen() {
     <View style={[s.msgRow, item.isAi ? s.msgRowAi : s.msgRowUser]}>
       {item.isAi && (
         <View style={[s.avatarWrap, { backgroundColor: 'transparent' }]}>
-          <Image source={MascotImages.coach} style={{ width: 45, height: 36, resizeMode: 'contain', position: 'absolute', bottom: 1, left: - 13 }} />
+          <Image 
+            source={item.spriteId ? chatbotSpriteController.getAssetSource(item.spriteId) : MascotImages.coach} 
+            style={{ width: 45, height: 45, resizeMode: 'contain', position: 'absolute', bottom: 1, left: -13 }} 
+          />
         </View>
       )}
       <View style={[s.bubble, item.isAi ? s.bubbleAi : s.bubbleUser]}>

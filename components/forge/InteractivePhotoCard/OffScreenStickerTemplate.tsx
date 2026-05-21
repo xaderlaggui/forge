@@ -1,8 +1,8 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import ViewShot from 'react-native-view-shot';
-import { formatDuration } from '../../../utils/format';
+import { LinearGradient } from 'expo-linear-gradient';
 import { StickerTheme, getStickerColors } from './InteractivePhotoCardTypes';
 
 interface OffScreenStickerTemplateProps {
@@ -13,6 +13,15 @@ interface OffScreenStickerTemplateProps {
 
 export function OffScreenStickerTemplate({ workout, stickerTheme, shareViewShotRef }: OffScreenStickerTemplateProps) {
   const stickerColors = getStickerColors(stickerTheme);
+
+  const formatTimeParts = (minutes: number) => {
+    if (!minutes || minutes <= 0) return { value: '0', unit: 'min' };
+    if (minutes < 60) return { value: String(minutes), unit: 'min' };
+    const hrs = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return { value: `${hrs}:${mins.toString().padStart(2, '0')}`, unit: 'hrs' };
+  };
+  const timeParts = formatTimeParts(workout.durationMin);
 
   return (
     <ViewShot
@@ -35,9 +44,14 @@ export function OffScreenStickerTemplate({ workout, stickerTheme, shareViewShotR
           bottom: 60,
           left: 60,
           right: 60,
+          padding: 40,
           justifyContent: 'center',
         }}
       >
+        <LinearGradient
+          colors={[stickerColors.gradientStart, stickerColors.gradientEnd]}
+          style={StyleSheet.absoluteFillObject}
+        />
         {/* Header Row: Shoe Icon and Brand Wordmark */}
         <View
           style={{
@@ -200,7 +214,20 @@ export function OffScreenStickerTemplate({ workout, stickerTheme, shareViewShotR
                   textShadowRadius: 3.5,
                 }}
               >
-                {formatDuration(workout.durationMin)}
+                {timeParts.value}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 24,
+                  fontWeight: '900',
+                  color: stickerColors.text,
+                  marginTop: 4,
+                  textShadowColor: stickerTheme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.35)',
+                  textShadowOffset: { width: 0, height: 1 },
+                  textShadowRadius: 2,
+                }}
+              >
+                {timeParts.unit}
               </Text>
             </View>
           </View>

@@ -1,8 +1,9 @@
-import { ForgeButton } from "@/components/forge/ForgeButton";
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { useRouter } from 'expo-router';
+import { Plus } from 'lucide-react-native';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ForgeSkeleton } from '../../../components/forge/ForgeSkeleton';
 import { useRoutines } from '../../../hooks/useRoutines';
 
@@ -31,9 +32,11 @@ export function RoutineList() {
   const router = useRouter();
   const { routines, isLoading } = useRoutines();
 
+  const insets = useSafeAreaInsets();
+
   if (isLoading) {
     return (
-      <View style={s.list}>
+      <View style={[s.list, { flex: 1 }]}>
         <ForgeSkeleton width="100%" height={150} radius={T.radii.lg} style={{ marginBottom: 12 }} />
         <ForgeSkeleton width="100%" height={150} radius={T.radii.lg} />
       </View>
@@ -41,50 +44,59 @@ export function RoutineList() {
   }
 
   return (
-    <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
-      {routines.length === 0 ? (
-        <View style={s.emptyState}>
-          <Text style={s.emptyText} maxFontSizeMultiplier={1.2}>
-            You haven't built any custom routines yet.
-          </Text>
-        </View>
-      ) : (
-        routines.map(routine => (
-          <View key={routine.id} style={s.card}>
-            <View style={s.cardTop}>
-              <Text style={s.cardTitle}>{routine.name}</Text>
-              <Badge split={routine.split} />
-            </View>
-            <Text style={s.cardMeta}>
-              {routine.exercises.length} exercises • ~{routine.exercises.length * 10} min
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
+        {routines.length === 0 ? (
+          <View style={s.emptyState}>
+            <Text style={s.emptyText} maxFontSizeMultiplier={1.2}>
+              You haven't built any custom routines yet.
             </Text>
-
-            <View style={s.exList}>
-              {routine.exercises.map((ex, idx) => (
-                <View key={idx} style={s.exRow}>
-                  <View style={s.exDot} />
-                  <Text style={s.exName} numberOfLines={1}>{ex.name}</Text>
-                  <Text style={s.exPreset}>{ex.preset || `${ex.sets}×${ex.reps}`}</Text>
-                </View>
-              ))}
-            </View>
-
-            <TouchableOpacity
-              style={s.startBtn}
-              onPress={() => router.push({ pathname: '/activeWorkout', params: { routineId: routine.id } })}
-              activeOpacity={0.8}
-            >
-              <Text style={s.startBtnText}>Start Workout</Text>
-            </TouchableOpacity>
           </View>
-        ))
-      )}
-      <ForgeButton
-        label="+ Create Custom Routine"
-        onPress={() => router.push('/buildRoutine')}
-        style={{ marginBottom: T.spacing.px6 }}
-      />
-    </ScrollView>
+        ) : (
+          routines.map(routine => (
+            <View key={routine.id} style={s.card}>
+              <View style={s.cardTop}>
+                <Text style={s.cardTitle}>{routine.name}</Text>
+                <Badge split={routine.split} />
+              </View>
+              <Text style={s.cardMeta}>
+                {routine.exercises.length} exercises • ~{routine.exercises.length * 10} min
+              </Text>
+
+              <View style={s.exList}>
+                {routine.exercises.map((ex, idx) => (
+                  <View key={idx} style={s.exRow}>
+                    <View style={s.exDot} />
+                    <Text style={s.exName} numberOfLines={1}>{ex.name}</Text>
+                    <Text style={s.exPreset}>{ex.preset || `${ex.sets}×${ex.reps}`}</Text>
+                  </View>
+                ))}
+              </View>
+
+              <TouchableOpacity
+                style={s.startBtn}
+                onPress={() => router.push({ pathname: '/activeWorkout', params: { routineId: routine.id } })}
+                activeOpacity={0.8}
+              >
+                <Text style={s.startBtnText}>Start Workout</Text>
+              </TouchableOpacity>
+            </View>
+          ))
+        )}
+      </ScrollView>
+
+      <View style={[s.fabWrapper, { bottom: 85 + insets.bottom }]}>
+        <TouchableOpacity
+          style={[s.fab, { backgroundColor: T.colors.forge, shadowColor: T.colors.forge }]}
+          onPress={() => router.push('/buildRoutine')}
+          activeOpacity={0.85}
+          accessibilityLabel="Create Custom Routine"
+          accessibilityRole="button"
+        >
+          <Plus size={24} color="#fff" strokeWidth={2.5} />
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
@@ -114,5 +126,22 @@ const useS = (T: any) => StyleSheet.create({
   emptyText: {
     textAlign: 'center', color: T.colors.t3, fontWeight: '500',
     fontSize: T.typography.sizes.bodyS, lineHeight: T.typography.sizes.bodyS * 1.5,
+  },
+  fabWrapper: {
+    position: 'absolute',
+    right: T.spacing.page,
+    zIndex: 100,
+  },
+  fab: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 8,
+    zIndex: 100,
   },
 });

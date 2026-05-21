@@ -1,16 +1,16 @@
-import { X, Search, Sparkles } from 'lucide-react-native';
-import React, { useState, useMemo, useEffect } from 'react';
-import { Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, ActivityIndicator } from 'react-native';
+import { useForgeTheme } from "@/hooks/useForgeTheme";
+import { Search, Sparkles, X } from 'lucide-react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Image, Modal, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Body from 'react-native-body-highlighter';
 import { ForgeSkeleton } from '../../../components/forge/ForgeSkeleton';
-import type { Exercise } from '../../../types';
-import { useForgeTheme } from "@/hooks/useForgeTheme";
-import { groqComplete } from '../../../services/groq';
 import { EXERCISE_TIP_SYSTEM_PROMPT, exerciseTipUserPrompt } from '../../../constants/prompts';
+import { groqComplete } from '../../../services/groq';
+import type { Exercise } from '../../../types';
 
 function SkeletonLibrary() {
-    const { T } = useForgeTheme();
-    const s = useS(T);
+  const { T } = useForgeTheme();
+  const s = useS(T);
   return (
     <View style={{ gap: 12 }}>
       {[1, 2, 3, 4, 5].map((i) => (
@@ -27,48 +27,48 @@ export const mapMusclesToSlugs = (groups: string[]): { slug: string; intensity: 
   // Maps every muscle group name used in seedData to react-native-body-highlighter slugs
   const map: Record<string, string[]> = {
     // Chest
-    chest:          ['chest'],
-    'lower chest':  ['chest'],
-    'upper chest':  ['chest'],
+    chest: ['chest'],
+    'lower chest': ['chest'],
+    'upper chest': ['chest'],
 
     // Shoulders / Delts
-    shoulders:      ['deltoids'],
-    deltoids:       ['deltoids'],
-    'front delts':  ['deltoids'],
-    'side delts':   ['deltoids'],
-    'rear delts':   ['deltoids'],
+    shoulders: ['deltoids'],
+    deltoids: ['deltoids'],
+    'front delts': ['deltoids'],
+    'side delts': ['deltoids'],
+    'rear delts': ['deltoids'],
 
     // Arms
-    triceps:        ['triceps'],
-    biceps:         ['biceps'],
-    forearms:       ['biceps'],          // no forearm slug; closest is biceps
+    triceps: ['triceps'],
+    biceps: ['biceps'],
+    forearms: ['biceps'],          // no forearm slug; closest is biceps
 
     // Back
-    back:           ['upper-back', 'trapezius'],
-    lats:           ['upper-back'],
-    'upper back':   ['upper-back'],
-    'upper-back':   ['upper-back'],
-    'lower back':   ['lower-back'],
-    'lower-back':   ['lower-back'],
-    trapezius:      ['trapezius'],
-    traps:          ['trapezius'],
-    rhomboids:      ['upper-back'],
+    back: ['upper-back', 'trapezius'],
+    lats: ['upper-back'],
+    'upper back': ['upper-back'],
+    'upper-back': ['upper-back'],
+    'lower back': ['lower-back'],
+    'lower-back': ['lower-back'],
+    trapezius: ['trapezius'],
+    traps: ['trapezius'],
+    rhomboids: ['upper-back'],
 
     // Core
-    core:           ['abs', 'obliques'],
-    abs:            ['abs'],
-    obliques:       ['obliques'],
+    core: ['abs', 'obliques'],
+    abs: ['abs'],
+    obliques: ['obliques'],
 
     // Legs
-    legs:           ['quadriceps', 'hamstring', 'calves', 'gluteal'],
-    quads:          ['quadriceps'],
-    quadriceps:     ['quadriceps'],
-    hamstrings:     ['hamstring'],
-    hamstring:      ['hamstring'],
-    glutes:         ['gluteal'],
-    gluteal:        ['gluteal'],
-    calves:         ['calves'],
-    adductors:      ['adductors'],
+    legs: ['quadriceps', 'hamstring', 'calves', 'gluteal'],
+    quads: ['quadriceps'],
+    quadriceps: ['quadriceps'],
+    hamstrings: ['hamstring'],
+    hamstring: ['hamstring'],
+    glutes: ['gluteal'],
+    gluteal: ['gluteal'],
+    calves: ['calves'],
+    adductors: ['adductors'],
   };
 
   const slugs = new Set<string>();
@@ -80,14 +80,14 @@ export const mapMusclesToSlugs = (groups: string[]): { slug: string; intensity: 
   return Array.from(slugs).map(slug => ({ slug: slug as any, intensity: 1 }));
 };
 
-export function ExercisePreviewModal({ 
-  exercise, 
+export function ExercisePreviewModal({
+  exercise,
   onClose,
   onAdd
-}: { 
-  exercise: Exercise | null, 
+}: {
+  exercise: Exercise | null,
   onClose: () => void,
-  onAdd?: (ex: Exercise) => void 
+  onAdd?: (ex: Exercise) => void
 }) {
   const { T } = useForgeTheme();
   const s = useS(T);
@@ -120,7 +120,7 @@ export function ExercisePreviewModal({
       }
     };
     fetchTip();
-    
+
     return () => { isMounted = false; };
   }, [exercise]);
 
@@ -154,19 +154,48 @@ export function ExercisePreviewModal({
           </View>
 
           {/* AI Coach Tips Section */}
-          <View style={s.aiTipCard}>
-            <View style={s.aiTipHeader}>
-              <Sparkles size={16} color={T.colors.forge} />
-              <Text style={s.aiTipTitle}>AI Coach Tip</Text>
-            </View>
-            {isLoadingTip ? (
-              <View style={{ gap: 8 }}>
-                <ForgeSkeleton width="100%" height={14} radius={4} />
-                <ForgeSkeleton width="80%" height={14} radius={4} />
+          <View style={{ marginTop: 50 }}>
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              marginHorizontal: T.spacing.page,
+            }}>
+              <Image
+                source={require('../../../assets/images/mascot/tips.png')}
+                style={{ width: 110, height: 130, marginLeft: -15, marginRight: 8 }}
+                resizeMode="contain"
+              />
+
+              <View style={[s.aiTipCard, { flex: 1, marginTop: 0, marginHorizontal: 0, position: 'relative' }]}>
+                {/* Message Bubble Pointer */}
+                <View style={{
+                  position: 'absolute',
+                  left: -7,
+                  top: 25,
+                  width: 12,
+                  height: 12,
+                  backgroundColor: T.colors.bg1,
+                  borderLeftWidth: 1,
+                  borderBottomWidth: 1,
+                  borderColor: T.colors.b1,
+                  transform: [{ rotate: '45deg' }],
+                }} />
+
+                <View style={s.aiTipHeader}>
+                  <Sparkles size={16} color={T.colors.forge} />
+                  <Text style={s.aiTipTitle}>AI Coach Tip</Text>
+                </View>
+
+                {isLoadingTip ? (
+                  <View style={{ gap: 8 }}>
+                    <ForgeSkeleton width="100%" height={14} radius={4} />
+                    <ForgeSkeleton width="80%" height={14} radius={4} />
+                  </View>
+                ) : (
+                  <Text style={s.aiTipText}>{aiTip}</Text>
+                )}
               </View>
-            ) : (
-              <Text style={s.aiTipText}>{aiTip}</Text>
-            )}
+            </View>
           </View>
         </ScrollView>
 
@@ -189,8 +218,8 @@ interface ExerciseLibraryProps {
 }
 
 export function ExerciseLibrary({ exercises, isLoading, onSelect }: ExerciseLibraryProps) {
-    const { T } = useForgeTheme();
-    const s = useS(T);
+  const { T } = useForgeTheme();
+  const s = useS(T);
   const [selectedEx, setSelectedEx] = useState<Exercise | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCat, setActiveCat] = useState('All');
@@ -198,7 +227,7 @@ export function ExerciseLibrary({ exercises, isLoading, onSelect }: ExerciseLibr
   const filteredExercises = useMemo(() => {
     if (!exercises) return [];
     let list = exercises;
-    
+
     // Category Filter
     if (activeCat !== 'All') {
       const lowerCat = activeCat.toLowerCase();
@@ -216,8 +245,8 @@ export function ExerciseLibrary({ exercises, isLoading, onSelect }: ExerciseLibr
     // Search Filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      list = list.filter(e => 
-        e.name.toLowerCase().includes(q) || 
+      list = list.filter(e =>
+        e.name.toLowerCase().includes(q) ||
         e.muscleGroups.some(m => m.toLowerCase().includes(q))
       );
     }
@@ -269,9 +298,9 @@ export function ExerciseLibrary({ exercises, isLoading, onSelect }: ExerciseLibr
           ))
         )}
       </ScrollView>
-      <ExercisePreviewModal 
-        exercise={selectedEx} 
-        onClose={() => setSelectedEx(null)} 
+      <ExercisePreviewModal
+        exercise={selectedEx}
+        onClose={() => setSelectedEx(null)}
         onAdd={onSelect}
       />
     </View>
@@ -279,69 +308,69 @@ export function ExerciseLibrary({ exercises, isLoading, onSelect }: ExerciseLibr
 }
 
 const useS = (T: any) => StyleSheet.create({
-          filterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: T.colors.bg1, borderWidth: 1, borderColor: T.colors.b1 },
-          filterChipActive: { backgroundColor: T.colors.forge, borderColor: T.colors.forge },
-          filterChipText: { color: T.colors.t2, fontSize: 13, fontWeight: '600' },
+  filterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: T.colors.bg1, borderWidth: 1, borderColor: T.colors.b1 },
+  filterChipActive: { backgroundColor: T.colors.forge, borderColor: T.colors.forge },
+  filterChipText: { color: T.colors.t2, fontSize: 13, fontWeight: '600' },
 
-          list: { padding: T.spacing.page, paddingBottom: 100 },
-          card: {
-            backgroundColor: T.colors.bg1, padding: T.spacing.px4,
-            borderRadius: T.radii.lg, marginBottom: T.spacing.px3,
-            borderWidth: 0.5, borderColor: T.colors.b1,
-          },
-          cardTitle: { fontSize: T.typography.sizes.body, fontWeight: '600', color: T.colors.t1, letterSpacing: 0.2 },
-          cardSub: {
-            fontSize: T.typography.sizes.label, color: T.colors.t3, marginTop: T.spacing.px1,
-            textTransform: 'uppercase', fontWeight: '600', letterSpacing: 0.8,
-          },
-          emptyState: { padding: T.spacing.px7, alignItems: 'center' },
-          emptyText: {
-            textAlign: 'center', color: T.colors.t3, fontWeight: '500',
-            fontSize: T.typography.sizes.bodyS, lineHeight: T.typography.sizes.bodyS * 1.5,
-          },
+  list: { padding: T.spacing.page, paddingBottom: 100 },
+  card: {
+    backgroundColor: T.colors.bg1, padding: T.spacing.px4,
+    borderRadius: T.radii.lg, marginBottom: T.spacing.px3,
+    borderWidth: 0.5, borderColor: T.colors.b1,
+  },
+  cardTitle: { fontSize: T.typography.sizes.body, fontWeight: '600', color: T.colors.t1, letterSpacing: 0.2 },
+  cardSub: {
+    fontSize: T.typography.sizes.label, color: T.colors.t3, marginTop: T.spacing.px1,
+    textTransform: 'uppercase', fontWeight: '600', letterSpacing: 0.8,
+  },
+  emptyState: { padding: T.spacing.px7, alignItems: 'center' },
+  emptyText: {
+    textAlign: 'center', color: T.colors.t3, fontWeight: '500',
+    fontSize: T.typography.sizes.bodyS, lineHeight: T.typography.sizes.bodyS * 1.5,
+  },
 
-          modalContainer: { flex: 1, backgroundColor: T.colors.bg0 },
-          modalHeader: {
-            flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-            paddingHorizontal: T.spacing.page, paddingTop: 20, paddingBottom: 8,
-          },
-          modalTitle: { fontSize: 22, fontWeight: '800', color: T.colors.t1, flex: 1 },
-          closeBtn: { padding: 4 },
-          modalSub: {
-            fontSize: 14, color: T.colors.forge, fontWeight: '700',
-            paddingHorizontal: T.spacing.page, marginBottom: 40, textTransform: 'uppercase', letterSpacing: 0.5
-          },
-          bodyRow: {
-            flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
-            gap: 20, paddingHorizontal: 20,
-          },
-          bodyWrapper: { alignItems: 'center' },
-          bodyLabel: {
-            marginTop: 20, fontSize: 12, fontWeight: '800', color: T.colors.t3, letterSpacing: 1
-          },
-          searchBar: {
-            flexDirection: 'row', alignItems: 'center', backgroundColor: T.colors.bg1,
-            borderWidth: 1, borderColor: T.colors.b1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10,
-            marginBottom: 16, gap: 10
-          },
-          searchInput: { flex: 1, color: T.colors.t1, fontSize: 15, fontWeight: '500' },
-          addBtn: { backgroundColor: T.colors.forge, padding: 16, borderRadius: 12, alignItems: 'center' },
-          addBtnText: { color: '#000', fontSize: 16, fontWeight: '800' },
-          aiTipCard: {
-            backgroundColor: T.colors.bg1,
-            borderWidth: 1, borderColor: T.colors.b1,
-            borderRadius: 16,
-            padding: 16,
-            marginHorizontal: T.spacing.page,
-            marginTop: 24,
-          },
-          aiTipHeader: {
-            flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12,
-          },
-          aiTipTitle: {
-            color: T.colors.t1, fontSize: 14, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5,
-          },
-          aiTipText: {
-            color: T.colors.t2, fontSize: 14, lineHeight: 22, fontWeight: '500',
-          }
-        });
+  modalContainer: { flex: 1, backgroundColor: T.colors.bg0 },
+  modalHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: T.spacing.page, paddingTop: 20, paddingBottom: 8,
+  },
+  modalTitle: { fontSize: 22, fontWeight: '800', color: T.colors.t1, flex: 1 },
+  closeBtn: { padding: 4 },
+  modalSub: {
+    fontSize: 14, color: T.colors.forge, fontWeight: '700',
+    paddingHorizontal: T.spacing.page, marginBottom: 40, textTransform: 'uppercase', letterSpacing: 0.5
+  },
+  bodyRow: {
+    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
+    gap: 20, paddingHorizontal: 20,
+  },
+  bodyWrapper: { alignItems: 'center' },
+  bodyLabel: {
+    marginTop: 20, fontSize: 12, fontWeight: '800', color: T.colors.t3, letterSpacing: 1
+  },
+  searchBar: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: T.colors.bg1,
+    borderWidth: 1, borderColor: T.colors.b1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10,
+    marginBottom: 16, gap: 10
+  },
+  searchInput: { flex: 1, color: T.colors.t1, fontSize: 15, fontWeight: '500' },
+  addBtn: { backgroundColor: T.colors.forge, padding: 16, borderRadius: 12, alignItems: 'center' },
+  addBtnText: { color: '#000', fontSize: 16, fontWeight: '800' },
+  aiTipCard: {
+    backgroundColor: T.colors.bg1,
+    borderWidth: 1, borderColor: T.colors.b1,
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: T.spacing.page,
+    marginTop: 24,
+  },
+  aiTipHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8,
+  },
+  aiTipTitle: {
+    color: T.colors.t1, fontSize: 12, fontWeight: '700', textTransform: 'uppercase',
+  },
+  aiTipText: {
+    color: T.colors.t2, fontSize: 12, lineHeight: 14.5, fontWeight: '500',
+  }
+});

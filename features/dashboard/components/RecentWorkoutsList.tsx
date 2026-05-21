@@ -6,6 +6,8 @@ import { WorkoutListItem } from '../../../components/forge/WorkoutAtoms';
 import { ForgeButton } from '../../../components/forge/ForgeButton';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { MascotImages } from '../../../constants/mascotImages';
+import { SpriteMascot } from '../../../components/forge/SpriteMascot';
+import { EmptyStateSpriteMap } from '../../sprites/EmptyStateSpriteMap';
 
 interface RecentWorkoutsListProps {
   recentWorkouts: any[];
@@ -23,14 +25,11 @@ export function RecentWorkoutsList({ recentWorkouts }: RecentWorkoutsListProps) 
         {recentWorkouts.length === 0 ? (
           <View style={s.emptyState}>
             <View style={s.emptyIconWrap}>
-              <Image
-                source={MascotImages.workout}
-                style={{ width: 56, height: 56, resizeMode: 'contain' }}
-              />
+              <SpriteMascot spriteId={EmptyStateSpriteMap.no_workouts.spriteId} animation="static" size="sm" />
             </View>
             <Text style={s.emptyTitle} maxFontSizeMultiplier={1.2}>No workouts yet</Text>
             <Text style={s.emptyBody} maxFontSizeMultiplier={1.2}>
-              Log your first session to start tracking progress.
+              {EmptyStateSpriteMap.no_workouts.message}
             </Text>
             <ForgeButton
               label="+ Add Workout"

@@ -7,11 +7,15 @@ import { useAuthStore } from '../stores/authStore';
 import { useForgeTheme } from '@/hooks/useForgeTheme';
 import { Sparkles, ArrowRight } from 'lucide-react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { SpriteMascot } from '../components/forge/SpriteMascot';
+import { onboardingSpriteSequence } from '../features/sprites/OnboardingSpriteSequence';
 
 export default function PersonalizeModal() {
   const { T } = useForgeTheme();
   const styles = useStyles(T);
   const router = useRouter();
+  
+  const spriteConfig = onboardingSpriteSequence.getSpriteForStep(4);
   
   const [age, setAge] = useState('');
   const [height, setHeight] = useState(''); // cm
@@ -100,9 +104,9 @@ export default function PersonalizeModal() {
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <Animated.View entering={FadeInDown.delay(100).duration(600)} style={styles.header}>
-          <View style={styles.iconBadge}>
-            <Sparkles size={24} color={T.colors.forge} />
-          </View>
+          <TouchableOpacity style={{ marginBottom: 16 }} activeOpacity={0.8} onPress={() => alert(spriteConfig.messageSuggestion)}>
+            <SpriteMascot spriteId={spriteConfig.spriteId} animation={spriteConfig.animation} size="lg" />
+          </TouchableOpacity>
           <Text style={styles.title}>Welcome to FORGE</Text>
           <Text style={styles.subtitle}>Let's calibrate your profile so our AI can build your perfect baseline.</Text>
         </Animated.View>

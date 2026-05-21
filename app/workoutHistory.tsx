@@ -8,6 +8,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { BearMascot } from '../components/forge/BearMascot';
+import { SpriteMascot } from '../components/forge/SpriteMascot';
+import { EmptyStateSpriteMap } from '../features/sprites/EmptyStateSpriteMap';
 import { useWorkouts } from '../hooks/useWorkouts';
 
 // ── Activity Images (using Bear mascot assets) ──
@@ -148,9 +150,9 @@ export default function WorkoutHistoryScreen() {
           </View>
         ) : activityFeed.length === 0 ? (
           <View style={s.emptyState}>
-            <BearMascot variant="THINKING" size="xl" animate style={{ marginBottom: 20 }} />
+            <SpriteMascot spriteId={EmptyStateSpriteMap.no_workouts.spriteId} animation="bounce-in" size="xl" style={{ marginBottom: 20 }} />
             <Text style={s.emptyTitle}>No activity yet</Text>
-            <Text style={s.emptySub}>Complete a workout or log a meal to see it here.</Text>
+            <Text style={s.emptySub}>{EmptyStateSpriteMap.no_workouts.message}</Text>
           </View>
         ) : (
           activityFeed.map((item, idx) => (

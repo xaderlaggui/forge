@@ -1,9 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Dimensions, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Dumbbell, Apple, TrendingUp, ChevronRight } from 'lucide-react-native';
 import { ForgeButton } from '../../components/forge/ForgeButton';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
+import { SpriteMascot } from '../../components/forge/SpriteMascot';
+import { onboardingSpriteSequence } from '../../features/sprites/OnboardingSpriteSequence';
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,19 +15,19 @@ export default function WelcomeScreen() {
   const SLIDES = [
     {
       id: '1',
-      icon: <Dumbbell size={80} color={T.colors.forge} />,
+      index: 0,
       title: 'Train Like A Pro',
       description: 'Dynamic PPL splits constructed mathematically for your specific body and frequency.',
     },
     {
       id: '2',
-      icon: <Apple size={80} color={T.colors.forge} />,
+      index: 1,
       title: 'Macro Precision',
       description: 'Calculates your exact TDEE to give you perfect caloric targets whether you want to shred or bulk.',
     },
     {
       id: '3',
-      icon: <TrendingUp size={80} color={T.colors.forge} />,
+      index: 2,
       title: 'Progressive Overload',
       description: 'The app remembers your reps and automatically increments your weights every week.',
     }
@@ -62,15 +63,22 @@ export default function WelcomeScreen() {
         bounces={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        renderItem={({ item }) => (
-          <View style={s.slide}>
-            <View style={s.iconWrap}>
-              {item.icon}
+        renderItem={({ item }) => {
+          const config = onboardingSpriteSequence.getSpriteForStep(item.index);
+          return (
+            <View style={s.slide}>
+              <TouchableOpacity style={s.iconWrap} activeOpacity={0.8} onPress={() => alert(config.messageSuggestion)}>
+                <SpriteMascot 
+                  spriteId={config.spriteId} 
+                  animation={config.animation} 
+                  size="xl" 
+                />
+              </TouchableOpacity>
+              <Text style={s.title}>{item.title}</Text>
+              <Text style={s.description}>{item.description}</Text>
             </View>
-            <Text style={s.title}>{item.title}</Text>
-            <Text style={s.description}>{item.description}</Text>
-          </View>
-        )}
+          );
+        }}
       />
 
       <View style={s.footer}>
@@ -106,11 +114,9 @@ const useS = (T: any) => StyleSheet.create({
             paddingBottom: 100, // Make room for footer
           },
           iconWrap: {
-            width: 160, height: 160, borderRadius: 80,
-            backgroundColor: T.colors.forgeDim,
+            width: 220, height: 220, borderRadius: 110,
             alignItems: 'center', justifyContent: 'center',
             marginBottom: 40,
-            borderWidth: 1, borderColor: 'rgba(178, 255, 36, 0.2)'
           },
           title: {
             fontSize: 32, fontWeight: '800', color: T.colors.t1,

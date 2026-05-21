@@ -10,8 +10,9 @@ import { useActiveSession } from '../features/workout/hooks/useActiveSession';
 
 // Shared Components
 import { useForgeTheme } from "@/hooks/useForgeTheme";
-import { BearMascot } from '../components/forge/BearMascot';
+import { SpriteMascot } from '../components/forge/SpriteMascot';
 import { ForgeButton } from '../components/forge/ForgeButton';
+import { workoutSpriteMapper } from '../features/sprites/WorkoutSpriteMapper';
 import { NumpadBottomSheet, RestTimerWidget } from '../components/forge/WorkoutWidgets';
 
 const PRESETS = [
@@ -31,6 +32,7 @@ export default function ActiveWorkoutScreen() {
   const session = useActiveSession(id, date, routineId, title);
   const [summary, setSummary] = useState<{ mins: number, volume: number, id: string } | null>(null);
   const [rpe, setRpe] = useState<string | null>(null);
+  const workoutSpriteId = workoutSpriteMapper.getSpriteForWorkout((title as string) || 'workout');
 
   const handleFinish = async () => {
     try {
@@ -61,7 +63,7 @@ export default function ActiveWorkoutScreen() {
   if (summary) {
     return (
       <View style={[styles.container, { padding: 24, justifyContent: 'center', alignItems: 'center' }]}>
-        <BearMascot variant="PROUD" size="xl" />
+        <SpriteMascot spriteId={workoutSpriteId} screen="workout_complete" size="xl" />
         <Text style={{ fontSize: 36, fontWeight: '900', color: T.colors.t1, marginTop: 32, letterSpacing: 1 }}>WORKOUT</Text>
         <Text style={{ fontSize: 36, fontWeight: '900', color: T.colors.forge, letterSpacing: 1 }}>COMPLETE!</Text>
 
@@ -121,7 +123,7 @@ export default function ActiveWorkoutScreen() {
         {!session.workoutStarted ? (
           <View style={styles.startOverlay}>
             <View style={{ alignItems: 'center', marginBottom: 20 }}>
-              <BearMascot variant="READY" size="xl" />
+              <SpriteMascot spriteId={workoutSpriteId} screen="workout_start" size="xl" />
             </View>
             <Text style={styles.exerciseTitle} maxFontSizeMultiplier={1.2}>
               {session.workoutTitle}
@@ -132,7 +134,7 @@ export default function ActiveWorkoutScreen() {
           <>
             {/* Feature 4: Volume Tracker */}
             <View style={{ alignItems: 'center', marginVertical: 10 }}>
-              <BearMascot variant="LIFTING" size="md" />
+              <SpriteMascot spriteId={workoutSpriteId} screen="workout_active" size="md" />
             </View>
             <View style={styles.volumeTracker}>
               <View style={styles.volStat}>

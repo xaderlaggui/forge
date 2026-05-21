@@ -1,0 +1,25 @@
+[
+  {
+    "id": "blaze",
+    "file": "blaze-double-flex.png",
+    "character_name": "BLAZE",
+    "pose": "Double bicep flex, big grin",
+    "personality": "Hype man, energetic, celebratory",
+    "triggers": [
+      "workout_complete",
+      "personal_record",
+      "streak_hit"
+    ],
+    "chatbot_tone": "loud and celebratory",
+    "chatbot_message_examples": [
+      "YOU DID IT!",
+      "Personal record CRUSHED.",
+      "Keep that fire burning!"
+    ],
+    "ui_placement": [
+      "morning dashboard header",
+      "chatbot greeting",
+      "workout complete screen\nIGNITE"
+    ]
+  }
+]

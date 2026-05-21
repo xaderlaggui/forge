@@ -30,22 +30,22 @@ interface StickerShareModalProps {
 }
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const PHONE_WIDTH = SCREEN_WIDTH * 0.7;
-const PHONE_HEIGHT = PHONE_WIDTH * (16 / 9);
+const PHONE_WIDTH = SCREEN_WIDTH * 0.6;
+const PHONE_HEIGHT = PHONE_WIDTH * (16 / 8);
 const ITEM_WIDTH = SCREEN_WIDTH;
 
 const themes: StickerTheme[] = ['white', 'dark', 'orange'];
 
 const themeLabels: Record<StickerTheme, string> = {
-  white: 'Light',
-  dark: 'Slate',
+  white: 'Dark',
+  dark: 'Light',
   orange: 'Ember',
 };
 
 const themeScreenBg: Record<StickerTheme, string> = {
-  white: '#000000',
-  dark: '#FFFFFF',
-  orange: '#000000',
+  white: '#4a4a5c', // Mid-grey so dark gradient is visible
+  dark: '#8e8e96',  // Medium tone so light gradient pops
+  orange: '#1a1a2e', // Deep navy to contrast warm orange
 };
 
 export function StickerShareModal({
@@ -109,6 +109,8 @@ export function StickerShareModal({
 
   const renderPhoneMockup = ({ item: theme }: { item: StickerTheme }) => {
     const screenBg = themeScreenBg[theme];
+    const isPhoneDark = theme === 'white' || theme === 'orange';
+    const phoneBorder = isPhoneDark ? '#222' : '#222';
 
     return (
       <View style={localStyles.carouselItem}>
@@ -120,7 +122,7 @@ export function StickerShareModal({
             style={[
               localStyles.phoneMockup,
               {
-                borderColor: isDark ? '#333' : '#D8D8DA',
+                borderColor: phoneBorder,
               },
             ]}
           >
@@ -128,7 +130,7 @@ export function StickerShareModal({
             <View
               style={[
                 localStyles.dynamicIsland,
-                { backgroundColor: isDark ? '#333' : '#D8D8DA' },
+                { backgroundColor: '#000' },
               ]}
             />
 

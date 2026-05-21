@@ -1,8 +1,8 @@
 import { useForgeTheme } from '@/hooks/useForgeTheme';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { formatDuration } from '../../../utils/format';
 import { useStyles } from './InteractivePhotoCardStyles';
 import { StickerTheme, getStickerColors } from './InteractivePhotoCardTypes';
 
@@ -16,8 +16,21 @@ export function StickerPreviewUI({ workout, stickerTheme }: StickerPreviewUIProp
   const styles = useStyles(T, isDark);
   const stickerColors = getStickerColors(stickerTheme);
 
+  const formatTimeParts = (minutes: number) => {
+    if (!minutes || minutes <= 0) return { value: '0', unit: 'min' };
+    if (minutes < 60) return { value: String(minutes), unit: 'min' };
+    const hrs = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return { value: `${hrs}:${mins.toString().padStart(2, '0')}`, unit: 'hrs' };
+  };
+  const timeParts = formatTimeParts(workout.durationMin);
+
   return (
-    <View style={styles.modalStickerContainer}>
+    <View style={[styles.modalStickerContainer, { padding: 30 }]}>
+      <LinearGradient
+        colors={[stickerColors.gradientStart, stickerColors.gradientEnd]}
+        style={StyleSheet.absoluteFillObject}
+      />
       {/* Header Row: Shoe Icon and Brand Wordmark */}
       <View style={styles.liveHeaderRow}>
         <View style={styles.liveShoeIcon}>
@@ -166,7 +179,19 @@ export function StickerPreviewUI({ workout, stickerTheme }: StickerPreviewUIProp
                 },
               ]}
             >
-              {formatDuration(workout.durationMin)}
+              {timeParts.value}
+            </Text>
+            <Text
+              style={[
+                styles.liveStatUnit,
+                {
+                  fontSize: 14,
+                  color: stickerColors.text,
+                  textShadowColor: stickerTheme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.3)',
+                },
+              ]}
+            >
+              {timeParts.unit}
             </Text>
           </View>
         </View>
