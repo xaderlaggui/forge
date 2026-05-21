@@ -34,8 +34,8 @@ export default function HoorayScreen() {
   }));
 
   const handleContinue = () => {
-    // This will trigger the global auth state change which checks isOnboarded
-    // Since it's false, it will redirect to /(onboarding)
+    // This triggers a navigation to tabs.
+    // The root layout will automatically push the /personalize modal since BMI is missing.
     router.replace('/(tabs)');
   };
 
