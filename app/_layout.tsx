@@ -101,9 +101,8 @@ function RootLayoutNav() {
     // Wait for both fonts and auth state to resolve
     if (isLoading) return;
 
-    const inAuthGroup       = segments[0] === '(auth)';
-    const inOnboardingGroup = segments[0] === '(onboarding)';
-    const inSplash          = segments[0] === 'splash';
+    const inAuthGroup = segments[0] === '(auth)';
+    const inSplash    = segments[0] === 'splash';
 
     // Never redirect while on splash or while segments haven't resolved yet.
     // The splash screen is the sole gatekeeper for initial navigation.
@@ -115,10 +114,10 @@ function RootLayoutNav() {
       const currentRoute = segments.join('/');
       const isSignupFlow = currentRoute.includes('password') || currentRoute.includes('hooray') || currentRoute.includes('otp');
 
-      if (!user.isOnboarded && !inOnboardingGroup && !isSignupFlow) {
-        router.replace('/(onboarding)');
-      } else if (user.isOnboarded && (inAuthGroup || inOnboardingGroup)) {
+      if (inAuthGroup) {
         router.replace('/(tabs)');
+      } else if (!user.bmi && !isSignupFlow && currentRoute !== 'personalize') {
+        router.push('/personalize');
       }
     }
   }, [user, isLoading, segments]);
@@ -131,7 +130,7 @@ function RootLayoutNav() {
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="splash" />
             <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(onboarding)" />
+            <Stack.Screen name="personalize" options={{ presentation: 'modal' }} />
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="+not-found" />
             <Stack.Screen name="addMeal"      options={{ presentation: 'modal' }} />
