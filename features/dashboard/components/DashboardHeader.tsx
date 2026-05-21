@@ -1,8 +1,9 @@
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import { Bell } from 'lucide-react-native';
 import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getGreeting, getInitial } from '../utils';
 
 interface DashboardHeaderProps {
@@ -11,6 +12,7 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ displayName, photoUrl }: DashboardHeaderProps) {
+  const router = useRouter();
   const { T } = useForgeTheme();
   const s = useS(T);
   return (
@@ -23,19 +25,21 @@ export function DashboardHeader({ displayName, photoUrl }: DashboardHeaderProps)
             <Bell size={24} color={T.colors.t1} />
             <View style={s.bellBadge} />
           </View>
-          <LinearGradient colors={[T.colors.forge, '#b33e1d']} style={s.avatarWrap}>
-            <View
-              style={[s.avatarInner, { overflow: 'hidden' }]}
-              accessibilityLabel={`Profile: ${displayName ?? 'Athlete'}`}
-              accessibilityRole="button"
-            >
-              {photoUrl ? (
-                <Image source={{ uri: photoUrl }} style={{ width: '100%', height: '100%' }} />
-              ) : (
-                <Text style={s.avatarText}>{getInitial(displayName)}</Text>
-              )}
-            </View>
-          </LinearGradient>
+          <TouchableOpacity onPress={() => router.push('/settings')} activeOpacity={0.8}>
+            <LinearGradient colors={[T.colors.forge, '#b33e1d']} style={s.avatarWrap}>
+              <View
+                style={[s.avatarInner, { overflow: 'hidden' }]}
+                accessibilityLabel={`Profile: ${displayName ?? 'Athlete'}`}
+                accessibilityRole="button"
+              >
+                {photoUrl ? (
+                  <Image source={{ uri: photoUrl }} style={{ width: '100%', height: '100%' }} />
+                ) : (
+                  <Text style={s.avatarText}>{getInitial(displayName)}</Text>
+                )}
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
       </View>
 
