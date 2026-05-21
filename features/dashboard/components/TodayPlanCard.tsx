@@ -114,7 +114,7 @@ export function TodayPlanCard({ isLoading, plannedWorkout, loggedWorkout, muscle
               case 'HYPED': // workout_complete (No CTA)
                 return { right: -25, bottom: -43, width: 170, height: 220 };
               case 'THINKING': // rest_day (No CTA)
-                return { right: -25, bottom: 15, width: 160, height: 160 };
+                return { right: -16, bottom: -20, width: 160, height: 200 };
               case 'STERN': // home_idle (Has CTA Button)
               default:
                 return { right: -34, bottom: 72.7, width: 193, height: 135 }; // Sticky above the button

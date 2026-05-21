@@ -122,6 +122,48 @@ export function StickerPreviewUI({ workout, stickerTheme }: StickerPreviewUIProp
             </Text>
           </View>
 
+          {workout.pace ? (
+            <View style={[styles.liveStatBox, { marginTop: 12 }]}>
+              <Text
+                style={[
+                  styles.liveStatLbl,
+                  {
+                    fontSize: 11,
+                    color: stickerColors.label,
+                    textShadowColor: stickerTheme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.3)',
+                  },
+                ]}
+              >
+                Pace
+              </Text>
+              <Text
+                style={[
+                  styles.liveStatVal,
+                  {
+                    fontSize: 24,
+                    lineHeight: 28,
+                    color: stickerColors.text,
+                    textShadowColor: stickerTheme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.4)',
+                  },
+                ]}
+              >
+                {workout.pace.replace(/[^\d.]/g, '')}
+              </Text>
+              <Text
+                style={[
+                  styles.liveStatUnit,
+                  {
+                    fontSize: 14,
+                    color: stickerColors.text,
+                    textShadowColor: stickerTheme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.3)',
+                  },
+                ]}
+              >
+                km/h
+              </Text>
+            </View>
+          ) : null}
+
           {workout.steps ? (
             <View style={[styles.liveStatBox, { marginTop: 12 }]}>
               <Text
@@ -194,6 +236,48 @@ export function StickerPreviewUI({ workout, stickerTheme }: StickerPreviewUIProp
               {timeParts.unit}
             </Text>
           </View>
+          
+          {workout.calories ? (
+            <View style={[styles.liveStatBox, { marginTop: 12 }]}>
+              <Text
+                style={[
+                  styles.liveStatLbl,
+                  {
+                    fontSize: 11,
+                    color: stickerColors.label,
+                    textShadowColor: stickerTheme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.3)',
+                  },
+                ]}
+              >
+                Calories
+              </Text>
+              <Text
+                style={[
+                  styles.liveStatVal,
+                  {
+                    fontSize: 32,
+                    lineHeight: 36,
+                    color: stickerColors.text,
+                    textShadowColor: stickerTheme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.4)',
+                  },
+                ]}
+              >
+                {workout.calories}
+              </Text>
+              <Text
+                style={[
+                  styles.liveStatUnit,
+                  {
+                    fontSize: 14,
+                    color: stickerColors.text,
+                    textShadowColor: stickerTheme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.3)',
+                  },
+                ]}
+              >
+                kcal
+              </Text>
+            </View>
+          ) : null}
         </View>
       </View>
     </View>
