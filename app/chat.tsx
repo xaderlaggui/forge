@@ -1,7 +1,5 @@
 import { MascotImages } from '@/constants/mascotImages';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
-import { SpriteMascot } from '../components/forge/SpriteMascot';
-import { getSpriteForActivity } from '../features/sprites/activity-sprite-map';
 import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
@@ -20,8 +18,10 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
+import { SpriteMascot } from '../components/forge/SpriteMascot';
 import { TypewriterText } from '../components/forge/TypewriterText';
 import { COACH_SYSTEM_PROMPT } from '../constants/prompts';
+import { getSpriteForActivity } from '../features/sprites/activity-sprite-map';
 import { useNutrition } from '../hooks/useNutrition';
 import { useWorkouts } from '../hooks/useWorkouts';
 import { groqComplete, GroqMessage } from '../services/groq';
@@ -53,11 +53,11 @@ export default function ChatScreen() {
 
   const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState<Message[]>([
-    { 
-      id: '1', 
-      text: "Hey! I'm your FORGE Coach. Tell me what you did today — like 'I ran 5km' — and I'll log it for you!", 
+    {
+      id: '1',
+      text: "Hey! I'm your FORGE Coach. Tell me what you did today — like 'I ran 5km' — and I'll log it for you!",
       isAi: true,
-      spriteId: chatbotSpriteController.getSpriteForMessage('', true, false).spriteId
+      spriteId: 'smiling-coach'
     },
   ]);
   const [isTyping, setIsTyping] = useState(false);
@@ -121,7 +121,7 @@ export default function ChatScreen() {
             const actType = parsed.type || 'strength';
             const duration = parsed.durationMinutes ?? 0;
             const distance = parsed.distanceKm ?? null;
-            
+
             // Rely on AI's calculated calories, fallback to basic formula
             const estCalories = parsed.calories ?? Math.round(duration * (actType === 'run' ? 10 : actType === 'walk' ? 4 : 5));
             const pace = parsed.pace ?? null;
@@ -168,29 +168,31 @@ export default function ChatScreen() {
       historyRef.current.push({ role: 'assistant', content: raw });
       const newMsgId = (Date.now() + 1).toString();
       const spriteConfig = chatbotSpriteController.getSpriteForMessage(userMsg, false, false);
-      let finalSpriteId = spriteConfig.spriteId;
-      if (logged && activity) {
-        finalSpriteId = getSpriteForActivity(activity.activityName, activity.type);
+
+      // Override activity-specific sprites for the avatar
+      let finalSpriteId = 'smiling-coach';
+      if (logged) {
+        finalSpriteId = 'thumbs-up';
       }
-      
-      setMessages(prev => [...prev, { 
-        id: newMsgId, 
-        text: displayText, 
-        isAi: true, 
-        logged, 
-        activity, 
-        spriteId: finalSpriteId 
+
+      setMessages(prev => [...prev, {
+        id: newMsgId,
+        text: displayText,
+        isAi: true,
+        logged,
+        activity,
+        spriteId: finalSpriteId
       }]);
 
     } catch (err: any) {
       const errMsg = err?.message?.includes('not set')
         ? 'Add your EXPO_PUBLIC_GROQ_API_KEY in .env to chat with your coach!'
         : 'Sorry, I had trouble connecting. Try again in a moment!';
-      
+
       const errorSpriteConfig = chatbotSpriteController.getSpriteForMessage(userMsg, false, true);
-      setMessages(prev => [...prev, { 
-        id: (Date.now() + 1).toString(), 
-        text: errMsg, 
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        text: errMsg,
         isAi: true,
         spriteId: errorSpriteConfig.spriteId
       }]);
@@ -207,9 +209,9 @@ export default function ChatScreen() {
     <View style={[s.msgRow, item.isAi ? s.msgRowAi : s.msgRowUser]}>
       {item.isAi && (
         <View style={[s.avatarWrap, { backgroundColor: 'transparent' }]}>
-          <Image 
-            source={item.spriteId ? chatbotSpriteController.getAssetSource(item.spriteId) : MascotImages.coach} 
-            style={{ width: 45, height: 45, resizeMode: 'contain', position: 'absolute', bottom: 1, left: -13 }} 
+          <Image
+            source={item.spriteId ? chatbotSpriteController.getAssetSource(item.spriteId) : MascotImages.coach}
+            style={{ width: 45, height: 45, resizeMode: 'contain', position: 'absolute', bottom: 1, left: -13 }}
           />
         </View>
       )}
@@ -264,13 +266,15 @@ export default function ChatScreen() {
         )}
       </View>
       {!item.isAi && (
-        <View style={[s.avatarWrap, { backgroundColor: T.colors.bg3, overflow: 'hidden' }]}>
-          {user?.photoURL ? (
-            <Image source={{ uri: user.photoURL }} style={{ width: '100%', height: '100%', resizeMode: 'cover' }} />
-          ) : (
-            <UserIcon size={15} color={T.colors.t1} />
-          )}
-        </View>
+        <TouchableOpacity onPress={() => router.push('/settings')} activeOpacity={0.8}>
+          <View style={[s.avatarWrap, { backgroundColor: T.colors.bg3, overflow: 'hidden' }]}>
+            {user?.photoURL ? (
+              <Image source={{ uri: user.photoURL }} style={{ width: '100%', height: '100%', resizeMode: 'cover' }} />
+            ) : (
+              <UserIcon size={15} color={T.colors.t1} />
+            )}
+          </View>
+        </TouchableOpacity>
       )}
     </View>
   );
