@@ -8,7 +8,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { Camera, ChevronLeft, Share as ShareIcon } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import ViewShot from 'react-native-view-shot';
 import { ForgeButton } from '../components/forge/ForgeButton';
 import { InteractivePhotoCard } from '../components/forge/InteractivePhotoCard';
@@ -157,7 +158,7 @@ export default function WorkoutDetailScreen() {
   const renderCardioView = () => (
     <View style={{ flex: 1 }}>
       {photoUri ? (
-        <ViewShot ref={viewShotRef} style={{ flex: 1, backgroundColor: '#0F0F12' }} options={{ format: 'jpg', quality: 0.9 }}>
+        <View style={{ flex: 1, backgroundColor: '#0F0F12' }}>
           <InteractivePhotoCard
             photoUri={photoUri}
             workout={workout}
@@ -166,17 +167,17 @@ export default function WorkoutDetailScreen() {
             isUploading={isUploading}
             shareViewShotRef={shareViewShotRef}
           />
-        </ViewShot>
+        </View>
       ) : (
         <View style={s.cardioContainer}>
-          <ViewShot ref={viewShotRef} style={{ backgroundColor: T.colors.bg1, ...T.shadows.lift, borderRadius: T.radii.lg }} options={{ format: 'jpg', quality: 0.9 }}>
+          <View style={{ backgroundColor: T.colors.bg1, ...T.shadows.lift, borderRadius: T.radii.lg }}>
             <View style={[s.shareCard, { backgroundColor: T.colors.bg2, justifyContent: 'center', alignItems: 'center' }]}>
-              <Image source={{ uri: displayPhotoUri }} style={StyleSheet.absoluteFill as any} resizeMode="cover" />
+              <Image source={{ uri: displayPhotoUri }} style={StyleSheet.absoluteFill as any} contentFit="cover" />
               <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' }]}>
                 <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600', letterSpacing: 0.5 }}>Tap 'Add Photo' to customize</Text>
               </View>
             </View>
-          </ViewShot>
+          </View>
 
           <View style={s.cardioDetails}>
             <Text style={s.cTitle}>{workout.notes || 'Morning Activity'}</Text>
