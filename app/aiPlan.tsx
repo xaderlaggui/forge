@@ -58,7 +58,7 @@ function CoachMessageCard({ message, T }: { message: string, T: any }) {
   return (
     <View style={{
       flexDirection: 'row',
-      backgroundColor: T.colors.bg1,
+      backgroundColor: T.colors.bg1, ...T.shadows.lift,
       borderRadius: 16,
       overflow: 'hidden',
       borderWidth: 1,
@@ -133,7 +133,7 @@ function PlanPreview({ plan, onApply, onSaveDraft, isApplying, T }: {
         <View
           key={i}
           style={{
-            backgroundColor: T.colors.bg1, borderRadius: 14,
+            backgroundColor: T.colors.bg1, ...T.shadows.lift, borderRadius: 14,
             padding: 16, borderWidth: 0.5, borderColor: T.colors.b1,
             flexDirection: 'row', alignItems: 'center', gap: 14,
           }}
@@ -355,7 +355,7 @@ const useStyles = (T: any) => StyleSheet.create({
   header: {
     flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
     paddingTop: 60, paddingBottom: 16, paddingHorizontal: 16,
-    backgroundColor: T.colors.bg1, borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
+    backgroundColor: T.colors.bg1, ...T.shadows.lift, borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
   },
   backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 18, fontWeight: '700', color: T.colors.t1, paddingBottom: 8 },
@@ -367,7 +367,7 @@ const useStyles = (T: any) => StyleSheet.create({
     textTransform: 'uppercase', marginBottom: 12,
   },
   textarea: {
-    backgroundColor: T.colors.bg1, borderRadius: 14,
+    backgroundColor: T.colors.bg1, ...T.shadows.lift, borderRadius: 14,
     borderWidth: 0.5, borderColor: T.colors.b1,
     padding: 14, fontSize: 15, color: T.colors.t1,
     minHeight: 90,
