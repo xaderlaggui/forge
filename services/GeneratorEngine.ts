@@ -43,19 +43,25 @@ export interface GeneratedWorkoutDay {
   }[];
 }
 
-export interface GeneratedMealPlan {
-  targetCalories: number;
-  targetProtein: number;
-  targetCarbs: number;
-  targetFat: number;
+export interface GeneratedMealDay {
+  dayOfWeek: string;
   meals: {
-    name: string;         // "Breakfast" | "Lunch" | "Dinner" | "Snacks"
+    name: string;
     description: string;
     calories: number;
     protein: number;
     carbs: number;
     fat: number;
   }[];
+}
+
+export interface GeneratedMealPlan {
+  targetCalories: number;
+  targetProtein: number;
+  targetCarbs: number;
+  targetFat: number;
+  days: GeneratedMealDay[];
+  meals?: any[]; // Keep for backwards compatibility
 }
 
 export interface GeneratedPlan {
@@ -204,10 +210,10 @@ async function generateMealPlan(
   );
 
   const parsed = JSON.parse(content);
-  const meals = parsed.meals ?? [];
+  const days = parsed.days ?? [];
   const coachMessage = parsed.coachMessage || "Here is your personalized plan, let's crush it!";
 
-  return { ...macros, meals, coachMessage };
+  return { ...macros, days, coachMessage };
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -257,3 +263,33 @@ export async function generateFullPlan(metrics: UserMetrics): Promise<GeneratedP
 
   return plan;
 }
+
+/**
+ * Generates only a daily meal plan.
+ * Saves the result to `users/{uid}/generatedPlans/{date}` in Firestore/Supabase.
+ */
+export async function generateMealPlanOnly(metrics: UserMetrics): Promise<GeneratedPlan> {
+  const macros = calculateTargetMacros(metrics);
+  const split = getWorkoutSplit(metrics.fitnessGoal); // Just used for context in meal prompt
+
+  const mealPlanResult = await generateMealPlan(macros, metrics.dietPreference, metrics.fitnessGoal, metrics, split);
+  const { coachMessage, ...mealPlan } = mealPlanResult;
+
+  const plan: GeneratedPlan = {
+    generatedAt: new Date().toISOString(),
+    workoutWeek: [], // Empty workout week for meal-only plan
+    mealPlan,
+    coachMessage,
+  };
+
+  const dateKey = dayjs().format('YYYY-MM-DD');
+  await supabase.from('generated_plans').upsert({
+    user_id: metrics.uid,
+    date: dateKey,
+    plan: plan,
+    saved_at: new Date().toISOString(),
+  }, { onConflict: 'user_id,date' });
+
+  return plan;
+}
+
