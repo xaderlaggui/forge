@@ -87,7 +87,7 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
   if (isCompleted) {
     const data = getHeatmapData(loggedWorkout);
     return (
-      <View style={{ position: 'relative', overflow: 'visible' }}>
+      <View style={{ position: 'relative', overflow: 'visible', ...T.shadows.lift }}>
         <View style={[s.todayCard, { overflow: 'hidden' }]}>
           <View style={{ position: 'absolute', top: -20, right: -20, width: 110, height: 110, borderRadius: 55, backgroundColor: T.colors.forgeDim }} />
 
@@ -116,7 +116,7 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
   if (!isRestDay) {
     const data = getHeatmapData(plannedWorkout);
     return (
-      <View style={{ position: 'relative', overflow: 'visible' }}>
+      <View style={{ position: 'relative', overflow: 'visible', ...T.shadows.lift }}>
         <View style={[s.todayCard, { overflow: 'hidden' }]}>
           <View style={{ position: 'absolute', top: -20, right: -20, width: 110, height: 110, borderRadius: 55, backgroundColor: T.colors.forgeDim }} />
 
@@ -173,7 +173,7 @@ export function DailyPlanCard({ isLoading, loggedWorkout, plannedWorkout, active
 
 const useS = (T: any) => StyleSheet.create({
   todayCard: {
-    backgroundColor: T.colors.bg1, padding: T.spacing.px6, borderRadius: T.radii.xl,
+    backgroundColor: T.colors.bg1, ...T.shadows.lift, padding: T.spacing.px6, borderRadius: T.radii.xl,
     borderWidth: 0.5, borderColor: T.colors.b1,
   },
   todayCardEmpty: { alignItems: 'center', paddingVertical: 40 },

@@ -129,6 +129,7 @@ const useStyles = (T: any) => StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'stretch',
     backgroundColor: T.colors.bg1,
+    ...T.shadows.lift,
     padding: 12,
     borderRadius: 16,
     borderWidth: 0.5,

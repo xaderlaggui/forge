@@ -30,7 +30,7 @@ export function MeasurementCard({ label, value, prevValue, onPress }: MeasCardPr
 
 const useMeasS = (T: any) => StyleSheet.create({
           card: {
-            width: '48%', backgroundColor: T.colors.bg1,
+            width: '48%', backgroundColor: T.colors.bg1, ...T.shadows.lift,
             borderRadius: T.radii.lg, borderWidth: 0.5, borderColor: T.colors.b1, padding: 14,
           },
           label: { fontSize: T.typography.sizes.caption, fontWeight: '600', color: T.colors.t3, textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 6 },

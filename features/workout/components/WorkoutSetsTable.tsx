@@ -116,7 +116,7 @@ export function WorkoutSetsTable({ exercises, personalRecords, onToggleSet, onAd
 const useStyles = (T: any, isDark: boolean) => StyleSheet.create({
   exerciseBlock: {
     backgroundColor: T.colors.bg1,
-    borderRadius: T.radii.xl, borderWidth: 0.5, borderColor: T.colors.b1,
+    ...T.shadows.lift, borderRadius: T.radii.xl, borderWidth: 0.5, borderColor: T.colors.b1,
     overflow: 'hidden'
   },
   exName: { fontSize: T.typography.sizes.body, fontWeight: '700', color: T.colors.t1, padding: T.spacing.px4, paddingBottom: T.spacing.px3 },

@@ -49,23 +49,24 @@ export function ProgressPhotos({
           { photo: firstPhoto, badge: 'Before', index: 0 },
           { photo: lastPhoto, badge: 'Current', index: Math.max(0, photosLength - 1) }
         ].map(({ photo, badge, index }) => (
-          <TouchableOpacity
-            key={badge}
-            style={s.photoCard}
-            onPress={() => handlePressPhoto(photo, badge, index)}
-            activeOpacity={0.85}
-          >
-            {photo?.url ? (
-              <Image source={{ uri: photo.url }} style={StyleSheet.absoluteFill as any} resizeMode="cover" />
-            ) : (
-              <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center', opacity: 0.3 }]}>
-                <Camera size={24} color={T.colors.t2} />
+          <View key={badge} style={{ flex: 1, aspectRatio: 0.72, ...T.shadows.lift, borderRadius: T.radii.lg }}>
+            <TouchableOpacity
+              style={s.photoCard}
+              onPress={() => handlePressPhoto(photo, badge, index)}
+              activeOpacity={0.85}
+            >
+              {photo?.url ? (
+                <Image source={{ uri: photo.url }} style={StyleSheet.absoluteFill as any} resizeMode="cover" />
+              ) : (
+                <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center', opacity: 0.3 }]}>
+                  <Camera size={24} color={T.colors.t2} />
+                </View>
+              )}
+              <View style={s.photoBadgeWrap}>
+                <Text style={s.photoBadgeText} maxFontSizeMultiplier={1.2}>{badge}</Text>
               </View>
-            )}
-            <View style={s.photoBadgeWrap}>
-              <Text style={s.photoBadgeText} maxFontSizeMultiplier={1.2}>{badge}</Text>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         ))}
       </View>
 
@@ -114,7 +115,7 @@ const useS = (T: any) => StyleSheet.create({
   section: { marginBottom: T.spacing.px6 },
   photoGrid: { flexDirection: 'row', gap: 10 },
   photoCard: {
-    flex: 1, aspectRatio: 0.72, backgroundColor: T.colors.bg2,
+    flex: 1, backgroundColor: T.colors.bg2,
     borderRadius: T.radii.lg, borderWidth: 0.5, borderColor: T.colors.b1,
     overflow: 'hidden', justifyContent: 'flex-end',
   },

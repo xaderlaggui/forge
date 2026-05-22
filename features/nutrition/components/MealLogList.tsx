@@ -59,15 +59,17 @@ export function MealLogList({ meals, activePlan, updateNutrition }: MealLogListP
             {isEmpty ? (
               <View style={s.emptyActions}>
                 <PulseAnimatedView style={{ flex: 1 }}>
-                  <TouchableOpacity
-                    style={[s.mealCard, s.mealCardEmpty, { flex: 1, marginBottom: 0 }]}
-                    activeOpacity={0.7}
-                    onPress={() => router.push({ pathname: '/addMeal', params: { mealName: key } })}
-                  >
-                    <View style={s.foodRowCenter}>
-                      <Text style={s.emptyTapText}>Tap + to log {label.toLowerCase()}</Text>
-                    </View>
-                  </TouchableOpacity>
+                  <View style={[s.mealCardWrapper, { flex: 1, marginBottom: 0 }]}>
+                    <TouchableOpacity
+                      style={[s.mealCard, s.mealCardEmpty]}
+                      activeOpacity={0.7}
+                      onPress={() => router.push({ pathname: '/addMeal', params: { mealName: key } })}
+                    >
+                      <View style={s.foodRowCenter}>
+                        <Text style={s.emptyTapText}>Tap + to log {label.toLowerCase()}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
                 </PulseAnimatedView>
 
                 {activePlan && updateNutrition && (
@@ -107,7 +109,8 @@ export function MealLogList({ meals, activePlan, updateNutrition }: MealLogListP
                 )}
               </View>
             ) : (
-              <View style={s.mealCard}>
+              <View style={s.mealCardWrapper}>
+                <View style={s.mealCard}>
                 {/* Assuming isAiParsed or if the backend passes some flag, we check here. We'll show it if it exists */}
                 {meal.isAiParsed && (
                   <View style={s.parsedBadgeRow}>
@@ -135,6 +138,7 @@ export function MealLogList({ meals, activePlan, updateNutrition }: MealLogListP
                     <Text style={s.emptyTapText}>Aggregated macros only</Text>
                   </View>
                 )}
+              </View>
               </View>
             )}
           </View>
@@ -183,7 +187,8 @@ const useS = (T: any) => StyleSheet.create({
   sectionTitle: { color: T.colors.t1, fontSize: 15, fontWeight: '700' },
   sectionCals: { color: T.colors.t3, fontSize: 12 },
 
-  mealCard: { backgroundColor: T.colors.bg1, borderRadius: 16, overflow: 'hidden', borderWidth: 0.5, borderColor: T.colors.b1, marginBottom: 8 },
+  mealCardWrapper: { ...T.shadows.lift, borderRadius: 16, marginBottom: 8, backgroundColor: T.colors.bg1 },
+  mealCard: { backgroundColor: T.colors.bg1, borderRadius: 16, overflow: 'hidden', borderWidth: 0.5, borderColor: T.colors.b1, flex: 1 },
   mealCardEmpty: { borderStyle: 'dashed', opacity: 0.5 },
 
   parsedBadgeRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingTop: 8, paddingBottom: 4 },

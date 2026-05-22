@@ -75,7 +75,7 @@ export function WeightChart({
         ))}
       </View>
 
-      <View style={{ position: 'relative', overflow: 'visible' }}>
+      <View style={{ position: 'relative', overflow: 'visible', ...T.shadows.lift }}>
         <View style={s.chartCard}>
           <View style={{ position: 'absolute', top: -20, right: -20, width: 110, height: 110, borderRadius: 55, backgroundColor: T.colors.forgeDim }} />
 

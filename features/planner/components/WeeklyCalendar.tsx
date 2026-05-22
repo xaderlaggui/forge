@@ -41,7 +41,7 @@ const useS = (T: any) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: T.spacing.px6,
-    backgroundColor: T.colors.bg1,
+    backgroundColor: T.colors.bg1, ...T.shadows.lift,
     padding: 12,
     borderRadius: 16,
     borderWidth: 0.5,

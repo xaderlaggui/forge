@@ -123,7 +123,7 @@ const useStyles = (T: any) => StyleSheet.create({
     zIndex: 2,
   },
   bubble: {
-    backgroundColor: T.colors.bg1,
+    backgroundColor: T.colors.bg1, ...T.shadows.lift,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,

@@ -103,7 +103,7 @@ export function RoutineList() {
 const useS = (T: any) => StyleSheet.create({
   list: { padding: T.spacing.page, paddingBottom: 100 },
   card: {
-    backgroundColor: T.colors.bg1, padding: T.spacing.px4,
+    backgroundColor: T.colors.bg1, ...T.shadows.lift, padding: T.spacing.px4,
     borderRadius: 16, marginBottom: T.spacing.px3,
     borderWidth: 0.5, borderColor: T.colors.b1,
   },

@@ -52,7 +52,7 @@ const useS = (T: any) => StyleSheet.create({
             flexDirection: 'row', gap: 12, paddingHorizontal: T.spacing.page, marginBottom: T.spacing.px5,
           },
           metricCard: {
-            flex: 1, backgroundColor: T.colors.bg1, borderRadius: T.radii.xl,
+            flex: 1, backgroundColor: T.colors.bg1, ...T.shadows.lift, borderRadius: T.radii.xl,
             borderWidth: 0.5, borderColor: T.colors.b1, padding: T.spacing.px4,
             alignItems: 'center', justifyContent: 'center',
           },

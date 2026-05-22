@@ -54,7 +54,7 @@ export function StatCard({ label, value, unit, delta, subText, valueColor, Icon,
 
 const useSc = (T: any) => StyleSheet.create({
   card: {
-    flex: 1, backgroundColor: T.colors.bg1,
+    flex: 1, backgroundColor: T.colors.bg1, ...T.shadows.lift,
     borderRadius: T.radii.lg, borderWidth: 0.5, borderColor: T.colors.b1, padding: 14,
     alignItems: 'center',
   },

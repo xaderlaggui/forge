@@ -206,11 +206,52 @@ async function generateMealPlan(
 
   const content = await groqComplete(
     [{ role: 'user', content: prompt }],
-    { model: 'llama-3.3-70b-versatile', max_tokens: 1200, temperature: 0.5, response_format: { type: 'json_object' } }
+    { model: 'llama-3.3-70b-versatile', max_tokens: 3000, temperature: 0.5, response_format: { type: 'json_object' } }
   );
 
-  const parsed = JSON.parse(content);
-  const days = parsed.days ?? [];
+  let parsed: any = {};
+  try {
+    parsed = JSON.parse(content);
+  } catch(e) {
+    console.error("Failed to parse JSON", e);
+  }
+
+  let days: GeneratedMealDay[] = [];
+  
+  if (Array.isArray(parsed.days) && parsed.days.length > 0) {
+    days = parsed.days;
+  } else if (Array.isArray(parsed.weeklyPlan) && parsed.weeklyPlan.length > 0) {
+    days = parsed.weeklyPlan;
+  } else if (Array.isArray(parsed.mealPlan) && parsed.mealPlan.length > 0) {
+    days = parsed.mealPlan;
+  } else if (Array.isArray(parsed.meals) && parsed.meals.length > 0) {
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    days = dayNames.map(dayOfWeek => ({
+      dayOfWeek,
+      meals: parsed.meals
+    }));
+  } else {
+    throw new Error("AI did not return a valid meal plan array.");
+  }
+
+  // Safety net: if AI returned fewer than 7 days, pad the missing days
+  if (days.length > 0 && days.length < 7) {
+    const fullWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const currentDayNames = days.map(d => d.dayOfWeek);
+    for (const name of fullWeek) {
+      if (!currentDayNames.some(d => d.toLowerCase().includes(name.toLowerCase()))) {
+        // Copy the first day's meals as a fallback for missing days
+        days.push({ dayOfWeek: name, meals: days[0].meals });
+      }
+    }
+    // Sort them correctly
+    days.sort((a, b) => {
+      const aIdx = fullWeek.findIndex(d => a.dayOfWeek.toLowerCase().includes(d.toLowerCase()));
+      const bIdx = fullWeek.findIndex(d => b.dayOfWeek.toLowerCase().includes(d.toLowerCase()));
+      return aIdx - bIdx;
+    });
+  }
+
   const coachMessage = parsed.coachMessage || "Here is your personalized plan, let's crush it!";
 
   return { ...macros, days, coachMessage };

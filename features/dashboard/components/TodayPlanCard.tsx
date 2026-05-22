@@ -32,7 +32,7 @@ export function TodayPlanCard({ isLoading, plannedWorkout, loggedWorkout, muscle
   const bearMood = useBearMood(isCompleted ? 'workout_complete' : isRestDay ? 'rest_day' : 'accountability');
 
   return (
-    <View style={{ position: 'relative', overflow: 'visible', marginHorizontal: T.spacing.page, marginBottom: T.spacing.px5 }}>
+    <View style={{ position: 'relative', overflow: 'visible', marginHorizontal: T.spacing.page, marginBottom: T.spacing.px5, ...T.shadows.lift }}>
       <View style={[s.todayCard, { marginHorizontal: 0, marginBottom: 0 }]}>
         <LinearGradient
           colors={[T.colors.bg1, T.colors.bg2]}

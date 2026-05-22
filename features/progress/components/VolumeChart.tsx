@@ -190,7 +190,8 @@ export function VolumeChart({
   return (
     <View style={s.section}>
       <Text style={s.sectionLabel} maxFontSizeMultiplier={1.2}>Progressive Overload</Text>
-      <View style={s.chartCard}>
+      <View style={{ ...T.shadows.lift, borderRadius: T.radii.xl }}>
+        <View style={s.chartCard}>
 
         {/* Header */}
         <View style={[s.chartHeader, !hasTrainingData && { opacity: 0.15 }]}>
@@ -243,6 +244,7 @@ export function VolumeChart({
             </View>
           )}
         </View>
+      </View>
       </View>
     </View>
   );

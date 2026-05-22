@@ -174,7 +174,7 @@ export function ExercisePreviewModal({
                   top: 25,
                   width: 12,
                   height: 12,
-                  backgroundColor: T.colors.bg1,
+                  backgroundColor: T.colors.bg1, ...T.shadows.lift,
                   borderLeftWidth: 1,
                   borderBottomWidth: 1,
                   borderColor: T.colors.b1,
@@ -308,13 +308,13 @@ export function ExerciseLibrary({ exercises, isLoading, onSelect }: ExerciseLibr
 }
 
 const useS = (T: any) => StyleSheet.create({
-  filterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: T.colors.bg1, borderWidth: 1, borderColor: T.colors.b1 },
+  filterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: T.colors.bg1, ...T.shadows.lift, borderWidth: 1, borderColor: T.colors.b1 },
   filterChipActive: { backgroundColor: T.colors.forge, borderColor: T.colors.forge },
   filterChipText: { color: T.colors.t2, fontSize: 13, fontWeight: '600' },
 
   list: { padding: T.spacing.page, paddingBottom: 100 },
   card: {
-    backgroundColor: T.colors.bg1, padding: T.spacing.px4,
+    backgroundColor: T.colors.bg1, ...T.shadows.lift, padding: T.spacing.px4,
     borderRadius: T.radii.lg, marginBottom: T.spacing.px3,
     borderWidth: 0.5, borderColor: T.colors.b1,
   },
@@ -349,7 +349,7 @@ const useS = (T: any) => StyleSheet.create({
     marginTop: 20, fontSize: 12, fontWeight: '800', color: T.colors.t3, letterSpacing: 1
   },
   searchBar: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: T.colors.bg1,
+    flexDirection: 'row', alignItems: 'center', backgroundColor: T.colors.bg1, ...T.shadows.lift,
     borderWidth: 1, borderColor: T.colors.b1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10,
     marginBottom: 16, gap: 10
   },
@@ -357,7 +357,7 @@ const useS = (T: any) => StyleSheet.create({
   addBtn: { backgroundColor: T.colors.forge, padding: 16, borderRadius: 12, alignItems: 'center' },
   addBtnText: { color: '#000', fontSize: 16, fontWeight: '800' },
   aiTipCard: {
-    backgroundColor: T.colors.bg1,
+    backgroundColor: T.colors.bg1, ...T.shadows.lift,
     borderWidth: 1, borderColor: T.colors.b1,
     borderRadius: 16,
     padding: 16,

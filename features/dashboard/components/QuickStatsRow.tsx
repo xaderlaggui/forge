@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 interface QuickStatsRowProps {
   volumeLbs: number;
@@ -59,7 +59,7 @@ const useStyles = (T: any) => StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: T.colors.bg1,
+    backgroundColor: T.colors.bg1, ...T.shadows.lift,
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 8,

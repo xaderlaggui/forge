@@ -85,7 +85,7 @@ const useS = (T: any) => StyleSheet.create({
             textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: T.spacing.px2,
           },
           waterCard: {
-            backgroundColor: T.colors.bg1, borderRadius: T.radii.lg,
+            backgroundColor: T.colors.bg1, ...T.shadows.lift, borderRadius: T.radii.lg,
             borderWidth: 0.5, borderColor: T.colors.b1,
             padding: T.spacing.px4, gap: 14,
           },

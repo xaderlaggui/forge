@@ -22,7 +22,8 @@ export function RecentWorkoutsList({ recentActivity }: RecentWorkoutsListProps) 
   return (
     <View style={s.section}>
       <Text style={s.sectionLabel} maxFontSizeMultiplier={1.2}>Recent Workouts</Text>
-      <View style={s.card}>
+      <View style={{ ...T.shadows.lift, borderRadius: T.radii.xl }}>
+        <View style={s.card}>
         {recentActivity.length === 0 ? (
           <View style={s.emptyState}>
             <View style={s.emptyIconWrap}>
@@ -99,6 +100,7 @@ export function RecentWorkoutsList({ recentActivity }: RecentWorkoutsListProps) 
             );
           })
         )}
+      </View>
       </View>
     </View>
   );

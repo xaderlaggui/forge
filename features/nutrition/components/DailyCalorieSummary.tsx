@@ -14,7 +14,7 @@ export function DailyCalorieSummary({ aggregates }: DailyCalorieSummaryProps) {
   const { totalCal, calPct, remaining, goalCal, totalProtein, totalCarbs, totalFat } = aggregates;
 
   return (
-    <View style={{ position: 'relative', overflow: 'visible', marginHorizontal: T.spacing.page, marginBottom: T.spacing.px5 }}>
+    <View style={{ position: 'relative', overflow: 'visible', marginHorizontal: T.spacing.page, marginBottom: T.spacing.px5, ...T.shadows.lift }}>
       <View style={[s.summaryCard, { marginHorizontal: 0, marginBottom: 0 }]}>
         <LinearGradient
           colors={[T.colors.bg1, T.colors.bg2]}
@@ -72,7 +72,7 @@ export function DailyCalorieSummary({ aggregates }: DailyCalorieSummaryProps) {
 const useS = (T: any) => StyleSheet.create({
   summaryCard: {
     marginHorizontal: T.spacing.page, marginBottom: T.spacing.px5,
-    borderRadius: T.radii.xl, borderWidth: 0.5, borderColor: T.colors.b1,
+    ...T.shadows.lift, borderRadius: T.radii.xl, borderWidth: 0.5, borderColor: T.colors.b1,
     overflow: 'hidden', padding: T.spacing.px5,
   },
   blob: {
