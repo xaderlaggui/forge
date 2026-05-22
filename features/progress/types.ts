@@ -19,6 +19,7 @@ export interface StatCardProps {
   valueColor?: string;
   Icon?: React.ElementType;
   onPress?: () => void;
+  userGoal?: string;
 }
 
 export interface MeasCardProps {
