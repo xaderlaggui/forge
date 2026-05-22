@@ -145,13 +145,13 @@ const useStyles = (T: any) => StyleSheet.create({
   header: {
     flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
     paddingTop: 60, paddingBottom: 16, paddingHorizontal: 16,
-    backgroundColor: T.colors.bg1, borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
+    backgroundColor: T.colors.bg1, ...T.shadows.lift, borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
   },
   backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 18, fontWeight: '700', color: T.colors.t1, paddingBottom: 8 },
   
   calendarStrip: {
-    backgroundColor: T.colors.bg1,
+    backgroundColor: T.colors.bg1, ...T.shadows.lift,
     borderBottomWidth: 0.5,
     borderBottomColor: T.colors.b1,
   },
@@ -190,7 +190,7 @@ const useStyles = (T: any) => StyleSheet.create({
   },
   
   mealCard: {
-    backgroundColor: T.colors.bg1,
+    backgroundColor: T.colors.bg1, ...T.shadows.lift,
     borderRadius: 16,
     padding: 16,
     borderWidth: 0.5,
