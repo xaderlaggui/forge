@@ -9,6 +9,7 @@ import { ForgeButton } from '../../../components/forge/ForgeButton';
 import { SkeletonHeroCard } from '../../../components/forge/ForgeSkeleton';
 import { MuscleTagChip } from '../../../components/forge/WorkoutAtoms';
 import { useBearMood } from '../../../hooks/useBearMood';
+import { classifyWorkoutFromExercises } from '../../../utils/workoutClassifier';
 
 interface TodayPlanCardProps {
   isLoading: boolean;
@@ -53,15 +54,7 @@ export function TodayPlanCard({ isLoading, plannedWorkout, loggedWorkout, muscle
             </Text>
           </View>
           <Text style={s.todayWorkoutName} maxFontSizeMultiplier={1.2}>
-            {(() => {
-              if (isRestDay) return 'Recovery Day';
-              switch (plannedWorkout?.dayType) {
-                case 'Push': return 'Push Day';
-                case 'Pull': return 'Pull Day';
-                case 'Legs': return 'Leg Day';
-                default: return 'Push Day';
-              }
-            })()}
+            {classifyWorkoutFromExercises(plannedWorkout?.exercises)}
           </Text>
           <Text style={s.todayMeta} maxFontSizeMultiplier={1.2}>
             {isRestDay
@@ -87,14 +80,9 @@ export function TodayPlanCard({ isLoading, plannedWorkout, loggedWorkout, muscle
               onPress={() => router.push({
                 pathname: '/activeWorkout',
                 params: {
-                  title: (() => {
-                    switch (plannedWorkout?.dayType) {
-                      case 'Push': return 'Push Day';
-                      case 'Pull': return 'Pull Day';
-                      case 'Legs': return 'Leg Day';
-                      default: return 'Push Day';
-                    }
-                  })()
+                  date: new Date().toISOString().split('T')[0],
+                  title: classifyWorkoutFromExercises(plannedWorkout?.exercises),
+                  plannedExercises: JSON.stringify(plannedWorkout?.exercises || [])
                 },
               })}
               variant="primary"
@@ -117,7 +105,7 @@ export function TodayPlanCard({ isLoading, plannedWorkout, loggedWorkout, muscle
                 return { right: -16, bottom: -20, width: 160, height: 200 };
               case 'STERN': // home_idle (Has CTA Button)
               default:
-                return { right: -34, bottom: 72.7, width: 193, height: 135 }; // Sticky above the button
+                return { right: -34, bottom: 72, width: 193, height: 135 }; // Sticky above the button
             }
           })()
         }}

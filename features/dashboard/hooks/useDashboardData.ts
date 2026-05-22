@@ -79,7 +79,7 @@ export function useDashboardData() {
     }
   }
   if (!plannedWorkout) {
-    plannedWorkout = (user as any)?.plan?.weeklySchedule?.[todayIdx];
+    plannedWorkout = (user as any)?.plan_weekly_schedule?.[todayIdx] || (user as any)?.plan?.weeklySchedule?.[todayIdx];
   }
 
   const muscleTags: string[] = plannedWorkout && plannedWorkout.dayType !== 'Rest'

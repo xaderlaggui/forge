@@ -26,6 +26,8 @@ export function OffScreenStickerTemplate({ workout, stickerTheme, shareViewShotR
   return (
     <ViewShot
       ref={shareViewShotRef}
+      // @ts-ignore - collapsable is required for React Fabric but missing from types
+      collapsable={false}
       style={{
         position: 'absolute',
         left: -9999,

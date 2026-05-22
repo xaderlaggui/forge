@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
 import { WorkoutListItem } from '../../../components/forge/WorkoutAtoms';
