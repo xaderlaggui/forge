@@ -14,14 +14,13 @@ import {
   View,
 } from 'react-native';
 import { BearMascot } from '../components/forge/BearMascot';
-import { GeneratedPlan, GeneratedWorkoutDay, generateFullPlan } from '../services/GeneratorEngine';
+import { GeneratedPlan, generateMealPlanOnly } from '../services/GeneratorEngine';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../stores/authStore';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const GOALS = ['Weight Loss', 'Muscle Gain', 'Endurance', 'Flexibility', 'General Fitness'];
-const EXPERIENCE = ['Beginner', 'Intermediate', 'Advanced'];
-const EQUIPMENT = ['None', 'Dumbbells', 'Barbell', 'Machines', 'Resistance Bands', 'Pull-up Bar', 'Full Gym'];
+const GOALS = ['Diet (Weight Loss)', 'Maintain', 'Lean Bulking', 'Bulking'];
+const DIET_PREFS = ['Anything', 'Vegan', 'Vegetarian', 'Keto', 'High Protein'];
 
 // ─── Pill Multi-Select ────────────────────────────────────────────────────────
 function PillSelect({
@@ -52,105 +51,7 @@ function PillSelect({
   );
 }
 
-// ─── Segmented Control ────────────────────────────────────────────────────────
-function Segmented({
-  options, value, onChange, T,
-}: { options: string[]; value: string; onChange: (v: string) => void; T: any }) {
-  return (
-    <View style={{ flexDirection: 'row', backgroundColor: T.colors.bg2, borderRadius: 12, padding: 4 }}>
-      {options.map(opt => {
-        const active = value === opt;
-        return (
-          <TouchableOpacity
-            key={opt}
-            onPress={() => onChange(opt)}
-            style={{
-              flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center',
-              backgroundColor: active ? T.colors.bg1 : 'transparent',
-              shadowColor: active ? '#000' : 'transparent',
-              shadowOpacity: active ? 0.1 : 0,
-              shadowRadius: active ? 4 : 0,
-              elevation: active ? 2 : 0,
-            }}
-          >
-            <Text style={{
-              fontSize: 13, fontWeight: '700',
-              color: active ? T.colors.forge : T.colors.t3,
-            }}>{opt}</Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
-  );
-}
 
-// ─── Stepper ─────────────────────────────────────────────────────────────────
-function Stepper({ value, min, max, onChange, T }: {
-  value: number; min: number; max: number; onChange: (v: number) => void; T: any;
-}) {
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
-      <TouchableOpacity
-        onPress={() => onChange(Math.max(min, value - 1))}
-        style={{
-          width: 44, height: 44, borderRadius: 22,
-          backgroundColor: T.colors.bg2, alignItems: 'center', justifyContent: 'center',
-        }}
-      >
-        <Text style={{ fontSize: 24, color: T.colors.t1, fontWeight: '300' }}>−</Text>
-      </TouchableOpacity>
-      <Text style={{ fontSize: 28, fontWeight: '800', color: T.colors.t1, minWidth: 40, textAlign: 'center' }}>
-        {value}
-      </Text>
-      <TouchableOpacity
-        onPress={() => onChange(Math.min(max, value + 1))}
-        style={{
-          width: 44, height: 44, borderRadius: 22,
-          backgroundColor: T.colors.forge, alignItems: 'center', justifyContent: 'center',
-        }}
-      >
-        <Text style={{ fontSize: 24, color: '#FFF', fontWeight: '300' }}>+</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-// ─── Slider (manual impl) ─────────────────────────────────────────────────────
-function SliderRow({ value, min, max, step, onChange, T }: {
-  value: number; min: number; max: number; step: number; onChange: (v: number) => void; T: any;
-}) {
-  const steps = Math.round((max - min) / step);
-  const stepIdx = Math.round((value - min) / step);
-
-  return (
-    <View>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-        {Array.from({ length: steps + 1 }).map((_, i) => {
-          const v = min + i * step;
-          const active = v <= value;
-          return (
-            <TouchableOpacity
-              key={i}
-              onPress={() => onChange(v)}
-              style={{
-                flex: 1, minWidth: 28, height: 36, borderRadius: 8,
-                backgroundColor: active ? T.colors.forge : T.colors.bg2,
-                alignItems: 'center', justifyContent: 'center',
-              }}
-            >
-              <Text style={{ fontSize: 11, fontWeight: '700', color: active ? '#FFF' : T.colors.t3 }}>
-                {v}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-      <Text style={{ fontSize: 12, color: T.colors.t3, marginTop: 6, textAlign: 'right' }}>
-        {value} min
-      </Text>
-    </View>
-  );
-}
 
 // ─── AI Rationale Card ────────────────────────────────────────────────────────
 function CoachMessageCard({ message, T }: { message: string, T: any }) {
@@ -193,16 +94,42 @@ function PlanPreview({ plan, onApply, onSaveDraft, isApplying, T }: {
   isApplying: boolean;
   T: any;
 }) {
-  const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const [selectedDayIdx, setSelectedDayIdx] = React.useState(0);
+  const isWeekly = Array.isArray(plan.mealPlan.days) && plan.mealPlan.days.length > 0;
+  const days = isWeekly ? plan.mealPlan.days : [{ dayOfWeek: 'Preview', meals: plan.mealPlan.meals }];
+  const currentDay = days?.[selectedDayIdx];
+
   return (
     <View style={{ gap: 12 }}>
       {plan.coachMessage && (
         <CoachMessageCard message={plan.coachMessage} T={T} />
       )}
+      {isWeekly && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
+          {plan.mealPlan.days.map((d: any, idx: number) => (
+            <TouchableOpacity
+              key={idx}
+              onPress={() => setSelectedDayIdx(idx)}
+              style={{
+                paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, marginRight: 8,
+                backgroundColor: selectedDayIdx === idx ? T.colors.forge : T.colors.bg2,
+              }}
+            >
+              <Text style={{ fontSize: 13, fontWeight: '600', color: selectedDayIdx === idx ? '#000' : T.colors.t2 }}>
+                {d.dayOfWeek.substring(0, 3)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
+
       <Text style={{ fontSize: 18, fontWeight: '800', color: T.colors.t1, marginBottom: 4 }}>
-        Weekly Preview
+        Meal Plan Preview ({currentDay?.dayOfWeek})
       </Text>
-      {plan.workoutWeek.map((day: GeneratedWorkoutDay, i: number) => (
+      <Text style={{ fontSize: 14, color: T.colors.t2, marginBottom: 8, fontWeight: '600' }}>
+        Targets: {plan.mealPlan.targetCalories} kcal • {plan.mealPlan.targetProtein}g P • {plan.mealPlan.targetCarbs}g C • {plan.mealPlan.targetFat}g F
+      </Text>
+      {(currentDay?.meals || []).map((meal: any, i: number) => (
         <View
           key={i}
           style={{
@@ -213,18 +140,21 @@ function PlanPreview({ plan, onApply, onSaveDraft, isApplying, T }: {
         >
           <View style={{
             width: 44, height: 44, borderRadius: 10,
-            backgroundColor: day.exercises.length > 0 ? T.colors.forgeDim : T.colors.bg2,
+            backgroundColor: T.colors.forgeDim,
             alignItems: 'center', justifyContent: 'center',
           }}>
             <Text style={{
               fontSize: 11, fontWeight: '800', letterSpacing: 0.5,
-              color: day.exercises.length > 0 ? T.colors.forge : T.colors.t3,
-            }}>{DAY_NAMES[i]}</Text>
+              color: T.colors.forge,
+            }}>{meal.name.substring(0, 3).toUpperCase()}</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 15, fontWeight: '700', color: T.colors.t1 }}>{day.focus}</Text>
-            <Text style={{ fontSize: 12, color: T.colors.t3, marginTop: 2 }}>
-              {day.exercises.length > 0 ? `${day.exercises.length} exercises` : 'Rest Day'}
+            <Text style={{ fontSize: 15, fontWeight: '700', color: T.colors.t1 }}>{meal.name}</Text>
+            <Text style={{ fontSize: 13, color: T.colors.t2, marginTop: 2, lineHeight: 18 }}>
+              {meal.description}
+            </Text>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: T.colors.t3, marginTop: 4 }}>
+              {meal.calories} kcal • {meal.protein}g P • {meal.carbs}g C • {meal.fat}g F
             </Text>
           </View>
         </View>
@@ -267,44 +197,38 @@ export default function AIPlanScreen() {
   const queryClient = useQueryClient();
 
   // Form state
-  const [selectedGoals, setSelectedGoals] = useState<string[]>(['General Fitness']);
-  const [experience, setExperience] = useState('Beginner');
-  const [daysPerWeek, setDaysPerWeek] = useState(3);
-  const [sessionMin, setSessionMin] = useState(45);
-  const [selectedEquipment, setSelectedEquipment] = useState<string[]>(['Dumbbells']);
-  const [injuries, setInjuries] = useState('');
+  const [selectedGoals, setSelectedGoals] = useState<string[]>(['Maintain']);
+  const [selectedDiets, setSelectedDiets] = useState<string[]>(['Anything']);
+  const [allergies, setAllergies] = useState('');
 
   // Generation state
   const [generating, setGenerating] = useState(false);
   const [plan, setPlan] = useState<GeneratedPlan | null>(null);
   const [applying, setApplying] = useState(false);
 
-  const toggleGoal = (g: string) =>
-    setSelectedGoals(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g]);
+  const toggleGoal = (g: string) => setSelectedGoals([g]);
 
-  const toggleEquipment = (e: string) =>
-    setSelectedEquipment(prev => prev.includes(e) ? prev.filter(x => x !== e) : [...prev, e]);
+  const toggleDiet = (d: string) => setSelectedDiets([d]);
 
   const handleGenerate = async () => {
     if (!user) { Alert.alert('Not signed in'); return; }
     setGenerating(true);
     setPlan(null);
     try {
-      const result = await generateFullPlan({
+      const result = await generateMealPlanOnly({
         uid: user.uid,
         weightKg: (user as any).weight ?? 70,
         heightCm: (user as any).height ?? 170,
         ageYears: (user as any).age ?? 25,
-        fitnessGoal: (user as any).fitnessGoal ?? 'maintain',
-        dietPreference: (user as any).dietPreference ?? 'anything',
-        equipmentAccess: selectedEquipment.includes('Full Gym') ? 'full'
-          : selectedEquipment.includes('Barbell') ? 'full'
-            : selectedEquipment.includes('Dumbbells') ? 'dumbbells'
-              : 'bodyweight',
-        experienceLevel: experience,
-        daysPerWeek,
-        sessionMin,
-        customGoals: selectedGoals,
+        fitnessGoal: selectedGoals.includes('Bulking') ? 'bulk'
+          : selectedGoals.includes('Lean Bulking') ? 'bulk'
+            : selectedGoals.includes('Diet (Weight Loss)') ? 'cut'
+              : 'maintain',
+        dietPreference: selectedDiets.includes('Vegan') ? 'vegan'
+          : selectedDiets.includes('Keto') ? 'keto'
+            : 'anything',
+        equipmentAccess: 'full', // Not needed for meal plans
+        customGoals: [...selectedGoals, ...selectedDiets, ...(allergies ? [`Allergies/Restrictions: ${allergies}`] : [])],
       });
       setPlan(result);
     } catch (e: any) {
@@ -352,7 +276,7 @@ export default function AIPlanScreen() {
         </TouchableOpacity>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Sparkles size={18} color={T.colors.forge} />
-          <Text style={s.headerTitle}>Generate AI Plan</Text>
+          <Text style={s.headerTitle}>Generate Weekly Plan</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
@@ -367,43 +291,20 @@ export default function AIPlanScreen() {
               <PillSelect options={GOALS} selected={selectedGoals} onToggle={toggleGoal} T={T} />
             </View>
 
-            {/* Experience */}
+            {/* Dietary Preferences */}
             <View style={s.section}>
-              <Text style={s.sectionLabel}>Experience Level</Text>
-              <Segmented options={EXPERIENCE} value={experience} onChange={setExperience} T={T} />
+              <Text style={s.sectionLabel}>Dietary Preferences</Text>
+              <PillSelect options={DIET_PREFS} selected={selectedDiets} onToggle={toggleDiet} T={T} />
             </View>
 
-            {/* Days per week */}
+            {/* Allergies */}
             <View style={s.section}>
-              <Text style={s.sectionLabel}>Days per Week</Text>
-              <Stepper value={daysPerWeek} min={1} max={7} onChange={setDaysPerWeek} T={T} />
-            </View>
-
-            {/* Session Duration */}
-            <View style={s.section}>
-              <Text style={s.sectionLabel}>Session Duration</Text>
-              <SliderRow
-                value={sessionMin}
-                min={20} max={120} step={10}
-                onChange={setSessionMin}
-                T={T}
-              />
-            </View>
-
-            {/* Equipment */}
-            <View style={s.section}>
-              <Text style={s.sectionLabel}>Equipment Available</Text>
-              <PillSelect options={EQUIPMENT} selected={selectedEquipment} onToggle={toggleEquipment} T={T} />
-            </View>
-
-            {/* Injuries */}
-            <View style={s.section}>
-              <Text style={s.sectionLabel}>Injuries or Limitations (optional)</Text>
+              <Text style={s.sectionLabel}>Allergies or Restrictions (optional)</Text>
               <TextInput
                 style={s.textarea}
-                value={injuries}
-                onChangeText={setInjuries}
-                placeholder="e.g. bad knees, lower back pain..."
+                value={allergies}
+                onChangeText={setAllergies}
+                placeholder="e.g. peanut allergy, lactose intolerant..."
                 placeholderTextColor={T.colors.t3}
                 multiline
                 numberOfLines={3}
@@ -413,12 +314,6 @@ export default function AIPlanScreen() {
 
             {/* Generate Button */}
             <View style={s.section}>
-              {generating && (
-                <View style={{ alignItems: 'center', marginBottom: 24 }}>
-                  <BearMascot variant="THINKING" size="lg" animate />
-                  <Text style={{ fontSize: 14, color: T.colors.t3, marginTop: 12 }}>Analyzing your profile...</Text>
-                </View>
-              )}
               <TouchableOpacity
                 style={[s.generateBtn, generating && { opacity: 0.6 }]}
                 onPress={handleGenerate}
@@ -426,7 +321,7 @@ export default function AIPlanScreen() {
                 activeOpacity={0.85}
               >
                 {generating ? (
-                  <View style={{ alignItems: 'center', gap: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                     <ActivityIndicator color="#000" />
                     <Text style={s.generateBtnText}>Building your plan with AI...</Text>
                   </View>
