@@ -4,11 +4,23 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { StatCardProps } from '../types';
 
-export function StatCard({ label, value, unit, delta, subText, valueColor, Icon, onPress }: StatCardProps) {
+export function StatCard({ label, value, unit, delta, subText, valueColor, Icon, onPress, userGoal }: StatCardProps) {
   const { T } = useForgeTheme();
   const sc = useSc(T);
   const isDown = delta !== undefined && delta < 0;
   const isUp = delta !== undefined && delta > 0;
+  
+  let badgeColor = T.colors.t3;
+  let badgeBg = T.colors.bg2;
+  
+  if (isDown) {
+    if (userGoal === 'bulk') { badgeColor = T.colors.red; badgeBg = T.colors.redDim; }
+    else { badgeColor = T.colors.green; badgeBg = T.colors.greenDim; }
+  } else if (isUp) {
+    if (userGoal === 'bulk') { badgeColor = T.colors.green; badgeBg = T.colors.greenDim; }
+    else { badgeColor = T.colors.red; badgeBg = T.colors.redDim; }
+  }
+
   return (
     <TouchableOpacity style={sc.card} onPress={onPress} activeOpacity={0.75}>
       <Text style={sc.label} maxFontSizeMultiplier={1.2}>{label}</Text>
@@ -17,9 +29,9 @@ export function StatCard({ label, value, unit, delta, subText, valueColor, Icon,
         {unit && <Text style={sc.unit} maxFontSizeMultiplier={1.2}>{unit}</Text>}
       </View>
       {delta !== undefined && (
-        <View style={[sc.badge, isDown && sc.badgeDown, isUp && sc.badgeUp]}>
-          {isDown ? <TrendingDown size={10} color={T.colors.green} /> : isUp ? <TrendingUp size={10} color={T.colors.red} /> : <Minus size={10} color={T.colors.t3} />}
-          <Text style={[sc.badgeText, isDown && { color: T.colors.green }, isUp && { color: T.colors.red }]} maxFontSizeMultiplier={1.2}>
+        <View style={[sc.badge, { backgroundColor: badgeBg }]}>
+          {isDown ? <TrendingDown size={10} color={badgeColor} /> : isUp ? <TrendingUp size={10} color={badgeColor} /> : <Minus size={10} color={T.colors.t3} />}
+          <Text style={[sc.badgeText, { color: badgeColor }]} maxFontSizeMultiplier={1.2}>
             {Math.abs(delta)} lbs
           </Text>
         </View>
@@ -53,11 +65,8 @@ const useSc = (T: any) => StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 6,
     alignSelf: 'center',
     paddingHorizontal: 7, paddingVertical: 3, borderRadius: T.radii.full,
-    backgroundColor: T.colors.bg2,
   },
-  badgeDown: { backgroundColor: T.colors.greenDim },
-  badgeUp: { backgroundColor: T.colors.redDim },
-  badgeText: { fontSize: T.typography.sizes.caption, fontWeight: '800', color: T.colors.t3 },
+  badgeText: { fontSize: T.typography.sizes.caption, fontWeight: '800' },
   categoryBadge: {
     flexDirection: 'row', alignItems: 'center', marginTop: 6,
     alignSelf: 'center',
