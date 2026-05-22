@@ -1,6 +1,7 @@
 import { ChevronUp, Sparkles } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, Image, LayoutChangeEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, LayoutChangeEvent, StyleSheet, Text, TouchableOpacity, View, Image as RNImage } from 'react-native';
+import { Image } from 'expo-image';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Extrapolate,
@@ -37,7 +38,7 @@ export function InteractivePhotoCard({
   // Fetch image dimensions to compute exact cover scale factor
   useEffect(() => {
     if (photoUri) {
-      Image.getSize(
+      RNImage.getSize(
         photoUri,
         (w, h) => {
           if (w && h) {
@@ -208,7 +209,7 @@ export function InteractivePhotoCard({
             <Image
               source={{ uri: photoUri }}
               style={styles.foregroundImage}
-              resizeMode="contain"
+              contentFit="contain"
             />
           </Animated.View>
 

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 // Feature Modules
 import { useForgeTheme } from "@/hooks/useForgeTheme";
+import { TopFog } from '../../components/forge/TopFog';
 import { BodyMeasurementsCard } from '../../features/progress/components/BodyMeasurementsCard';
 import { PhysiqueCoachBubble } from '../../features/progress/components/PhysiqueCoachBubble';
 import { ProgressPhotos } from '../../features/progress/components/ProgressPhotos';
@@ -55,7 +56,8 @@ export default function ProgressScreen() {
           : AlertTriangle;
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={s.content} showsVerticalScrollIndicator={false} onScroll={onScroll} scrollEventThrottle={16} bounces={false}>
+    <View style={s.container}>
+      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false} onScroll={onScroll} scrollEventThrottle={16} bounces={false}>
 
       {/* ── Composition: Header ── */}
       <View style={s.header}>
@@ -138,6 +140,8 @@ export default function ProgressScreen() {
       </View>
 
     </ScrollView>
+      <TopFog top={0} height={40} />
+    </View>
   );
 }
 
