@@ -23,6 +23,8 @@ export interface UserProfile {
   fitnessLevel: 'beginner' | 'intermediate' | 'advanced';
   createdAt: string;
   isOnboarded?: boolean;
+  weight_unit?: 'kg' | 'lbs';
+  height_unit?: 'cm' | 'ft';
 }
 
 export interface Exercise {

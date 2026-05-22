@@ -204,7 +204,7 @@ export default function PrivacySecurityScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false} bounces={false}>
         
         <View style={{ alignItems: 'center', marginBottom: 20 }}>
           <BearMascot variant="THINKING" size="md" animate />

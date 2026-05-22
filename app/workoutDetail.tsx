@@ -8,12 +8,15 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { Camera, ChevronLeft, Share as ShareIcon } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ViewShot from 'react-native-view-shot';
 import { ForgeButton } from '../components/forge/ForgeButton';
 import { InteractivePhotoCard } from '../components/forge/InteractivePhotoCard';
 import { useWorkouts } from '../hooks/useWorkouts';
 import { formatDuration } from '../utils/format';
+import { StickerTheme } from '../components/forge/InteractivePhotoCard/InteractivePhotoCardTypes';
+import { StickerShareModal } from '../components/forge/InteractivePhotoCard/StickerShareModal';
+import { OffScreenStickerTemplate } from '../components/forge/InteractivePhotoCard/OffScreenStickerTemplate';
 
 export default function WorkoutDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -29,6 +32,9 @@ export default function WorkoutDetailScreen() {
   const [photoUri, setPhotoUri] = useState<string | null>(workout?.photoUrl || null);
   const [useLbs, setUseLbs] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [stickerTheme, setStickerTheme] = useState<StickerTheme>('white');
+  const [isShareModalVisible, setIsShareModalVisible] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
     if (workout && workout.photoUrl) {
@@ -110,11 +116,20 @@ export default function WorkoutDetailScreen() {
     }
   };
 
-  // AFTER
-  const shareImage = async (): Promise<void> => {
-    if (!shareViewShotRef.current?.capture) return;
-    const uri = await shareViewShotRef.current.capture();
-    await Sharing.shareAsync(uri, { dialogTitle: 'Share Workout' });
+  const openShareModal = () => setIsShareModalVisible(true);
+
+  const handleShareExport = async (): Promise<void> => {
+    setIsSharing(true);
+    try {
+      await new Promise(resolve => requestAnimationFrame(resolve));
+      if (!shareViewShotRef.current?.capture) return;
+      const uri = await shareViewShotRef.current.capture();
+      await Sharing.shareAsync(uri, { dialogTitle: 'Share Workout' });
+    } catch (e) {
+      console.error('Share failed:', e);
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   // Calculations for Strength
@@ -126,6 +141,19 @@ export default function WorkoutDetailScreen() {
   });
   const totalVolume = useLbs ? Math.round(totalVolumeKg * 2.20462) : totalVolumeKg;
 
+  const getActivityPlaceholder = (type?: string, notes?: string) => {
+    const n = (notes || '').toLowerCase();
+    const t = (type || '').toLowerCase();
+    if (t === 'run' || n.includes('run')) return 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1000&auto=format&fit=crop';
+    if (t === 'cycle' || t === 'ride' || n.includes('cycle') || n.includes('bike')) return 'https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=1000&auto=format&fit=crop';
+    if (n.includes('yoga') || n.includes('stretch')) return 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1000&auto=format&fit=crop';
+    if (t === 'walk' || n.includes('walk')) return 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?q=80&w=1000&auto=format&fit=crop';
+    // Default moody fitness background
+    return 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1000&auto=format&fit=crop';
+  };
+
+  const displayPhotoUri = photoUri || getActivityPlaceholder(workout.type, workout.notes);
+
   const renderCardioView = () => (
     <View style={{ flex: 1 }}>
       {photoUri ? (
@@ -134,16 +162,19 @@ export default function WorkoutDetailScreen() {
             photoUri={photoUri}
             workout={workout}
             pickImage={pickImage}
-            shareImage={shareImage}
+            shareImage={openShareModal}
             isUploading={isUploading}
             shareViewShotRef={shareViewShotRef}
           />
         </ViewShot>
       ) : (
         <View style={s.cardioContainer}>
-          <ViewShot ref={viewShotRef} style={{ backgroundColor: T.colors.bg1, ...T.shadows.lift }} options={{ format: 'jpg', quality: 0.9 }}>
+          <ViewShot ref={viewShotRef} style={{ backgroundColor: T.colors.bg1, ...T.shadows.lift, borderRadius: T.radii.lg }} options={{ format: 'jpg', quality: 0.9 }}>
             <View style={[s.shareCard, { backgroundColor: T.colors.bg2, justifyContent: 'center', alignItems: 'center' }]}>
-              <Text style={{ color: T.colors.t3 }}>Add a photo to generate share card</Text>
+              <Image source={{ uri: displayPhotoUri }} style={StyleSheet.absoluteFill as any} resizeMode="cover" />
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600', letterSpacing: 0.5 }}>Tap 'Add Photo' to customize</Text>
+              </View>
             </View>
           </ViewShot>
 
@@ -182,8 +213,8 @@ export default function WorkoutDetailScreen() {
               <ForgeButton
                 label="Share"
                 leftIcon={<ShareIcon size={18} color="#000" />}
-                onPress={shareImage}
-                disabled={true}
+                onPress={openShareModal}
+                disabled={false}
                 style={{ flex: 1, marginLeft: 8 }}
               />
             </View>
@@ -265,10 +296,27 @@ export default function WorkoutDetailScreen() {
       {isCardio && photoUri ? (
         renderCardioView()
       ) : (
-        <ScrollView contentContainerStyle={[s.content, { paddingTop: 110 }]}>
+        <ScrollView contentContainerStyle={[s.content, { paddingTop: 110 }]} bounces={false}>
           {isCardio ? renderCardioView() : renderStrengthView()}
         </ScrollView>
       )}
+
+      {/* Render the offscreen template and modal globally so they work in both states */}
+      <OffScreenStickerTemplate
+        workout={workout}
+        stickerTheme={stickerTheme}
+        shareViewShotRef={shareViewShotRef}
+      />
+      <StickerShareModal
+        isVisible={isShareModalVisible}
+        onClose={() => setIsShareModalVisible(false)}
+        workout={workout}
+        stickerTheme={stickerTheme}
+        setStickerTheme={setStickerTheme}
+        shareImage={handleShareExport}
+        isSharing={isSharing}
+        shareViewShotRef={shareViewShotRef}
+      />
     </View>
   );
 }
@@ -301,7 +349,7 @@ const useStyles = (T: any) => StyleSheet.create({
 
   // Cardio
   cardioContainer: {},
-  shareCard: { width: '100%', aspectRatio: 0.75, position: 'relative', overflow: 'hidden' },
+  shareCard: { width: '100%', aspectRatio: 1, position: 'relative', overflow: 'hidden' },
   darkGradient: {
     position: 'absolute',
     left: 0, right: 0, bottom: 0,

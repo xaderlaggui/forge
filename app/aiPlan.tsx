@@ -2,58 +2,17 @@ import { useForgeTheme } from '@/hooks/useForgeTheme';
 import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Sparkles } from 'lucide-react-native';
+import { AlertTriangle, Apple, Target } from 'lucide-react-native';
 import React, { useState } from 'react';
-import {
-  ActivityIndicator, Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BearMascot } from '../components/forge/BearMascot';
+import { ForgeButton } from '../components/forge/ForgeButton';
+import { WeeklyCalendar } from '../features/planner/components/WeeklyCalendar';
 import { GeneratedPlan, generateMealPlanOnly } from '../services/GeneratorEngine';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../stores/authStore';
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-const GOALS = ['Diet (Weight Loss)', 'Maintain', 'Lean Bulking', 'Bulking'];
-const DIET_PREFS = ['Anything', 'Vegan', 'Vegetarian', 'Keto', 'High Protein'];
-
-// ─── Pill Multi-Select ────────────────────────────────────────────────────────
-function PillSelect({
-  options, selected, onToggle, accent, T,
-}: { options: string[]; selected: string[]; onToggle: (v: string) => void; accent?: boolean; T: any }) {
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-      {options.map(opt => {
-        const active = selected.includes(opt);
-        return (
-          <TouchableOpacity
-            key={opt}
-            onPress={() => onToggle(opt)}
-            style={{
-              paddingHorizontal: 16, paddingVertical: 10, borderRadius: 100,
-              backgroundColor: active ? T.colors.forge : T.colors.bg2,
-              borderWidth: 1, borderColor: active ? T.colors.forge : T.colors.b1,
-            }}
-          >
-            <Text style={{
-              fontSize: 13, fontWeight: '700',
-              color: active ? '#FFF' : T.colors.t2,
-            }}>{opt}</Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
-  );
-}
-
-
-
-// ─── AI Rationale Card ────────────────────────────────────────────────────────
+// Removed PillSelect// ─── AI Rationale Card ────────────────────────────────────────────────────────
 function CoachMessageCard({ message, T }: { message: string, T: any }) {
   return (
     <View style={{
@@ -80,7 +39,7 @@ function CoachMessageCard({ message, T }: { message: string, T: any }) {
       </View>
       <View style={{ flex: 1, padding: 16 }}>
         <Text style={{ fontSize: 14, fontWeight: '800', color: T.colors.forge, marginBottom: 6 }}>Coach AI</Text>
-        <Text style={{ fontSize: 13, color: T.colors.t1, lineHeight: 20, fontWeight: '500' }}>{message}</Text>
+        <Text numberOfLines={8} style={{ fontSize: 13, color: T.colors.t1, lineHeight: 20, fontWeight: '500' }}>{message}</Text>
       </View>
     </View>
   );
@@ -105,22 +64,18 @@ function PlanPreview({ plan, onApply, onSaveDraft, isApplying, T }: {
         <CoachMessageCard message={plan.coachMessage} T={T} />
       )}
       {isWeekly && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
-          {plan.mealPlan.days.map((d: any, idx: number) => (
-            <TouchableOpacity
-              key={idx}
-              onPress={() => setSelectedDayIdx(idx)}
-              style={{
-                paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, marginRight: 8,
-                backgroundColor: selectedDayIdx === idx ? T.colors.forge : T.colors.bg2,
-              }}
-            >
-              <Text style={{ fontSize: 13, fontWeight: '600', color: selectedDayIdx === idx ? '#000' : T.colors.t2 }}>
-                {d.dayOfWeek.substring(0, 3)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        <WeeklyCalendar
+          days={plan.mealPlan.days.map((d: any, idx: number) => {
+            const dateObj = dayjs().startOf('week').add(1, 'day').add(idx, 'day');
+            return {
+              label: d.dayOfWeek.substring(0, 3),
+              date: dateObj.date(),
+              fullDate: dateObj.format('YYYY-MM-DD'),
+            };
+          })}
+          activeDayIdx={selectedDayIdx}
+          onSelectDay={setSelectedDayIdx}
+        />
       )}
 
       <Text style={{ fontSize: 18, fontWeight: '800', color: T.colors.t1, marginBottom: 4 }}>
@@ -242,7 +197,7 @@ export default function AIPlanScreen() {
     if (!plan || !user) return;
     setApplying(true);
     try {
-      const { error } = await supabase.from('generated_plans').upsert({
+      const { error } = await supabase.from('generated_meal_plan_weekly').upsert({
         user_id: user.uid,
         date: dayjs().format('YYYY-MM-DD'),
         plan: plan,
@@ -250,8 +205,8 @@ export default function AIPlanScreen() {
       }, { onConflict: 'user_id,date' });
       if (error) throw error;
 
-      // Invalidate the activePlan query so the Dashboard and Planner instantly update
-      await queryClient.invalidateQueries({ queryKey: ['activePlan', user.uid] });
+      // Invalidate the activeMealPlan query so the Dashboard and Planner instantly update
+      await queryClient.invalidateQueries({ queryKey: ['activeMealPlan', user.uid] });
 
       Alert.alert('Plan Activated!', 'Your personalized plan is now live in the Planner.', [
         { text: "Let's go!", onPress: () => router.back() },
@@ -267,39 +222,63 @@ export default function AIPlanScreen() {
     Alert.alert('Saved', 'Your plan has been saved as a draft.');
   };
 
+  const renderOption = (label: string, isSelected: boolean, onPress: () => void) => (
+    <TouchableOpacity
+      style={[s.optionCard, isSelected && s.optionCardActive]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <Text style={[s.optionText, isSelected && s.optionTextActive]}>{label}</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={s.container}>
-      {/* Header */}
-      <View style={s.header}>
-        <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
-          <ChevronLeft size={24} color={T.colors.t1} />
-        </TouchableOpacity>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Sparkles size={18} color={T.colors.forge} />
-          <Text style={s.headerTitle}>Generate Weekly Plan</Text>
-        </View>
-        <View style={{ width: 40 }} />
-      </View>
 
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
-
+      <ScrollView style={s.scroll} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         {!plan ? (
           <>
-            {/* Goal */}
-            <View style={s.section}>
-              <Text style={s.sectionLabel}>Goal</Text>
-              <PillSelect options={GOALS} selected={selectedGoals} onToggle={toggleGoal} T={T} />
+            <View style={s.hero}>
+              <Text style={s.heroTitle}>Build Your Meal Plan</Text>
+              <Text style={s.heroSubtitle}>Let the AI craft a personalized nutrition strategy based on your stats.</Text>
             </View>
 
-            {/* Dietary Preferences */}
             <View style={s.section}>
-              <Text style={s.sectionLabel}>Dietary Preferences</Text>
-              <PillSelect options={DIET_PREFS} selected={selectedDiets} onToggle={toggleDiet} T={T} />
+              <View style={s.sectionHeader}>
+                <Target size={18} color={T.colors.t2} />
+                <Text style={s.sectionTitle}>Primary Goal</Text>
+              </View>
+              <View style={s.row}>
+                {renderOption('Diet (Weight Loss)', selectedGoals.includes('Diet (Weight Loss)'), () => toggleGoal('Diet (Weight Loss)'))}
+                {renderOption('Maintain', selectedGoals.includes('Maintain'), () => toggleGoal('Maintain'))}
+              </View>
+              <View style={s.row}>
+                {renderOption('Lean Bulking', selectedGoals.includes('Lean Bulking'), () => toggleGoal('Lean Bulking'))}
+                {renderOption('Bulking', selectedGoals.includes('Bulking'), () => toggleGoal('Bulking'))}
+              </View>
             </View>
 
-            {/* Allergies */}
             <View style={s.section}>
-              <Text style={s.sectionLabel}>Allergies or Restrictions (optional)</Text>
+              <View style={s.sectionHeader}>
+                <Apple size={18} color={T.colors.t2} />
+                <Text style={s.sectionTitle}>Dietary Preferences</Text>
+              </View>
+              <View style={s.row}>
+                {renderOption('Anything', selectedDiets.includes('Anything'), () => toggleDiet('Anything'))}
+                {renderOption('High Protein', selectedDiets.includes('High Protein'), () => toggleDiet('High Protein'))}
+              </View>
+              <View style={s.row}>
+                {renderOption('Vegan', selectedDiets.includes('Vegan'), () => toggleDiet('Vegan'))}
+                {renderOption('Vegetarian', selectedDiets.includes('Vegetarian'), () => toggleDiet('Vegetarian'))}
+                {renderOption('Keto', selectedDiets.includes('Keto'), () => toggleDiet('Keto'))}
+              </View>
+            </View>
+
+            <View style={s.section}>
+              <View style={s.sectionHeader}>
+                <AlertTriangle size={18} color={T.colors.t2} />
+                <Text style={s.sectionTitle}>Allergies or Restrictions (Optional)</Text>
+              </View>
               <TextInput
                 style={s.textarea}
                 value={allergies}
@@ -311,28 +290,6 @@ export default function AIPlanScreen() {
                 textAlignVertical="top"
               />
             </View>
-
-            {/* Generate Button */}
-            <View style={s.section}>
-              <TouchableOpacity
-                style={[s.generateBtn, generating && { opacity: 0.6 }]}
-                onPress={handleGenerate}
-                disabled={generating}
-                activeOpacity={0.85}
-              >
-                {generating ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                    <ActivityIndicator color="#000" />
-                    <Text style={s.generateBtnText}>Building your plan with AI...</Text>
-                  </View>
-                ) : (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    <Sparkles size={20} color="#000" />
-                    <Text style={s.generateBtnText}>Generate Plan</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
           </>
         ) : (
           <PlanPreview
@@ -343,9 +300,18 @@ export default function AIPlanScreen() {
             T={T}
           />
         )}
-
-        <View style={{ height: 60 }} />
       </ScrollView>
+
+      {!plan && (
+        <View style={s.footer}>
+          <ForgeButton
+            label="Generate AI Meal Plan"
+            onPress={handleGenerate}
+            loading={generating}
+            pulse
+          />
+        </View>
+      )}
     </View>
   );
 }
@@ -353,30 +319,54 @@ export default function AIPlanScreen() {
 const useStyles = (T: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: T.colors.bg0 },
   header: {
-    flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
-    paddingTop: 60, paddingBottom: 16, paddingHorizontal: 16,
-    backgroundColor: T.colors.bg1, ...T.shadows.lift, borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingTop: 50, paddingBottom: 10, paddingHorizontal: T.spacing.page,
+    backgroundColor: T.colors.bg1,
+    borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
   },
-  backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: T.colors.t1, paddingBottom: 8 },
-  content: { padding: 20, paddingBottom: 40 },
+  backBtn: { padding: 4, marginLeft: -4 },
+  headerTitle: { fontSize: T.typography.sizes.h3, fontWeight: '700', color: T.colors.t1 },
 
-  section: { marginBottom: 28 },
-  sectionLabel: {
-    fontSize: 12, fontWeight: '700', color: T.colors.t3, letterSpacing: 0.8,
-    textTransform: 'uppercase', marginBottom: 12,
+  scroll: { flex: 1 },
+  content: { padding: T.spacing.page, paddingBottom: 100 },
+
+  hero: { alignItems: 'center', marginVertical: 16 },
+  heroTitle: { fontSize: 28, fontWeight: '800', color: T.colors.t1, marginTop: 30, marginBottom: 8 },
+  heroSubtitle: { fontSize: 15, color: T.colors.t2, textAlign: 'center', lineHeight: 22, paddingHorizontal: 20 },
+
+  section: { marginBottom: 20 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  sectionTitle: { fontSize: 14, fontWeight: '700', color: T.colors.t2, textTransform: 'uppercase', letterSpacing: 1 },
+
+  row: { flexDirection: 'row', gap: 10, marginBottom: 10 },
+  optionCard: {
+    flex: 1, backgroundColor: T.colors.bg2, borderRadius: T.radii.lg,
+    paddingVertical: 12, paddingHorizontal: 12,
+    borderWidth: 1, borderColor: T.colors.b1,
+    alignItems: 'center', justifyContent: 'center',
   },
+  optionCardActive: {
+    backgroundColor: T.colors.forgeDim,
+    borderColor: T.colors.forge,
+  },
+  optionText: { fontSize: 14, fontWeight: '600', color: T.colors.t2, textAlign: 'center' },
+  optionTextActive: { color: T.colors.forge },
+
   textarea: {
-    backgroundColor: T.colors.bg1, ...T.shadows.lift, borderRadius: 14,
-    borderWidth: 0.5, borderColor: T.colors.b1,
-    padding: 14, fontSize: 15, color: T.colors.t1,
-    minHeight: 90,
+    backgroundColor: T.colors.bg2,
+    borderRadius: T.radii.lg,
+    borderWidth: 1,
+    borderColor: T.colors.b1,
+    padding: 12,
+    fontSize: 15,
+    color: T.colors.t1,
+    minHeight: 150,
   },
-  generateBtn: {
-    backgroundColor: T.colors.forge, paddingVertical: 18,
-    borderRadius: 16, alignItems: 'center',
-    shadowColor: T.colors.forge, shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4, shadowRadius: 16, elevation: 8,
-  },
-  generateBtnText: { fontSize: 17, fontWeight: '800', color: '#000' },
+  footer: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    backgroundColor: T.colors.bg1,
+    padding: T.spacing.page, paddingBottom: 40,
+    borderTopWidth: 0.5, borderTopColor: T.colors.b1,
+    shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 10,
+  }
 });

@@ -1,15 +1,15 @@
 import { useForgeTheme } from '@/hooks/useForgeTheme';
 import { useQuery } from '@tanstack/react-query';
-import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
-import { Calendar, ChevronLeft, Flame } from 'lucide-react-native';
+import { ChevronLeft, Flame, RefreshCw, Sunrise, Sun, Moon, Apple } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GeneratedPlan } from '../services/GeneratorEngine';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../stores/authStore';
 
-const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+import { WeeklyCalendar } from '../features/planner/components/WeeklyCalendar';
+import { usePlannerData } from '../features/planner/hooks/usePlannerData';
 
 export default function WeeklyMealPlanScreen() {
   const router = useRouter();
@@ -17,13 +17,16 @@ export default function WeeklyMealPlanScreen() {
   const s = useStyles(T);
   const { user } = useAuthStore();
 
-  const currentDayStr = dayjs().format('dddd');
-  const [selectedDay, setSelectedDay] = useState(currentDayStr);
+  const { days, todayIdx } = usePlannerData();
+  const [activeDayIdx, setActiveDayIdx] = useState(todayIdx);
+  const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const selectedDay = dayNames[activeDayIdx];
 
   const { data: plan, isLoading } = useQuery({
-    queryKey: ['activePlan', user?.uid],
+    queryKey: ['activeMealPlan', user?.uid],
     queryFn: async () => {
-      const { data, error } = await supabase.from('generated_plans')
+      const { data, error } = await supabase
+        .from('generated_meal_plan_weekly')
         .select('plan')
         .eq('user_id', user!.uid)
         .order('saved_at', { ascending: false })
@@ -56,11 +59,22 @@ export default function WeeklyMealPlanScreen() {
 
   // Handle backward compatibility if the plan only has one day of meals
   const isWeekly = Array.isArray(plan.mealPlan.days) && plan.mealPlan.days.length > 0;
-  const dayData = isWeekly 
+  const dayData = isWeekly
     ? plan.mealPlan.days?.find((d: any) => d.dayOfWeek === selectedDay)
     : { meals: plan.mealPlan.meals };
 
   const meals = dayData?.meals || [];
+
+  const handleRegeneratePlan = () => {
+    Alert.alert(
+      'Generate New Weekly Meal Plan?',
+      'This will replace your current meal plan with a new one.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Generate', style: 'destructive', onPress: () => router.push('/aiPlan') },
+      ]
+    );
+  };
 
   return (
     <View style={s.container}>
@@ -70,34 +84,23 @@ export default function WeeklyMealPlanScreen() {
           <ChevronLeft size={24} color={T.colors.t1} />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Calendar size={18} color={T.colors.forge} />
           <Text style={s.headerTitle}>Weekly Meal Plan</Text>
         </View>
-        <View style={{ width: 40 }} />
+        <TouchableOpacity style={s.refreshBtn} onPress={handleRegeneratePlan}>
+          <RefreshCw size={20} color={T.colors.t1} />
+        </TouchableOpacity>
       </View>
 
       {/* Calendar Strip */}
-      <View style={s.calendarStrip}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.calendarScroll}>
-          {DAYS_OF_WEEK.map((day) => {
-            const isSelected = selectedDay === day;
-            return (
-              <TouchableOpacity
-                key={day}
-                onPress={() => setSelectedDay(day)}
-                style={[s.dayTab, isSelected && s.dayTabSelected]}
-                activeOpacity={0.7}
-              >
-                <Text style={[s.dayTabText, isSelected && s.dayTabTextSelected]}>
-                  {day.substring(0, 3)}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+      <View style={{ paddingHorizontal: 16, paddingTop: 16, backgroundColor: T.colors.bg0 }}>
+        <WeeklyCalendar
+          days={days}
+          activeDayIdx={activeDayIdx}
+          onSelectDay={setActiveDayIdx}
+        />
       </View>
 
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false} bounces={false}>
         {/* Daily Summary */}
         <View style={s.summaryCard}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
@@ -118,17 +121,24 @@ export default function WeeklyMealPlanScreen() {
           meals.map((meal: any, i: number) => (
             <View key={i} style={s.mealCard}>
               <View style={s.mealIconWrap}>
-                <Text style={s.mealInitial}>{meal.name.substring(0, 3).toUpperCase()}</Text>
+                {i === 0 ? <Sunrise size={20} color={T.colors.forge} /> :
+                 i === 1 ? <Sun size={20} color={T.colors.forge} /> :
+                 i === 2 ? <Moon size={20} color={T.colors.forge} /> :
+                 <Apple size={20} color={T.colors.forge} />}
               </View>
               <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <Text style={s.mealName}>{meal.name}</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                  <Text style={[s.mealName, { flexShrink: 1 }]} numberOfLines={2}>{meal.name}</Text>
                   <Text style={s.mealCals}>{meal.calories} kcal</Text>
                 </View>
                 <Text style={s.mealDesc}>{meal.description}</Text>
-                <Text style={s.mealMacros}>
-                  {meal.protein}g P • {meal.carbs}g C • {meal.fat}g F
-                </Text>
+                <View style={{ flexDirection: 'row', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: '#FF5C2E' }}>{meal.protein}g P</Text>
+                  <Text style={{ fontSize: 12, fontWeight: '500', color: T.colors.t3 }}>•</Text>
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: '#4DA6FF' }}>{meal.carbs}g C</Text>
+                  <Text style={{ fontSize: 12, fontWeight: '500', color: T.colors.t3 }}>•</Text>
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: '#F2C94C' }}>{meal.fat}g F</Text>
+                </View>
               </View>
             </View>
           ))
@@ -148,47 +158,20 @@ const useStyles = (T: any) => StyleSheet.create({
     backgroundColor: T.colors.bg1, ...T.shadows.lift, borderBottomWidth: 0.5, borderBottomColor: T.colors.b1,
   },
   backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  refreshBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 18, fontWeight: '700', color: T.colors.t1, paddingBottom: 8 },
-  
-  calendarStrip: {
-    backgroundColor: T.colors.bg1, ...T.shadows.lift,
-    borderBottomWidth: 0.5,
-    borderBottomColor: T.colors.b1,
-  },
-  calendarScroll: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
-  },
-  dayTab: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: T.colors.bg2,
-  },
-  dayTabSelected: {
-    backgroundColor: T.colors.forge,
-  },
-  dayTabText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: T.colors.t2,
-  },
-  dayTabTextSelected: {
-    color: '#000',
-    fontWeight: '800',
-  },
 
   content: { padding: 16 },
   summaryCard: {
     backgroundColor: T.colors.forgeDim,
     padding: 16,
     borderRadius: 16,
-    marginBottom: 20,
+    marginBottom: 15,
     borderWidth: 1,
     borderColor: 'rgba(255,92,46,0.3)',
+    marginTop: -16,
   },
-  
+
   mealCard: {
     backgroundColor: T.colors.bg1, ...T.shadows.lift,
     borderRadius: 16,
@@ -203,9 +186,11 @@ const useStyles = (T: any) => StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: T.colors.bg2,
+    backgroundColor: T.colors.forgeDim,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 0.5,
+    borderColor: T.colors.b1,
   },
   mealInitial: {
     fontSize: 12,

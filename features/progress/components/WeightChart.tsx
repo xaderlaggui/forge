@@ -14,10 +14,11 @@ interface WeightChartProps {
   lineData: { value: number; label: string }[];
   minVal: number;
   maxVal: number;
+  weightUnit?: string;
 }
 
 export function WeightChart({
-  timeframe, setTimeframe, weightDiff, lineData, minVal, maxVal
+  timeframe, setTimeframe, weightDiff, lineData, minVal, maxVal, weightUnit = 'kg'
 }: WeightChartProps) {
   const { T } = useForgeTheme();
   const s = useS(T);
@@ -28,7 +29,7 @@ export function WeightChart({
   let noOfSections = 4;
 
   if (minVal === maxVal) {
-    // Constant weight case (e.g., 200 lbs)
+    // Constant weight case (e.g., 200 unit)
     stepValue = 5;
     noOfSections = 4;
     yAxisOffset = minVal - 8; // Center it: 2 sections below, 2 sections above (e.g., 192, 196, 200, 204, 208)
@@ -80,11 +81,11 @@ export function WeightChart({
           <View style={{ position: 'absolute', top: -20, right: -20, width: 110, height: 110, borderRadius: 55, backgroundColor: T.colors.forgeDim }} />
 
           <View style={s.chartHeader}>
-            <Text style={s.chartTitle} maxFontSizeMultiplier={1.2}>Weight Trend</Text>
+            <Text style={s.chartTitle} maxFontSizeMultiplier={1.2}>Weight Trend ({weightUnit})</Text>
             <View style={[s.deltaBadge, weightDiff <= 0 ? s.deltaBadgeDown : s.deltaBadgeUp]}>
               {weightDiff <= 0 ? <TrendingDown size={12} color={T.colors.green} /> : <TrendingUp size={12} color={T.colors.red} />}
               <Text style={[s.deltaBadgeText, weightDiff <= 0 ? { color: T.colors.green } : { color: T.colors.red }]} maxFontSizeMultiplier={1.2}>
-                {weightDiff > 0 ? '+' : ''}{weightDiff} lbs
+                {weightDiff > 0 ? '+' : ''}{weightDiff} {weightUnit}
               </Text>
             </View>
           </View>
@@ -103,7 +104,9 @@ export function WeightChart({
               yAxisColor="transparent"
               yAxisTextStyle={{ color: T.colors.t3, fontSize: 10 }}
               xAxisLabelTextStyle={{ color: T.colors.t3, fontSize: 10 }}
-              hideRules
+              curved
+              rulesType="solid"
+              rulesColor={T.colors.b1}
               yAxisOffset={yAxisOffset}
               maxValue={maxValueRange}
               noOfSections={noOfSections}

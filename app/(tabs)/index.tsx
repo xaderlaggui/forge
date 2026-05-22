@@ -31,6 +31,7 @@ export default function HomeScreen() {
       showsVerticalScrollIndicator={false}
       onScroll={onScroll}
       scrollEventThrottle={16}
+      bounces={false}
     >
       {/* ── Composition: Header & Greeting ── */}
       <DashboardHeader
@@ -94,7 +95,7 @@ const useStyles = (T: any) => StyleSheet.create({
     backgroundColor: T.colors.bg0,
   },
   scrollContent: {
-    paddingBottom: 110,
+    paddingBottom: 24,
   },
   section: {
     paddingHorizontal: T.spacing.page,

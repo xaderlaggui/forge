@@ -17,11 +17,11 @@ export function useDashboardData() {
   const { data: aiTip, isLoading: isAiLoading } = useAiCoach();
 
   const { data: activePlan, isLoading: isLoadingActivePlan } = useQuery({
-    queryKey: ['activePlan', user?.uid],
+    queryKey: ['activeWorkoutPlan', user?.uid],
     queryFn: async () => {
       if (!user?.uid) return null;
       const { data } = await supabase
-        .from('generated_plans')
+        .from('generated_workout_plan_weekly')
         .select('plan')
         .eq('user_id', user.uid)
         .order('date', { ascending: false })
@@ -93,7 +93,9 @@ export function useDashboardData() {
   nutritionLogs?.forEach(log => {
     const loggedMeals = (log.meals || []).filter((m: any) => m.calories > 0);
     if (loggedMeals.length > 0) {
-      allItems.push({ ...log, _type: 'meal', loggedMeals });
+      const totalCals = loggedMeals.reduce((sum: number, m: any) => sum + (m.calories || 0), 0);
+      const mealNames = loggedMeals.map((m: any) => m.name).filter(Boolean);
+      allItems.push({ ...log, _type: 'meal', loggedMeals, totalCals, mealNames });
     }
   });
 

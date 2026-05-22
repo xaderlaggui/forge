@@ -44,7 +44,6 @@ export default function PersonalizeModal() {
     try {
       setLoading(true);
       const { bmi } = calculateBMI(weightNum, heightNum);
-      const weightLbs = Math.round(weightNum * 2.20462);
 
       const updates = {
         age: ageNum,
@@ -55,7 +54,7 @@ export default function PersonalizeModal() {
         diet_preference: dietPreference,
         equipment_access: equipmentAccess,
         bmi_history: [{ value: bmi, date: new Date().toISOString() }],
-        weight_history: [{ value: weightLbs, date: new Date().toISOString() }],
+        weight_history: [{ value: weightNum, date: new Date().toISOString() }],
         is_onboarded: true,
       };
 
@@ -104,7 +103,7 @@ export default function PersonalizeModal() {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" bounces={false}>
         <Animated.View entering={FadeInDown.delay(100).duration(600)} style={styles.header}>
           <TouchableOpacity style={{ marginBottom: 16 }} activeOpacity={0.8} onPress={() => alert(spriteConfig.messageSuggestion)}>
             <SpriteMascot spriteId={spriteConfig.spriteId} animation={spriteConfig.animation} size="lg" />

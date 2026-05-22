@@ -85,8 +85,8 @@ export default function AnalyzeMealScreen() {
 
         <View style={s.header}>
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 10 }}>
-            <Text style={[s.title, { fontSize: 16 }]}>
-              LOG {mealName.toUpperCase()}
+            <Text style={s.title}>
+              <Text style={{ color: T.colors.forge }}>LOG</Text> {mealName.toUpperCase()}
             </Text>
           </View>
         </View>
@@ -139,7 +139,7 @@ const useS = (T: any) => StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingTop: 16, paddingBottom: 2,
   },
-  title: { fontSize: 14, fontWeight: '700', color: T.colors.t3, letterSpacing: 1 },
+  title: { fontSize: 24, fontWeight: '900', color: T.colors.t1, letterSpacing: 1, marginBottom: 4 },
   scroll: { padding: 16, paddingBottom: 40 },
 
   analyzeWrap: { marginTop: 0 },

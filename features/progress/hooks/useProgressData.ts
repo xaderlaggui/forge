@@ -41,10 +41,17 @@ export function useProgressData(weightTimeframe: string = '7D') {
       .filter(item => item.value > 0);
   }
 
-  const userWeightLbs = user?.weight ? Math.round(user.weight * 2.20462) : 0;
+  const weightUnit = user?.weight_unit || 'kg';
+  const isLbs = weightUnit === 'lbs';
 
-  const currentWeight = rawHistory.length > 0 ? rawHistory[rawHistory.length - 1].value : userWeightLbs;
-  const startWeight   = rawHistory.length > 0 ? rawHistory[0].value : userWeightLbs;
+  // Helper to convert base kg to preferred unit
+  const convertWeight = (kgVal: number) => isLbs ? Math.round(kgVal * 2.20462) : kgVal;
+
+  const userBaseWeight = user?.weight || 0;
+  const userDisplayWeight = convertWeight(userBaseWeight);
+
+  const currentWeight = rawHistory.length > 0 ? convertWeight(rawHistory[rawHistory.length - 1].value) : userDisplayWeight;
+  const startWeight   = rawHistory.length > 0 ? convertWeight(rawHistory[0].value) : userDisplayWeight;
   const weightDiff    = startWeight > 0 ? +(currentWeight - startWeight).toFixed(1) : 0;
 
   // Chronologically sort weight history
@@ -82,11 +89,11 @@ export function useProgressData(weightTimeframe: string = '7D') {
       dayjs(h.date).startOf('day').isSame(currentDate, 'day')
     );
 
-    let dailyWeight = userWeightLbs;
+    let dailyWeight = userDisplayWeight;
     if (entriesBeforeOrOn.length > 0) {
-      dailyWeight = entriesBeforeOrOn[entriesBeforeOrOn.length - 1].value;
+      dailyWeight = convertWeight(entriesBeforeOrOn[entriesBeforeOrOn.length - 1].value);
     } else if (sortedHistory.length > 0) {
-      dailyWeight = sortedHistory[0].value;
+      dailyWeight = convertWeight(sortedHistory[0].value);
     }
 
     let label = '';
@@ -121,8 +128,8 @@ export function useProgressData(weightTimeframe: string = '7D') {
     });
   }
 
-  const minVal = lineData.length > 0 ? Math.min(...lineData.map(r => r.value)) : userWeightLbs;
-  const maxVal = lineData.length > 0 ? Math.max(...lineData.map(r => r.value)) : userWeightLbs;
+  const minVal = lineData.length > 0 ? Math.min(...lineData.map(r => r.value)) : userDisplayWeight;
+  const maxVal = lineData.length > 0 ? Math.max(...lineData.map(r => r.value)) : userDisplayWeight;
 
   const bmiCalcText = user?.height && user?.weight
     ? `${Math.round(user.height)} x ${Math.round(user.weight)}`
@@ -279,6 +286,7 @@ export function useProgressData(weightTimeframe: string = '7D') {
   return {
     user,
     timeframe, setTimeframe,
+    weightUnit,
     lineData, currentWeight, startWeight, weightDiff, minVal, maxVal,
     volumeLineData, weeklyVolumeData, monthlyVolumeData,
     currentVolume, volumeDiff, minVol, maxVol,

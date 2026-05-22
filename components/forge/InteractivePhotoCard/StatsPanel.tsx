@@ -56,7 +56,7 @@ export function StatsPanel({
           ) : (
             <>
               <Camera size={16} color={T.colors.forge} style={{ marginRight: 6 }} />
-              <Text style={styles.btnTextSecondary}>Change Photo</Text>
+              <Text style={styles.btnTextSecondary}>{workout.photoUrl ? 'Change Photo' : 'Add Photo'}</Text>
             </>
           )}
         </TouchableOpacity>

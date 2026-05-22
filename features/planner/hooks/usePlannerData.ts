@@ -54,11 +54,11 @@ export function usePlannerData() {
 
   // AI Generated Active Plan Fetch
   const { data: activePlan, isLoading: isLoadingActivePlan } = useQuery({
-    queryKey: ['activePlan', user?.uid],
+    queryKey: ['activeWorkoutPlan', user?.uid],
     queryFn: async () => {
       if (!user?.uid) return null;
       const { data } = await supabase
-        .from('generated_plans')
+        .from('generated_workout_plan_weekly')
         .select('plan')
         .eq('user_id', user.uid)
         .order('date', { ascending: false })
@@ -102,6 +102,7 @@ export function usePlannerData() {
     activeTab, setActiveTab,
     days, activeDayIdx, setActiveDayIdx, activeDateStr, todayIdx,
     exercises, isLoadingExercises,
-    loggedWorkout, plannedWorkout, isLoadingWorkouts: isLoadingWorkouts || isLoadingActivePlan
+    loggedWorkout, plannedWorkout, isLoadingWorkouts: isLoadingWorkouts || isLoadingActivePlan,
+    activePlan, user
   };
 }

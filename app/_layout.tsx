@@ -134,7 +134,7 @@ function RootLayoutNav() {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="+not-found" />
             <Stack.Screen name="addMeal"      options={{ presentation: 'formSheet', sheetAllowedDetents: 'fitToContents', sheetGrabberVisible: true }} />
-            <Stack.Screen name="measurements" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="measurements" options={{ presentation: 'formSheet', sheetAllowedDetents: 'fitToContents', sheetGrabberVisible: true }} />
             <Stack.Screen name="chat"         options={{ presentation: 'modal', sheetGrabberVisible: true }} />
             <Stack.Screen name="activeWorkout" />
             <Stack.Screen name="workoutHistory" />

@@ -97,11 +97,11 @@ export default function MeasurementsScreen() {
 }
 
 const useS = (T: any) => StyleSheet.create({
-  container: { flex: 1, backgroundColor: T.colors.bg1, padding: 24, paddingTop: 40 },
-  title: { fontSize: 24, fontWeight: '900', color: T.colors.t1, letterSpacing: 1, marginBottom: 4 },
+  container: { backgroundColor: T.colors.bg0, padding: 24, paddingTop: 40, paddingBottom: 40 },
+  title: { fontSize: 24, fontWeight: '900', color: T.colors.t1, letterSpacing: 1, marginBottom: 4, textAlign: 'center' },
   subtitle: { fontSize: 12, color: T.colors.t3, marginBottom: 32 },
 
-  form: { flex: 1 },
+  form: {},
   row: { flexDirection: 'row', gap: 16, marginBottom: 24 },
   col: { flex: 1 },
 

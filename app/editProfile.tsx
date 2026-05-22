@@ -18,7 +18,11 @@ import { useAuthStore } from '../stores/authStore';
 import { calculateBMI } from '../utils/bmi';
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Prefer not to say'];
-const GOAL_OPTIONS = ['Lose Weight', 'Build Muscle', 'Improve Endurance', 'Stay Active'];
+const GOAL_OPTIONS = [
+  { label: 'Lose Weight', value: 'cut' },
+  { label: 'Maintain Weight', value: 'maintain' },
+  { label: 'Build Muscle', value: 'bulk' }
+];
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -29,12 +33,47 @@ export default function EditProfileScreen() {
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [handle, setHandle] = useState((user as any)?.handle || '');
   const [dob, setDob] = useState((user as any)?.dateOfBirth || '');
-  const [height, setHeight] = useState(user?.height?.toString() || '');
-  const [weight, setWeight] = useState(user?.weight?.toString() || '');
-  const [heightUnit, setHeightUnit] = useState<'cm' | 'ft'>('cm');
-  const [weightUnit, setWeightUnit] = useState<'kg' | 'lbs'>('kg');
+  const initialWeightUnit = user?.weight_unit || 'kg';
+  const initialHeightUnit = user?.height_unit || 'cm';
+  
+  const initialWeight = initialWeightUnit === 'lbs' && user?.weight 
+    ? Math.round(user.weight * 2.20462).toString() 
+    : user?.weight?.toString() || '';
+    
+  const initialHeight = initialHeightUnit === 'ft' && user?.height
+    ? (user.height / 30.48).toFixed(2)
+    : user?.height?.toString() || '';
+
+  const [height, setHeight] = useState(initialHeight);
+  const [weight, setWeight] = useState(initialWeight);
+  const [heightUnit, setHeightUnit] = useState<'cm' | 'ft'>(initialHeightUnit);
+  const [weightUnit, setWeightUnit] = useState<'kg' | 'lbs'>(initialWeightUnit);
   const [gender, setGender] = useState(GENDER_OPTIONS[0]);
-  const [goal, setGoal] = useState(GOAL_OPTIONS[0]);
+  const [goal, setGoal] = useState((user as any)?.fitness_goal || user?.fitnessGoal || 'maintain');
+
+  const handleWeightUnitChange = (newUnit: 'kg' | 'lbs') => {
+    if (newUnit === weightUnit) return;
+    setWeightUnit(newUnit);
+    if (weight) {
+      const val = parseFloat(weight);
+      if (!isNaN(val)) {
+        if (newUnit === 'lbs') setWeight(Math.round(val * 2.20462).toString());
+        else setWeight((val / 2.20462).toFixed(1));
+      }
+    }
+  };
+
+  const handleHeightUnitChange = (newUnit: 'cm' | 'ft') => {
+    if (newUnit === heightUnit) return;
+    setHeightUnit(newUnit);
+    if (height) {
+      const val = parseFloat(height);
+      if (!isNaN(val)) {
+        if (newUnit === 'ft') setHeight((val / 30.48).toFixed(2));
+        else setHeight(Math.round(val * 30.48).toString());
+      }
+    }
+  };
   const [photoUri, setPhotoUri] = useState<string | null>(user?.photoURL || null);
   const [saving, setSaving] = useState(false);
 
@@ -65,12 +104,12 @@ export default function EditProfileScreen() {
         ? calculateBMI(weightVal, heightVal)
         : { bmi: 0 };
 
-      const weightLbs = Math.round(weightVal * 2.20462);
+      const baseWeightKg = weightVal;
 
       const existingWeightHistory = (user as any)?.weight_history || (user as any)?.weightHistory || [];
       const updatedWeightHistory = [
         ...existingWeightHistory,
-        { value: weightLbs, date: new Date().toISOString() }
+        { value: baseWeightKg, date: new Date().toISOString() }
       ];
 
       const existingBmiHistory = (user as any)?.bmi_history || (user as any)?.bmiHistory || [];
@@ -93,6 +132,10 @@ export default function EditProfileScreen() {
         bmi_history: updatedBmiHistory,
         photoURL: photoUri || user.photoURL,
         photo_url: photoUri || user.photoURL,
+        weight_unit: weightUnit,
+        height_unit: heightUnit,
+        fitness_goal: goal,
+        fitnessGoal: goal,
       };
 
       const { error } = await supabase
@@ -107,6 +150,9 @@ export default function EditProfileScreen() {
           weight_history: updatedWeightHistory,
           bmi_history: updatedBmiHistory,
           photo_url: photoUri || (user as any).photoURL,
+          weight_unit: weightUnit,
+          height_unit: heightUnit,
+          fitness_goal: goal,
         })
         .eq('id', user.uid);
       if (error) throw error;
@@ -175,7 +221,7 @@ export default function EditProfileScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false} bounces={false}>
 
 
         {/* Avatar */}
@@ -273,7 +319,7 @@ export default function EditProfileScreen() {
                   placeholderTextColor={T.colors.t3}
                   keyboardType="decimal-pad"
                 />
-                {renderUnitToggle(heightUnit, ['cm', 'ft'], setHeightUnit)}
+                {renderUnitToggle(heightUnit, ['cm', 'ft'], handleHeightUnitChange)}
               </View>
             </View>
             <View style={s.divider} />
@@ -289,7 +335,7 @@ export default function EditProfileScreen() {
                   placeholderTextColor={T.colors.t3}
                   keyboardType="decimal-pad"
                 />
-                {renderUnitToggle(weightUnit, ['kg', 'lbs'], setWeightUnit)}
+                {renderUnitToggle(weightUnit, ['kg', 'lbs'], handleWeightUnitChange)}
               </View>
             </View>
           </View>
@@ -301,14 +347,14 @@ export default function EditProfileScreen() {
             <View style={s.field}>
               {GOAL_OPTIONS.map(opt => (
                 <TouchableOpacity
-                  key={opt}
-                  style={[s.goalRow, goal === opt && s.goalRowActive]}
-                  onPress={() => setGoal(opt)}
+                  key={opt.value}
+                  style={[s.goalRow, goal === opt.value && s.goalRowActive]}
+                  onPress={() => setGoal(opt.value)}
                 >
-                  <View style={[s.radioOuter, goal === opt && s.radioOuterActive]}>
-                    {goal === opt && <View style={s.radioInner} />}
+                  <View style={[s.radioOuter, goal === opt.value && s.radioOuterActive]}>
+                    {goal === opt.value && <View style={s.radioInner} />}
                   </View>
-                  <Text style={[s.goalText, goal === opt && { color: T.colors.forge }]}>{opt}</Text>
+                  <Text style={[s.goalText, goal === opt.value && { color: T.colors.forge }]}>{opt.label}</Text>
                 </TouchableOpacity>
               ))}
             </View>

@@ -12,6 +12,7 @@ import { SpriteMascot } from '../components/forge/SpriteMascot';
 import { EmptyStateSpriteMap } from '../features/sprites/EmptyStateSpriteMap';
 import { getSpriteForActivity } from '../features/sprites/activity-sprite-map';
 import { useWorkouts } from '../hooks/useWorkouts';
+import { useAuthStore } from '../stores/authStore';
 
 // ── Activity Images (using Bear mascot assets) ──
 const ACTIVITY_IMAGES: Record<string, any> = {
@@ -43,10 +44,12 @@ export default function WorkoutHistoryScreen() {
   const { T } = useForgeTheme();
   const s = useS(T);
   const router = useRouter();
+  const { user } = useAuthStore();
   const { workouts, isLoading: isWorkoutsLoading } = useWorkouts();
   const { nutritionLogs, isLoading: isNutritionLogsLoading } = useAllNutritionLogs();
   
   const isLoading = isWorkoutsLoading || isNutritionLogsLoading;
+  const weightUnit = user?.weight_unit || 'kg';
 
   const activityFeed: ActivityItem[] = useMemo(() => {
     const items: ActivityItem[] = [];
@@ -72,7 +75,7 @@ export default function WorkoutHistoryScreen() {
         pills.push({ label: `${w.steps.toLocaleString()} steps` });
       }
       if (!isCardio && vol > 0) {
-        pills.push({ label: `${vol.toLocaleString()} lbs` });
+        pills.push({ label: `${vol.toLocaleString()} ${weightUnit}` });
       }
       if (!isCardio && (w.exercises?.length ?? 0) > 0) {
         pills.push({ label: `${w.exercises!.length} exercises` });
@@ -128,7 +131,7 @@ export default function WorkoutHistoryScreen() {
 
     // Sort by date descending
     return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [workouts, nutritionLogs]);
+  }, [workouts, nutritionLogs, weightUnit]);
 
   return (
     <View style={s.container}>
@@ -144,7 +147,7 @@ export default function WorkoutHistoryScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false} bounces={false}>
         {isLoading ? (
           <View style={[s.emptyState, { marginTop: 100 }]}>
             <ActivityIndicator size="large" color={T.colors.forge} />

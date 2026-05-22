@@ -3,6 +3,7 @@ import { TrendingDown, TrendingUp } from 'lucide-react-native';
 import React from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
+import { usePlannerData } from '../../planner/hooks/usePlannerData';
 
 // Card padding (16px each side) + page margin (16px each side)
 const SCREEN_W = Dimensions.get('window').width;
@@ -38,6 +39,7 @@ interface VolumeChartProps {
   maxVol: number;
   timeframe: '1W' | '1M';
   setTimeframe: (t: '1W' | '1M') => void;
+  weightUnit?: string;
 }
 
 const DOW_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -45,11 +47,32 @@ const DOW_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 export function VolumeChart({
   weeklyVolumeData, monthlyVolumeData,
   currentVolume, volumeDiff,
-  maxVol, timeframe, setTimeframe,
+  maxVol, timeframe, setTimeframe, weightUnit = 'kg'
 }: VolumeChartProps) {
   const { T } = useForgeTheme();
   const s = useS(T);
   const isUp = volumeDiff >= 0;
+  const { activePlan, user } = usePlannerData();
+
+  const isRestDay = (dateStr: string) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const currentDayName = dayNames[d.getDay()];
+
+    if (activePlan?.workoutWeek) {
+      const dayPlan = activePlan.workoutWeek.find((dw: any) => dw.day === currentDayName);
+      if (dayPlan && dayPlan.exercises.length === 0) return true;
+      if (dayPlan && dayPlan.exercises.length > 0) return false;
+    }
+
+    const dayOfWeek = d.getDay();
+    const activeDayIdx = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 0=Mon, 6=Sun
+    const legacyPlan = (user as any)?.plan_weekly_schedule || (user as any)?.plan?.weeklySchedule?.[activeDayIdx];
+    if (legacyPlan && legacyPlan.dayType === 'Rest') return true;
+
+    return false;
+  };
 
   const hasTrainingData = weeklyVolumeData.some(d => d.value > 0) || monthlyVolumeData.some(d => d.value > 0);
 
@@ -76,28 +99,36 @@ export function VolumeChart({
   const renderWeekly = () => (
     <View style={{ marginTop: 17, left: -6 }}>
       <BarChart
-        data={displayWeeklyData.map(d => ({
-          value: d.value,
-          label: d.label,
-          frontColor: (d as any).isFuture
-            ? T.colors.bg3 + '60'
-            : d.isToday
-              ? T.colors.forge
-              : d.value > 0
-                ? T.colors.forge + '88'
-                : T.colors.bg3,
-          topLabelComponent: () =>
-            d.value > 0 ? (
-              <Text style={{ color: T.colors.t3, fontSize: 8, marginBottom: 2, fontWeight: '600' }}>
-                {d.value >= 1000 ? `${(d.value / 1000).toFixed(1)}k` : d.value}
-              </Text>
-            ) : null,
-        }))}
+        data={displayWeeklyData.map(d => {
+          const isFuture = (d as any).isFuture;
+          const isRest = isRestDay(d.date);
+          const displayVal = d.value > 0 ? d.value : (displayMaxVol > 0 ? displayMaxVol * 0.08 : 100);
+          
+          let color = T.colors.bg3 + '60'; // default empty
+          if (d.value > 0) {
+            color = d.isToday ? T.colors.forge : (T.colors.forge + '88');
+          } else if (isRest) {
+            color = T.colors.blue;
+          }
+          
+          return {
+            value: displayVal,
+            label: d.label,
+            frontColor: color,
+            topLabelComponent: () =>
+              d.value > 0 ? (
+                <Text style={{ color: T.colors.t3, fontSize: 8, marginBottom: 2, fontWeight: '600' }}>
+                  {d.value >= 1000 ? `${(d.value / 1000).toFixed(1)}k` : d.value}
+                </Text>
+              ) : null,
+          };
+        })}
         barWidth={BAR_W}
         spacing={BAR_SPACING}
         roundedTop
         roundedBottom
-        hideRules
+        rulesType="solid"
+        rulesColor={T.colors.b1}
         disableScroll
         yAxisLabelWidth={0}
         xAxisThickness={0}
@@ -114,8 +145,10 @@ export function VolumeChart({
         <Text style={s.legendLabel}>Today</Text>
         <View style={[s.legendDot, { backgroundColor: T.colors.forge + '88', marginLeft: 10 }]} />
         <Text style={s.legendLabel}>Trained</Text>
-        <View style={[s.legendDot, { backgroundColor: T.colors.bg3, marginLeft: 10 }]} />
+        <View style={[s.legendDot, { backgroundColor: T.colors.blue, marginLeft: 10 }]} />
         <Text style={s.legendLabel}>Rest</Text>
+        <View style={[s.legendDot, { backgroundColor: T.colors.bg3 + '60', marginLeft: 10 }]} />
+        <Text style={s.legendLabel}>Empty</Text>
       </View>
     </View>
   );
@@ -198,17 +231,18 @@ export function VolumeChart({
           <View style={{ flex: 1 }}>
             <Text style={s.chartTitle} maxFontSizeMultiplier={1.2}>Total Volume</Text>
             <Text style={s.chartSub} maxFontSizeMultiplier={1.2}>
-              {currentVolume > 0
-                ? `${currentVolume.toLocaleString()} lbs today`
-                : 'No session today'}
+              {currentVolume === 0
+                ? "No volume today"
+                : `${currentVolume.toLocaleString()} ${weightUnit} today`
+              }
             </Text>
           </View>
           <View style={[s.deltaBadge, isUp ? s.deltaBadgeUp : s.deltaBadgeDown]}>
             {isUp
               ? <TrendingUp size={12} color={T.colors.forge} />
               : <TrendingDown size={12} color={T.colors.t3} />}
-            <Text style={[s.deltaBadgeText, { color: isUp ? T.colors.forge : T.colors.t3 }]}>
-              {isUp ? '+' : ''}{volumeDiff.toLocaleString()}
+            <Text style={[s.deltaBadgeText, volumeDiff <= 0 ? { color: T.colors.t3 } : { color: T.colors.forge }]} maxFontSizeMultiplier={1.2}>
+              {volumeDiff > 0 ? '+' : ''}{volumeDiff.toLocaleString()} {weightUnit}
             </Text>
           </View>
         </View>

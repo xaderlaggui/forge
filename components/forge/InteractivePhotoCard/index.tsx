@@ -12,10 +12,8 @@ import Animated, {
 
 import { useForgeTheme } from '@/hooks/useForgeTheme';
 import { useStyles } from './InteractivePhotoCardStyles';
-import { InteractivePhotoCardProps, StickerTheme } from './InteractivePhotoCardTypes';
-import { OffScreenStickerTemplate } from './OffScreenStickerTemplate';
+import { InteractivePhotoCardProps } from './InteractivePhotoCardTypes';
 import { StatsPanel } from './StatsPanel';
-import { StickerShareModal } from './StickerShareModal';
 
 export function InteractivePhotoCard({
   photoUri,
@@ -30,9 +28,6 @@ export function InteractivePhotoCard({
 
   const [layout, setLayout] = useState({ width: 0, height: 0 });
   const [imageAspect, setImageAspect] = useState<number | null>(null);
-  const [stickerTheme, setStickerTheme] = useState<StickerTheme>('white');
-  const [isShareModalVisible, setIsShareModalVisible] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
 
   // Animation values
   const swipeProgress = useSharedValue(0);
@@ -193,17 +188,7 @@ export function InteractivePhotoCard({
     };
   });
 
-  const handleShareExport = async () => {
-    setIsSharing(true);
-    try {
-      await new Promise(resolve => requestAnimationFrame(resolve)); // let ViewShot render
-      await shareImage();
-    } catch (e) {
-      console.error('Share failed:', e);
-    } finally {
-      setIsSharing(false);
-    }
-  };
+
 
   return (
     <>
@@ -244,31 +229,12 @@ export function InteractivePhotoCard({
           <StatsPanel
             workout={workout}
             pickImage={pickImage}
-            openShareModal={() => setIsShareModalVisible(true)}
+            openShareModal={shareImage}
             isUploading={isUploading}
             animatedStatsStyle={animatedStatsStyle}
           />
-
-          <OffScreenStickerTemplate
-            workout={workout}
-            stickerTheme={stickerTheme}
-            shareViewShotRef={shareViewShotRef}
-          />
         </View>
       </GestureDetector>
-
-      {/* New Sticker Share Modal */}
-      <StickerShareModal
-        isVisible={isShareModalVisible}
-        onClose={() => setIsShareModalVisible(false)}
-        workout={workout}
-        stickerTheme={stickerTheme}
-        setStickerTheme={setStickerTheme}
-        shareImage={handleShareExport}
-        isSharing={false}
-        shareViewShotRef={shareViewShotRef}
-
-      />
     </>
   );
 }

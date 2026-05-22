@@ -293,9 +293,19 @@ export async function generateFullPlan(metrics: UserMetrics): Promise<GeneratedP
     coachMessage,
   };
 
-  // Persist to Supabase under generated_plans
+  // Persist to Supabase
   const dateKey = dayjs().format('YYYY-MM-DD');
-  await supabase.from('generated_plans').upsert({
+  
+  // Save workout
+  await supabase.from('generated_workout_plan_weekly').upsert({
+    user_id: metrics.uid,
+    date: dateKey,
+    plan: plan,
+    saved_at: new Date().toISOString(),
+  }, { onConflict: 'user_id,date' });
+
+  // Save meal
+  await supabase.from('generated_meal_plan_weekly').upsert({
     user_id: metrics.uid,
     date: dateKey,
     plan: plan,
@@ -324,12 +334,49 @@ export async function generateMealPlanOnly(metrics: UserMetrics): Promise<Genera
   };
 
   const dateKey = dayjs().format('YYYY-MM-DD');
-  await supabase.from('generated_plans').upsert({
+  await supabase.from('generated_meal_plan_weekly').upsert({
     user_id: metrics.uid,
     date: dateKey,
     plan: plan,
     saved_at: new Date().toISOString(),
   }, { onConflict: 'user_id,date' });
+
+  return plan;
+}
+
+/**
+ * Generates only a weekly workout plan using AI.
+ * Saves the result to `users/{uid}/generatedPlans/{date}` in Firestore/Supabase.
+ */
+export async function generateWorkoutPlanOnly(metrics: UserMetrics): Promise<GeneratedPlan> {
+  const split = getWorkoutSplit(metrics.fitnessGoal);
+
+  // Generate all workout days in parallel
+  const workoutWeek: GeneratedWorkoutDay[] = await Promise.all(
+    split.map(async ({ day, focus, muscleGroups }) => {
+      const exercises = await generateExercisesForDay(
+        focus,
+        muscleGroups,
+        metrics.equipmentAccess,
+        metrics.fitnessGoal,
+        metrics
+      );
+      return { day, focus, exercises };
+    })
+  );
+
+  const plan: GeneratedPlan = {
+    generatedAt: new Date().toISOString(),
+    workoutWeek,
+    mealPlan: {
+      targetCalories: 0,
+      targetProtein: 0,
+      targetCarbs: 0,
+      targetFat: 0,
+      days: []
+    },
+    coachMessage: "Here is your new dynamically generated AI workout split!",
+  };
 
   return plan;
 }

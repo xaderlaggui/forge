@@ -203,8 +203,8 @@ export default function AddMealScreen() {
     <View style={s.container}>
       <View style={s.header}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 10 }}>
-          <Text style={[s.title, { fontSize: 16 }]}>
-            LOG {resolvedMealName.toUpperCase()}
+          <Text style={s.title}>
+            <Text style={{ color: T.colors.forge }}>LOG</Text> {resolvedMealName.toUpperCase()}
           </Text>
         </View>
       </View>
@@ -355,11 +355,11 @@ const useS = (T: any) => StyleSheet.create({
   container: { backgroundColor: T.colors.bg0 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingTop: 16, paddingBottom: 2,
+    paddingHorizontal: 16, paddingTop: 16
   },
   iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 14, fontWeight: '700', color: T.colors.t3, letterSpacing: 1 },
-  scroll: { padding: 16, paddingBottom: 40 },
+  title: { fontSize: 24, fontWeight: '900', color: T.colors.t1, letterSpacing: 1, marginBottom: 4 },
+  scroll: { padding: 16, },
 
   analyzeWrap: { marginTop: 0 },
   aiPrompt: { fontSize: 24, fontWeight: '700', color: T.colors.t1, marginBottom: 16 },

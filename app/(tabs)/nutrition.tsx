@@ -37,6 +37,7 @@ export default function NutritionScreen() {
       showsVerticalScrollIndicator={false}
       onScroll={onScroll}
       scrollEventThrottle={16}
+      bounces={false}
     >
       {/* ── Composition: Header ── */}
       <View style={s.header}>
@@ -60,7 +61,10 @@ export default function NutritionScreen() {
       />
 
       {/* ── Composition: Meals ── */}
-      <NutritionCoachBubble onGeneratePress={() => router.push('/aiPlan')} />
+      <NutritionCoachBubble 
+        activePlanExists={!!activePlan}
+        onGeneratePress={() => router.push(activePlan ? '/weeklyMealPlan' : '/aiPlan')} 
+      />
 
       {nutrition.totalCalories === 0 && (
         <View style={{ alignItems: 'center', marginTop: 32, marginBottom: -16, zIndex: 10 }}>
@@ -81,7 +85,7 @@ export default function NutritionScreen() {
 
 const useS = (T: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: T.colors.bg0 },
-  content: { paddingBottom: 110 },
+  content: { paddingBottom: 24 },
 
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',

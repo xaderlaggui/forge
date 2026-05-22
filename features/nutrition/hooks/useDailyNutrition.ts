@@ -13,11 +13,11 @@ export function useDailyNutrition() {
 
   // Fetch active AI plan to get target macros
   const { data: activePlan } = useQuery({
-    queryKey: ['activePlan', user?.uid],
+    queryKey: ['activeMealPlan', user?.uid],
     queryFn: async () => {
       if (!user?.uid) return null;
       const { data } = await supabase
-        .from('generated_plans')
+        .from('generated_meal_plan_weekly')
         .select('plan')
         .eq('user_id', user.uid)
         .order('date', { ascending: false })

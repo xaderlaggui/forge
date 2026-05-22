@@ -240,7 +240,7 @@ export default function BuildRoutineScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false} bounces={false}>
         {/* Step dots — now 4 steps */}
         <View style={s.stepDots}>
           {[1, 2, 3, 4].map(i => (

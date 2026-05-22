@@ -9,10 +9,10 @@ export function StatCard({ label, value, unit, delta, subText, valueColor, Icon,
   const sc = useSc(T);
   const isDown = delta !== undefined && delta < 0;
   const isUp = delta !== undefined && delta > 0;
-  
+
   let badgeColor = T.colors.t3;
   let badgeBg = T.colors.bg2;
-  
+
   if (isDown) {
     if (userGoal === 'bulk') { badgeColor = T.colors.red; badgeBg = T.colors.redDim; }
     else { badgeColor = T.colors.green; badgeBg = T.colors.greenDim; }
@@ -25,7 +25,7 @@ export function StatCard({ label, value, unit, delta, subText, valueColor, Icon,
     <TouchableOpacity style={sc.card} onPress={onPress} activeOpacity={0.75}>
       <Text style={sc.label} maxFontSizeMultiplier={1.2}>{label}</Text>
       <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3, marginTop: 6 }}>
-        <Text style={[sc.value, valueColor ? { color: valueColor } : undefined]} maxFontSizeMultiplier={1.2}>{value}</Text>
+        <Text style={sc.value} maxFontSizeMultiplier={1.2}>{value}</Text>
         {unit && <Text style={sc.unit} maxFontSizeMultiplier={1.2}>{unit}</Text>}
       </View>
       {delta !== undefined && (
@@ -37,16 +37,10 @@ export function StatCard({ label, value, unit, delta, subText, valueColor, Icon,
         </View>
       )}
       {subText !== undefined && (
-        valueColor ? (
-          <View style={[sc.categoryBadge, { backgroundColor: valueColor + '22', borderColor: valueColor + '55', gap: 4 }]}>
-            {Icon && <Icon size={11} color={valueColor} />}
-            <Text style={[sc.categoryText, { color: valueColor }]} maxFontSizeMultiplier={1.2}>{subText}</Text>
-          </View>
-        ) : (
-          <Text style={{ fontSize: 11, color: T.colors.t3, marginTop: 6, fontWeight: '600', textAlign: 'center' }} maxFontSizeMultiplier={1.2}>
-            {subText}
-          </Text>
-        )
+        <View style={[sc.categoryBadge, { backgroundColor: (valueColor || T.colors.t3) + '22', borderColor: (valueColor || T.colors.t3) + '55', gap: Icon ? 4 : 0 }]}>
+          {Icon && <Icon size={11} color={valueColor || T.colors.t3} />}
+          <Text style={[sc.categoryText, { color: valueColor || T.colors.t2 }]} maxFontSizeMultiplier={1.2}>{subText}</Text>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -66,11 +60,11 @@ const useSc = (T: any) => StyleSheet.create({
     alignSelf: 'center',
     paddingHorizontal: 7, paddingVertical: 3, borderRadius: T.radii.full,
   },
-  badgeText: { fontSize: T.typography.sizes.caption, fontWeight: '800' },
+  badgeText: { fontSize: T.typography.sizes.caption, fontWeight: '700' },
   categoryBadge: {
     flexDirection: 'row', alignItems: 'center', marginTop: 6,
     alignSelf: 'center',
     paddingHorizontal: 7, paddingVertical: 3, borderRadius: T.radii.full,
   },
-  categoryText: { fontSize: T.typography.sizes.caption, fontWeight: '800', },
+  categoryText: { fontSize: T.typography.sizes.caption, fontWeight: '700', },
 });

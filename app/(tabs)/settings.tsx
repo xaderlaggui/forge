@@ -107,7 +107,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ScrollView style={[s.container, { backgroundColor: T.colors.bg0 }]} contentContainerStyle={s.content} showsVerticalScrollIndicator={false} onScroll={onScroll} scrollEventThrottle={16}>
+    <ScrollView style={[s.container, { backgroundColor: T.colors.bg0 }]} contentContainerStyle={s.content} showsVerticalScrollIndicator={false} onScroll={onScroll} scrollEventThrottle={16} bounces={false}>
       {/* ── Header ── */}
       <View style={[s.header, { borderBottomColor: T.colors.b1, backgroundColor: T.colors.bg0 }]}>
         <Text style={[s.headerTitle, { color: T.colors.t1 }]} maxFontSizeMultiplier={1.2}>Profile</Text>

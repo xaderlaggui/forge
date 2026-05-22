@@ -50,11 +50,15 @@ export function RecentWorkoutsList({ recentActivity }: RecentWorkoutsListProps) 
               dayjs(item.date).format('ddd, MMM D');
             
             if (item._type === 'meal') {
-              const totalCals = item.loggedMeals.reduce((sum: number, m: any) => sum + (m.calories || 0), 0);
+              const totalCals = item.totalCals ?? item.loggedMeals.reduce((sum: number, m: any) => sum + (m.calories || 0), 0);
+              const mealNames: string[] = item.mealNames ?? item.loggedMeals.map((m: any) => m.name).filter(Boolean);
+              const hasSnacks = mealNames.some((n: string) => n.toLowerCase() === 'snacks');
+              // Build a readable label e.g. "Breakfast • Lunch • Snacks"
+              const mealLabel = mealNames.length > 0 ? mealNames.join(' • ') : 'Nutrition Log';
               return (
                 <WorkoutListItem
                   key={item.id ?? `meal-${idx}`}
-                  title="Nutrition Log"
+                  title={mealLabel}
                   date={dateLabel}
                   icon={
                     <Image
@@ -107,7 +111,7 @@ export function RecentWorkoutsList({ recentActivity }: RecentWorkoutsListProps) 
 }
 
 const useS = (T: any) => StyleSheet.create({
-  section: { paddingHorizontal: T.spacing.page, marginBottom: T.spacing.px5 },
+  section: { paddingHorizontal: T.spacing.page, marginBottom: 0 },
   sectionLabel: {
     fontSize: T.typography.sizes.label, fontWeight: '600', color: T.colors.t3,
     textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: T.spacing.px2,

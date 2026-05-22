@@ -2,7 +2,8 @@ import { useRouter } from 'expo-router';
 import { Apple, Moon, Sparkles, Sun, Sunrise } from 'lucide-react-native';
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming, Easing } from 'react-native-reanimated';
+import { Swipeable } from 'react-native-gesture-handler';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { MealDef } from '../types';
 
 const MEAL_DEFS: MealDef[] = [
@@ -12,11 +13,14 @@ const MEAL_DEFS: MealDef[] = [
   { key: 'Snacks', label: 'Snacks', emoji: 'Snacks' },
 ];
 
-const MEAL_ICONS: Record<string, { icon: React.ReactNode; color: string }> = {
-  Breakfast: { icon: <Sunrise size={16} color="#FF9500" />, color: '#FF9500' },
-  Lunch: { icon: <Sun size={16} color="#FFCC00" />, color: '#FFCC00' },
-  Dinner: { icon: <Moon size={16} color="#7B68EE" />, color: '#7B68EE' },
-  Snacks: { icon: <Apple size={16} color="#30D158" />, color: '#30D158' },
+const getMealIcon = (emoji: string, color: string) => {
+  switch (emoji) {
+    case 'Breakfast': return <Sunrise size={16} color={color} />;
+    case 'Lunch': return <Sun size={16} color={color} />;
+    case 'Dinner': return <Moon size={16} color={color} />;
+    case 'Snacks': return <Apple size={16} color={color} />;
+    default: return <Apple size={16} color={color} />;
+  }
 };
 
 import { useForgeTheme } from "@/hooks/useForgeTheme";
@@ -45,12 +49,15 @@ export function MealLogList({ meals, activePlan, updateNutrition }: MealLogListP
         return (
           <View key={key}>
             <View style={[s.sectionHeader, { marginTop: index === 0 ? 6 : 14 }]}>
-              <View style={s.sectionTitleRow}>
-                <View style={[s.mealIconWrap, { backgroundColor: MEAL_ICONS[emoji].color + '20', borderColor: MEAL_ICONS[emoji].color + '60' }]}>
-                  {MEAL_ICONS[emoji].icon}
+                <View style={s.sectionTitleRow}>
+                  <View style={s.mealIconWrap}>
+                    {getMealIcon(emoji, T.colors.forge)}
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={s.sectionTitle}>{label}</Text>
+                    {meal.isAiParsed && <Sparkles size={14} color={T.colors.green} />}
+                  </View>
                 </View>
-                <Text style={s.sectionTitle}>{label}</Text>
-              </View>
               <Text style={[s.sectionCals, isEmpty && { color: T.colors.red }]}>
                 {isEmpty ? 'Not Logged' : `${meal.calories} kcal`}
               </Text>
@@ -79,27 +86,43 @@ export function MealLogList({ meals, activePlan, updateNutrition }: MealLogListP
                     onPress={async () => {
                       const currentDayStr = new Date().toLocaleDateString('en-US', { weekday: 'long' });
                       const isWeekly = Array.isArray(activePlan.mealPlan.days) && activePlan.mealPlan.days.length > 0;
-                      const dayMeals = isWeekly 
+                      const dayMeals = isWeekly
                         ? activePlan.mealPlan.days.find((d: any) => d.dayOfWeek === currentDayStr)?.meals || []
                         : activePlan.mealPlan.meals || [];
-                        
-                      const aiMeal = dayMeals.find((m: any) => m.name === key);
+
+                      // Robust matching: find by name containing the key, or fallback to standard index map
+                      const mealTypeIndexMap: Record<string, number> = { 'Breakfast': 0, 'Lunch': 1, 'Dinner': 2, 'Snack': 3, 'Snacks': 3 };
+                      const aiMeal = dayMeals.find((m: any) =>
+                        (m.type && m.type.toLowerCase().includes(key.toLowerCase())) ||
+                        (m.name && m.name.toLowerCase().includes(key.toLowerCase())) ||
+                        (m.name && (key === 'Snack' || key === 'Snacks') && m.name.toLowerCase().includes('snack'))
+                      ) || dayMeals[mealTypeIndexMap[key]];
+
                       if (aiMeal) {
-                        const newMeals = meals.map(m => m.name === key ? {
-                          ...m,
+                        const existingMeal = meals.find((m: any) => m.name === key);
+                        const mealData = {
+                          name: key,
                           calories: aiMeal.calories,
                           protein: aiMeal.protein,
                           carbs: aiMeal.carbs,
                           fat: aiMeal.fat,
                           isAiParsed: true,
                           items: [{
-                            name: aiMeal.description,
+                            name: aiMeal.name,
+                            serving: aiMeal.description,
                             calories: aiMeal.calories,
                             protein: aiMeal.protein,
                             carbs: aiMeal.carbs,
                             fat: aiMeal.fat
                           }]
-                        } : m);
+                        };
+
+                        let newMeals;
+                        if (existingMeal) {
+                          newMeals = meals.map(m => m.name === key ? { ...m, ...mealData } : m);
+                        } else {
+                          newMeals = [...meals, mealData];
+                        }
                         await updateNutrition({ meals: newMeals });
                       }
                     }}
@@ -111,34 +134,51 @@ export function MealLogList({ meals, activePlan, updateNutrition }: MealLogListP
             ) : (
               <View style={s.mealCardWrapper}>
                 <View style={s.mealCard}>
-                {/* Assuming isAiParsed or if the backend passes some flag, we check here. We'll show it if it exists */}
-                {meal.isAiParsed && (
-                  <View style={s.parsedBadgeRow}>
-                    <View style={s.parsedBadge}>
-                      <Sparkles size={11} color={T.colors.green} />
-                      <Text style={s.parsedBadgeText}>AI PARSED</Text>
+                  {meal.items && meal.items.length > 0 ? (
+                    meal.items.map((item: any, i: number) => (
+                      <Swipeable
+                        key={i}
+                        renderRightActions={() => (
+                          <TouchableOpacity
+                            style={[s.deleteBtn, { borderTopRightRadius: 0, borderBottomRightRadius: 0 }]}
+                            onPress={async () => {
+                              if (!updateNutrition) return;
+                              const newItems = meal.items.filter((_: any, idx: number) => idx !== i);
+                              const newMeal = {
+                                ...meal,
+                                items: newItems,
+                                calories: Math.max(0, (meal.calories || 0) - (item.calories || 0)),
+                                protein: Math.max(0, (meal.protein || 0) - (item.protein || 0)),
+                                carbs: Math.max(0, (meal.carbs || 0) - (item.carbs || 0)),
+                                fat: Math.max(0, (meal.fat || 0) - (item.fat || 0)),
+                              };
+                              const newMeals = meals.map(m => m.name === key ? newMeal : m);
+                              await updateNutrition({ meals: newMeals });
+                            }}
+                          >
+                            <Text style={s.deleteBtnText}>Clear</Text>
+                          </TouchableOpacity>
+                        )}
+                        containerStyle={i > 0 ? s.foodRowBorder : {}}
+                      >
+                        <View style={[s.foodRow, { backgroundColor: T.colors.bg1 }]}>
+                          <View style={{ flex: 1, paddingRight: 8 }}>
+                            <Text style={s.foodName}>{item.name}</Text>
+                            {item.serving && <Text style={s.foodServing}>{item.serving}</Text>}
+                          </View>
+                          <View style={s.foodMacros}>
+                            <Text style={s.foodCal}>{item.calories} kcal</Text>
+                            <Text style={s.foodPfc}>P {item.protein}g · C {item.carbs}g · F {item.fat}g</Text>
+                          </View>
+                        </View>
+                      </Swipeable>
+                    ))
+                  ) : (
+                    <View style={s.foodRowCenter}>
+                      <Text style={s.emptyTapText}>Aggregated macros only</Text>
                     </View>
-                  </View>
-                )}
-                {meal.items && meal.items.length > 0 ? (
-                  meal.items.map((item: any, i: number) => (
-                    <View key={i} style={[s.foodRow, i > 0 && s.foodRowBorder]}>
-                      <View style={{ flex: 1, paddingRight: 8 }}>
-                        <Text style={s.foodName}>{item.name}</Text>
-                        {item.serving && <Text style={s.foodServing}>{item.serving}</Text>}
-                      </View>
-                      <View style={s.foodMacros}>
-                        <Text style={s.foodCal}>{item.calories} kcal</Text>
-                        <Text style={s.foodPfc}>P {item.protein}g · C {item.carbs}g · F {item.fat}g</Text>
-                      </View>
-                    </View>
-                  ))
-                ) : (
-                  <View style={s.foodRowCenter}>
-                    <Text style={s.emptyTapText}>Aggregated macros only</Text>
-                  </View>
-                )}
-              </View>
+                  )}
+                </View>
               </View>
             )}
           </View>
@@ -174,7 +214,7 @@ function PulseAnimatedView({ children, style }: { children: React.ReactNode, sty
 }
 
 const useS = (T: any) => StyleSheet.create({
-  section: { marginHorizontal: T.spacing.page, marginBottom: T.spacing.px5 },
+  section: { marginHorizontal: T.spacing.page, marginBottom: 0 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   mealIconWrap: {
@@ -184,8 +224,8 @@ const useS = (T: any) => StyleSheet.create({
     borderWidth: 0.5, borderColor: T.colors.b1,
     overflow: 'hidden',
   },
-  sectionTitle: { color: T.colors.t1, fontSize: 15, fontWeight: '700' },
-  sectionCals: { color: T.colors.t3, fontSize: 12 },
+  sectionTitle: { color: T.colors.t1, fontSize: 16, fontWeight: '700' },
+  sectionCals: { color: T.colors.t3, fontSize: 12, fontWeight: '600' },
 
   mealCardWrapper: { ...T.shadows.lift, borderRadius: 16, marginBottom: 8, backgroundColor: T.colors.bg1 },
   mealCard: { backgroundColor: T.colors.bg1, borderRadius: 16, overflow: 'hidden', borderWidth: 0.5, borderColor: T.colors.b1, flex: 1 },
@@ -200,7 +240,7 @@ const useS = (T: any) => StyleSheet.create({
 
   foodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10, paddingHorizontal: 14 },
   foodRowBorder: { borderTopWidth: 0.5, borderTopColor: T.colors.b0 },
-  foodName: { color: T.colors.t1, fontSize: 13, fontWeight: '500' },
+  foodName: { color: T.colors.t1, fontSize: 13, fontWeight: '600' },
   foodServing: { color: T.colors.t2, fontSize: 11, marginTop: 2 },
   foodMacros: { alignItems: 'flex-end' },
   foodCal: { color: T.colors.t1, fontSize: 13, fontWeight: '600' },
@@ -217,4 +257,18 @@ const useS = (T: any) => StyleSheet.create({
     gap: 6,
   },
   autoFillText: { color: T.colors.bg0, fontSize: 13, fontWeight: '700' },
+  deleteBtn: {
+    backgroundColor: T.colors.red,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    borderTopRightRadius: 16,
+    borderBottomRightRadius: 16,
+    height: '100%',
+  },
+  deleteBtnText: {
+    color: T.colors.bg0,
+    fontWeight: '700',
+    fontSize: 14,
+  },
 });

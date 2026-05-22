@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 // Feature Modules
 import { useForgeTheme } from "@/hooks/useForgeTheme";
-import { MeasurementCard } from '../../features/progress/components/MeasurementCard';
+import { BodyMeasurementsCard } from '../../features/progress/components/BodyMeasurementsCard';
+import { PhysiqueCoachBubble } from '../../features/progress/components/PhysiqueCoachBubble';
 import { ProgressPhotos } from '../../features/progress/components/ProgressPhotos';
 import { StatCard } from '../../features/progress/components/StatCard';
 import { VolumeChart } from '../../features/progress/components/VolumeChart';
@@ -32,6 +33,7 @@ export default function ProgressScreen() {
     latest, prev,
     firstPhoto, lastPhoto,
     isUploading, takePhoto,
+    weightUnit,
     bmiCalcText
   } = useProgressData(weightTimeframe);
 
@@ -53,7 +55,7 @@ export default function ProgressScreen() {
           : AlertTriangle;
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={s.content} showsVerticalScrollIndicator={false} onScroll={onScroll} scrollEventThrottle={16}>
+    <ScrollView style={s.container} contentContainerStyle={s.content} showsVerticalScrollIndicator={false} onScroll={onScroll} scrollEventThrottle={16} bounces={false}>
 
       {/* ── Composition: Header ── */}
       <View style={s.header}>
@@ -73,8 +75,16 @@ export default function ProgressScreen() {
       </View>
       {/* ── Composition: Key Stats ── */}
       <View style={s.statsRow}>
-        <StatCard label="Current" value={currentWeight} unit="lbs" delta={weightDiff} userGoal={(user as any)?.fitness_goal || (user as any)?.fitnessGoal} />
-        <StatCard label="Started" value={startWeight} unit="lbs" />
+        {(() => {
+          const rawGoal = (user as any)?.fitness_goal || (user as any)?.fitnessGoal;
+          const goalDisplay = rawGoal === 'bulk' ? 'Bulking' : rawGoal === 'cut' ? 'Cutting' : rawGoal === 'maintain' ? 'Maintaining' : undefined;
+          return (
+            <>
+              <StatCard label="Current" value={currentWeight} unit={weightUnit} delta={weightDiff} userGoal={rawGoal} />
+              <StatCard label="Started" value={startWeight} unit={weightUnit} subText={goalDisplay} />
+            </>
+          );
+        })()}
         <StatCard label="BMI" value={user?.bmi?.toFixed(1) ?? '—'} subText={bmiCategory} valueColor={bmiColor} Icon={bmiIcon} />
       </View>
 
@@ -86,17 +96,17 @@ export default function ProgressScreen() {
         lineData={lineData}
         minVal={minVal}
         maxVal={maxVal}
+        weightUnit={weightUnit}
       />
 
       {/* ── Composition: Body Measurements ── */}
       <View style={s.section}>
         <Text style={s.sectionLabel} maxFontSizeMultiplier={1.2}>Body Measurements</Text>
-        <View style={s.measGrid}>
-          <MeasurementCard label="Chest" value={latest?.chest} prevValue={prev?.chest} onPress={() => router.push('/measurements')} />
-          <MeasurementCard label="Waist" value={latest?.waist} prevValue={prev?.waist} onPress={() => router.push('/measurements')} />
-          <MeasurementCard label="Arms" value={latest?.arms} prevValue={prev?.arms} onPress={() => router.push('/measurements')} />
-          <MeasurementCard label="Legs" value={latest?.legs} prevValue={prev?.legs} onPress={() => router.push('/measurements')} />
-        </View>
+        <BodyMeasurementsCard
+          latest={latest}
+          prev={prev}
+          onPressDetail={() => router.push('/measurements')}
+        />
       </View>
 
       {/* ── Composition: Progressive Overload ── */}
@@ -110,6 +120,7 @@ export default function ProgressScreen() {
         maxVol={maxVol}
         timeframe={volumeTimeframe}
         setTimeframe={setVolumeTimeframe}
+        weightUnit={weightUnit}
       />
 
       {/* ── Composition: Transformation ── */}
@@ -122,6 +133,8 @@ export default function ProgressScreen() {
           isUploading={isUploading}
           onTakePhoto={takePhoto}
         />
+
+        <PhysiqueCoachBubble hasPhotos={!!(firstPhoto && lastPhoto)} onUploadPress={takePhoto} />
       </View>
 
     </ScrollView>
@@ -130,7 +143,7 @@ export default function ProgressScreen() {
 
 const useS = (T: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: T.colors.bg0 },
-  content: { paddingBottom: 110 },
+  content: { paddingBottom: 30 },
 
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
