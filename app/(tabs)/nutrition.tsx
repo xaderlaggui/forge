@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 // Feature dependencies
 import { useForgeTheme } from "@/hooks/useForgeTheme";
+import { TopFog } from '../../components/forge/TopFog';
 import { DailyCalorieSummary } from '../../features/nutrition/components/DailyCalorieSummary';
 import { HydrationTracker } from '../../features/nutrition/components/HydrationTracker';
 import { MacroBreakdown } from '../../features/nutrition/components/MacroBreakdown';
@@ -31,9 +32,9 @@ export default function NutritionScreen() {
   }
 
   return (
-    <ScrollView
-      style={s.container}
-      contentContainerStyle={s.content}
+    <View style={s.container}>
+      <ScrollView
+        contentContainerStyle={s.content}
       showsVerticalScrollIndicator={false}
       onScroll={onScroll}
       scrollEventThrottle={16}
@@ -80,6 +81,8 @@ export default function NutritionScreen() {
       />
 
     </ScrollView>
+      <TopFog top={0} height={40} />
+    </View>
   );
 }
 

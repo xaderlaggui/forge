@@ -6,6 +6,7 @@ import { AiCoachCard } from '../../components/forge/AiCoachCard';
 
 // Dashboard Feature Modules
 import { useForgeTheme } from "@/hooks/useForgeTheme";
+import { TopFog } from '../../components/forge/TopFog';
 import { DashboardHeader } from '../../features/dashboard/components/DashboardHeader';
 import { QuickStatsRow } from '../../features/dashboard/components/QuickStatsRow';
 import { RecentWorkoutsList } from '../../features/dashboard/components/RecentWorkoutsList';
@@ -25,9 +26,9 @@ export default function HomeScreen() {
   const data = useDashboardData();
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
+    <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
       onScroll={onScroll}
       scrollEventThrottle={16}
@@ -86,6 +87,8 @@ export default function HomeScreen() {
       <RecentWorkoutsList recentActivity={data.recentActivity} />
 
     </ScrollView>
+      <TopFog top={0} height={40} />
+    </View>
   );
 }
 

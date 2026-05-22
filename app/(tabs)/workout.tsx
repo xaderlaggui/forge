@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { ForgeSegment } from '../../components/forge/ForgeSegment';
 
 // Feature Modules
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { useRouter } from 'expo-router';
-import { Dumbbell, RefreshCw, Sparkles } from 'lucide-react-native';
+import { Dumbbell, RefreshCw } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DailyPlanCard } from '../../features/planner/components/DailyPlanCard';
 import { ExerciseLibrary } from '../../features/planner/components/ExerciseLibrary';
@@ -95,20 +96,47 @@ export default function WorkoutScreen() {
       )}
 
       {/* ── Generate Weekly Plan FAB ── */}
-      {activeTab === 'Planner' && (
+      {activeTab === 'Planner' && !activePlan && (
         <View style={[s.fabWrapper, { bottom: 85 + insets.bottom }]}>
-          <TouchableOpacity
-            style={[s.fab, { backgroundColor: T.colors.forge, shadowColor: T.colors.forge }]}
-            onPress={handleFabPress}
-            activeOpacity={0.85}
-            accessibilityLabel="Generate AI Workout Plan"
-            accessibilityRole="button"
-          >
-            <Dumbbell size={24} color="#000" strokeWidth={2.5} />
-          </TouchableOpacity>
+          <PulseAnimatedView>
+            <TouchableOpacity
+              style={[s.fab, { backgroundColor: T.colors.t1, shadowColor: T.colors.t1 }]}
+              onPress={handleFabPress}
+              activeOpacity={0.85}
+              accessibilityLabel="Generate AI Workout Plan"
+              accessibilityRole="button"
+            >
+              <Dumbbell size={24} color={T.colors.bg0} strokeWidth={2.5} />
+            </TouchableOpacity>
+          </PulseAnimatedView>
         </View>
       )}
     </View>
+  );
+}
+
+function PulseAnimatedView({ children, style }: { children: React.ReactNode, style?: any }) {
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.06, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1,
+      true
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }]
+  }));
+
+  return (
+    <Animated.View style={[style, animatedStyle]}>
+      {children}
+    </Animated.View>
   );
 }
 
