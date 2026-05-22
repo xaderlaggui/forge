@@ -103,6 +103,7 @@ const useStyles = (T: any) => StyleSheet.create({
   transformCard: {
     flexDirection: 'row',
     backgroundColor: T.colors.bg1,
+    ...T.shadows.lift,
     borderRadius: T.radii.lg,
     padding: T.spacing.px4,
     alignItems: 'center',
