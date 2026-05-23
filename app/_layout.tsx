@@ -31,16 +31,6 @@ export default function RootLayout() {
   });
 
   const { setUser, setLoading } = useAuthStore();
-  const [onboardingSeen, setOnboardingSeen] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const checkOnboarding = async () => {
-      const seen = await AsyncStorage.getItem('onboarding_seen');
-      setOnboardingSeen(seen === 'true');
-    };
-    checkOnboarding();
-  }, []);
-
   useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -86,14 +76,14 @@ export default function RootLayout() {
     if (loaded) SplashScreen.hideAsync();
   }, [loaded]);
 
-  if (!loaded || onboardingSeen === null) return null;
+  if (!loaded) return null;
 
-  return <RootLayoutNav onboardingSeen={onboardingSeen} />;
+  return <RootLayoutNav />;
 }
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-function RootLayoutNav({ onboardingSeen }: { onboardingSeen: boolean }) {
+function RootLayoutNav() {
   const { user, isLoading } = useAuthStore();
   const segments = useSegments();
   const router = useRouter();
@@ -127,11 +117,7 @@ function RootLayoutNav({ onboardingSeen }: { onboardingSeen: boolean }) {
 
     if (!user) {
       if (!inAuthGroup) {
-        if (!onboardingSeen) {
-          router.replace('/(auth)/onboarding');
-        } else {
-          router.replace('/(auth)/welcome');
-        }
+        router.replace('/(auth)/welcome');
       }
     } else if (user) {
       const currentRoute = segments.join('/');
@@ -148,7 +134,7 @@ function RootLayoutNav({ onboardingSeen }: { onboardingSeen: boolean }) {
         router.replace('/(tabs)');
       }
     }
-  }, [user, isLoading, segments, onboardingSeen]);
+  }, [user, isLoading, segments]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
