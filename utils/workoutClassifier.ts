@@ -1,6 +1,6 @@
 export function classifyWorkoutFromExercises(exercises: any[] | undefined): string {
   if (!exercises || exercises.length === 0) return 'Rest Day';
-  
+
   const pushKWs = ['press', 'push', 'fly', 'dip', 'pec', 'tri', 'front raise', 'lateral raise'];
   const pullKWs = ['pull', 'row', 'curl', 'lat', 'chin', 'shrug', 'rear delt'];
   const legsKWs = ['squat', 'leg', 'calf', 'calves', 'lunge', 'deadlift', 'rdl', 'glute', 'hamstring', 'step-up'];
@@ -11,13 +11,13 @@ export function classifyWorkoutFromExercises(exercises: any[] | undefined): stri
 
   exercises.forEach(ex => {
     const name = (ex.name || ex.exerciseName || '').toLowerCase();
-    
+
     // Leg exercises that might contain push/pull/press (e.g. Leg Press, Leg Curl)
     if (legsKWs.some(kw => name.includes(kw))) {
       legsScore++;
-      return; 
+      return;
     }
-    
+
     if (pushKWs.some(kw => name.includes(kw))) pushScore++;
     if (pullKWs.some(kw => name.includes(kw))) pullScore++;
   });
@@ -32,7 +32,7 @@ export function classifyWorkoutFromExercises(exercises: any[] | undefined): stri
 
   if (pushScore > pullScore && pushScore > legsScore) return 'Push Day';
   if (pullScore > pushScore && pullScore > legsScore) return 'Pull Day';
-  if (legsScore > pushScore && legsScore > pullScore) return 'Legs Day';
+  if (legsScore > pushScore && legsScore > pullScore) return 'Leg Day';
 
   if (pushScore === pullScore && legsScore === 0) return 'Upper Body Day';
 
