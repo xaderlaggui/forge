@@ -15,6 +15,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { MascotImage } from '../../components/common/MascotImage';
+import { supabase } from '../../services/supabase';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function HoorayScreen() {
   const { T } = useForgeTheme();
@@ -33,10 +35,12 @@ export default function HoorayScreen() {
     transform: [{ translateY: translateY.value }],
   }));
 
-  const handleContinue = () => {
-    // This triggers a navigation to tabs.
-    // The root layout will automatically push the /personalize modal since BMI is missing.
-    router.replace('/(tabs)');
+  const handleContinue = async () => {
+    // This completes the signup flow. Sign them out so they must explicitly log in.
+    // The explicit login will then trigger the Personalization redirect.
+    await supabase.auth.signOut();
+    useAuthStore.getState().setUser(null);
+    router.replace('/(auth)/login');
   };
 
   return (
