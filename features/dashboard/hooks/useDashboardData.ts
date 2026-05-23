@@ -103,7 +103,7 @@ export function useDashboardData() {
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 3);
 
-  const startOfWeek = dayjs().startOf('week').add(1, 'day');
+  const startOfWeek = dayjs().subtract(todayIdx, 'day');
   let workoutsThisWeek = 0;
   const weekActivity = Array.from({ length: 7 }).map((_, i) => {
     const d = startOfWeek.add(i, 'day').format('YYYY-MM-DD');
