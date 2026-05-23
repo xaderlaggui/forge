@@ -135,7 +135,11 @@ export default function ProgressScreen() {
             onTakePhoto={takePhoto}
           />
 
-          <PhysiqueCoachBubble hasPhotos={!!(firstPhoto && lastPhoto)} onUploadPress={takePhoto} />
+          <PhysiqueCoachBubble 
+            hasPhotos={!!(firstPhoto && lastPhoto)} 
+            lastPhotoUrl={lastPhoto?.url}
+            onUploadPress={takePhoto} 
+          />
         </View>
 
       </ScrollView>
