@@ -9,9 +9,9 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/mascot/bear-4/bear-4-4.png",
+      "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0A0A0B"
+      "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true
