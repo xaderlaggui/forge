@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 // Feature dependencies
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { TopFog } from '../../components/forge/TopFog';
+import { FadeTabWrapper } from '../../components/common/FadeTabWrapper';
 import { DailyCalorieSummary } from '../../features/nutrition/components/DailyCalorieSummary';
 import { HydrationTracker } from '../../features/nutrition/components/HydrationTracker';
 import { MacroBreakdown } from '../../features/nutrition/components/MacroBreakdown';
@@ -25,14 +26,14 @@ export default function NutritionScreen() {
 
   if (isLoading || !nutrition || !aggregates) {
     return (
-      <View style={s.container}>
+      <FadeTabWrapper style={s.container}>
         <NutritionSkeleton />
-      </View>
+      </FadeTabWrapper>
     );
   }
 
   return (
-    <View style={s.container}>
+    <FadeTabWrapper style={s.container}>
       <ScrollView
         contentContainerStyle={s.content}
       showsVerticalScrollIndicator={false}
@@ -82,7 +83,7 @@ export default function NutritionScreen() {
 
     </ScrollView>
       <TopFog top={0} height={40} />
-    </View>
+    </FadeTabWrapper>
   );
 }
 
