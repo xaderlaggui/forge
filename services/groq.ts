@@ -11,7 +11,7 @@ const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
 
 export interface GroqMessage {
   role: 'system' | 'user' | 'assistant';
-  content: string;
+  content: string | any[];
 }
 
 interface GroqResponse {
