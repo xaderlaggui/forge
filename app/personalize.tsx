@@ -1,8 +1,8 @@
 import { useForgeTheme } from '@/hooks/useForgeTheme';
 import { useRouter } from 'expo-router';
 import { ArrowRight } from 'lucide-react-native';
-import React, { useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, BackHandler } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SpriteMascot } from '../components/forge/SpriteMascot';
 import { onboardingSpriteSequence } from '../features/sprites/OnboardingSpriteSequence';
@@ -22,7 +22,15 @@ export default function PersonalizeModal() {
   const [weight, setWeight] = useState(''); // kg
   const [loading, setLoading] = useState(false);
 
+  // Prevent back navigation
+  useEffect(() => {
+    const onBackPress = () => true; // Returning true prevents default behavior
+    BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+  }, []);
+
   // AI Generator Preferences
+  const [gender, setGender] = useState<'Male' | 'Female' | 'Non-binary' | 'Prefer not to say'>('Male');
   const [fitnessGoal, setFitnessGoal] = useState<'cut' | 'maintain' | 'bulk'>('maintain');
   const [dietPreference, setDietPreference] = useState<'anything' | 'vegan' | 'keto'>('anything');
   const [equipmentAccess, setEquipmentAccess] = useState<'full' | 'dumbbells' | 'bodyweight'>('full');
@@ -56,6 +64,7 @@ export default function PersonalizeModal() {
         bmi_history: [{ value: bmi, date: new Date().toISOString() }],
         weight_history: [{ value: weightNum, date: new Date().toISOString() }],
         is_onboarded: true,
+        gender,
       };
 
       const { error } = await supabase
@@ -99,6 +108,13 @@ export default function PersonalizeModal() {
     { id: 'full', label: 'Full Gym' },
     { id: 'dumbbells', label: 'Dumbbells Only' },
     { id: 'bodyweight', label: 'Bodyweight' }
+  ] as const;
+
+  const genders = [
+    { id: 'Male', label: 'Male' },
+    { id: 'Female', label: 'Female' },
+    { id: 'Non-binary', label: 'Non-binary' },
+    { id: 'Prefer not to say', label: 'Prefer not to say' }
   ] as const;
 
   return (
@@ -158,6 +174,24 @@ export default function PersonalizeModal() {
 
         <Animated.View entering={FadeInDown.delay(300).duration(600)} style={styles.card}>
           <Text style={styles.sectionTitle}>Your Preferences</Text>
+
+          <View style={styles.pickerGroup}>
+            <Text style={styles.label}>Gender</Text>
+            <View style={styles.pillRow}>
+              {genders.map(g => (
+                <TouchableOpacity
+                  key={g.id}
+                  style={[styles.pill, gender === g.id && styles.pillActive]}
+                  onPress={() => setGender(g.id as any)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.pillText, gender === g.id && styles.pillTextActive]}>
+                    {g.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
 
           <View style={styles.pickerGroup}>
             <Text style={styles.label}>Primary Goal</Text>
