@@ -75,7 +75,7 @@ export default function LoginScreen() {
         <Animated.View style={[s.inner, animStyle]}>
 
           <TouchableOpacity style={{ width: 210, height: 210, borderRadius: 100, alignItems: 'center', justifyContent: 'center', marginBottom: 20 }} activeOpacity={0.8} onPress={() => alert(spriteConfig.messageSuggestion)}>
-            <SpriteMascot spriteId={spriteConfig.spriteId} animation={spriteConfig.animation} size="xl" />
+            <Image source={require('../../assets/images/mascot/bear-3/bear-3-4.png')} style={{ width: '100%', height: '100%', resizeMode: 'contain' }} />
           </TouchableOpacity>
           {/* Brand */}
           <View style={s.brandRow}>
