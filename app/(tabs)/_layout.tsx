@@ -41,46 +41,46 @@ function ForgeFAB() {
       -1, false
     );
   }, []);
-  const pulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pulseScale.value }],
-    opacity: pulseOpacity.value,
-  }));
+const pulseStyle = useAnimatedStyle(() => ({
+  transform: [{ scale: pulseScale.value }],
+  opacity: pulseOpacity.value,
+}));
 
-  if (isNutrition) {
-    return (
-      <Animated.View style={[styles.fabWrapper, animatedStyle, { bottom: 85 + insets.bottom }]}>
-        <Animated.View style={[styles.fabRing, { backgroundColor: T.colors.forge }, pulseStyle]} />
-        <TouchableOpacity
-          style={[styles.fab, { backgroundColor: T.colors.forge, shadowColor: T.colors.forge }]}
-          onPress={() => router.push('/addMeal')}
-          activeOpacity={0.85}
-          accessibilityLabel="Add Meal"
-          accessibilityRole="button"
-        >
-          <UtensilsCrossed size={24} color="#fff" strokeWidth={2.5} />
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  }
+if (isNutrition) {
+  return (
+    <Animated.View style={[styles.fabWrapper, animatedStyle, { bottom: 85 + insets.bottom }]}>
+      <Animated.View style={[styles.fabRing, { backgroundColor: T.colors.forge }, pulseStyle]} />
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: T.colors.forge, shadowColor: T.colors.forge }]}
+        onPress={() => router.push('/addMeal')}
+        activeOpacity={0.85}
+        accessibilityLabel="Add Meal"
+        accessibilityRole="button"
+      >
+        <UtensilsCrossed size={24} color="#fff" strokeWidth={2.5} />
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
 
-  if (isHome) {
-    return (
-      <Animated.View style={[styles.fabWrapper, animatedStyle, { bottom: 85 + insets.bottom }]}>
-        <Animated.View style={[styles.fabRing, { backgroundColor: aiColor }, pulseStyle]} />
-        <TouchableOpacity
-          style={[styles.fab, { backgroundColor: aiColor, shadowColor: aiColor }]}
-          onPress={() => router.push('/chat')}
-          activeOpacity={0.85}
-          accessibilityLabel="AI Coach"
-          accessibilityRole="button"
-        >
-          <Sparkles size={24} color="#fff" strokeWidth={2.5} />
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  }
+if (isHome) {
+  return (
+    <Animated.View style={[styles.fabWrapper, animatedStyle, { bottom: 85 + insets.bottom }]}>
+      <Animated.View style={[styles.fabRing, { backgroundColor: aiColor }, pulseStyle]} />
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: aiColor, shadowColor: aiColor }]}
+        onPress={() => router.push('/chat')}
+        activeOpacity={0.85}
+        accessibilityLabel="AI Coach"
+        accessibilityRole="button"
+      >
+        <Sparkles size={24} color="#fff" strokeWidth={2.5} />
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
 
-  return null;
+return null;
 }
 
 const TabIcon = ({ Icon, color, focused, T }: { Icon: any, color: string, focused: boolean, T: any }) => (
