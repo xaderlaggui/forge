@@ -1,7 +1,7 @@
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { useRouter } from 'expo-router';
 import { Lock } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ActivityIndicator, Alert,
   KeyboardAvoidingView, Platform,
@@ -29,6 +29,18 @@ export default function PasswordScreen() {
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
+  const [hasLength, setHasLength] = useState(false);
+  const [hasUpper, setHasUpper] = useState(false);
+  const [hasSpecial, setHasSpecial] = useState(false);
+
+  useEffect(() => {
+    setHasLength(password.length >= 8);
+    setHasUpper(/[A-Z]/.test(password));
+    setHasSpecial(/[!@#$%^&*(),.?":{}|<>]/.test(password));
+  }, [password]);
+
+  const isValid = hasLength && hasUpper && hasSpecial && password === confirmPassword;
+
   // Entrance animation
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(24);
@@ -42,16 +54,8 @@ export default function PasswordScreen() {
   }));
 
   const handleSetPassword = async () => {
-    if (!password || !confirmPassword) {
-      Alert.alert('Missing fields', 'Please enter and confirm your password.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      Alert.alert('Password mismatch', 'Passwords do not match.');
-      return;
-    }
-    if (password.length < 6) {
-      Alert.alert('Weak password', 'Password must be at least 6 characters.');
+    if (!isValid) {
+      Alert.alert('Invalid Password', 'Please ensure all password requirements are met and passwords match.');
       return;
     }
 
@@ -94,7 +98,7 @@ export default function PasswordScreen() {
             <Lock size={18} color={focusedField === 'password' ? T.colors.forge : T.colors.t3} />
             <TextInput
               style={s.input}
-              placeholder="Password (min. 6 characters)"
+              placeholder="Password"
               placeholderTextColor={T.colors.t3}
               value={password}
               onChangeText={setPassword}
@@ -103,6 +107,19 @@ export default function PasswordScreen() {
               onFocus={() => setFocusedField('password')}
               onBlur={() => setFocusedField(null)}
             />
+          </View>
+
+          {/* Validation Rules */}
+          <View style={s.validationContainer}>
+            <Text style={[s.ruleText, hasLength && s.ruleMet]}>
+              {hasLength ? '✓' : '•'} Minimum 8 characters
+            </Text>
+            <Text style={[s.ruleText, hasUpper && s.ruleMet]}>
+              {hasUpper ? '✓' : '•'} At least 1 uppercase letter
+            </Text>
+            <Text style={[s.ruleText, hasSpecial && s.ruleMet]}>
+              {hasSpecial ? '✓' : '•'} At least 1 special character
+            </Text>
           </View>
 
           {/* Confirm Password Input */}
@@ -124,9 +141,9 @@ export default function PasswordScreen() {
 
           {/* CTA */}
           <TouchableOpacity
-            style={[s.btn, loading && { opacity: 0.7 }]}
+            style={[s.btn, (!isValid || loading) && { opacity: 0.5 }]}
             onPress={handleSetPassword}
-            disabled={loading}
+            disabled={!isValid || loading}
             activeOpacity={0.85}
           >
             {loading
@@ -167,6 +184,11 @@ const useS = (T: any) => StyleSheet.create({
     backgroundColor: T.colors.bg1,
   },
   input: { flex: 1, color: T.colors.t1, fontSize: 15 },
+
+  // Validation
+  validationContainer: { width: '100%', marginBottom: 12, paddingHorizontal: 4 },
+  ruleText: { fontSize: 13, color: T.colors.t3, marginBottom: 4 },
+  ruleMet: { color: T.colors.success || '#4ade80' },
 
   // Button
   btn: {
