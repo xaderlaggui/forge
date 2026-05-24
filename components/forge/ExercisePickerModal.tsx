@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, TextInput, FlatList, ActivityIndicator } from 'react-native';
 import { Search, X, ChevronLeft } from 'lucide-react-native';
-import { useExercises } from '../../hooks/useExercises';
+import { useExercises } from '../../features/workout/hooks/useExercises';
 import type { Exercise } from '../../types';
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 
