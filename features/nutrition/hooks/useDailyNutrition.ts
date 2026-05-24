@@ -20,6 +20,7 @@ export function useDailyNutrition() {
         .from('generated_meal_plan_weekly')
         .select('plan')
         .eq('user_id', user.uid)
+        .eq('status', 'active')
         .order('date', { ascending: false })
         .limit(1)
         .maybeSingle();
