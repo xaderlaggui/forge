@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { Camera } from 'lucide-react-native';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { AiCoachCard } from '../../components/forge/AiCoachCard';
+import { AiCoachCard } from '../../features/ai/components/AiCoachCard';
 import { FadeTabWrapper } from '../../components/common/FadeTabWrapper';
 
 // Dashboard Feature Modules
