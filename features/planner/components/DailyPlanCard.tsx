@@ -7,7 +7,7 @@ import Body from 'react-native-body-highlighter';
 import { BearMascot } from '../../../components/forge/BearMascot';
 import { ForgeButton } from '../../../components/forge/ForgeButton';
 import { ForgeSkeleton } from '../../../components/forge/ForgeSkeleton';
-import { useExercises } from '../../../hooks/useExercises';
+import { useExercises } from '../../../features/workout/hooks/useExercises';
 import { classifyWorkoutFromExercises } from '../../../utils/workoutClassifier';
 import { mapMusclesToSlugs } from './ExerciseLibrary';
 
