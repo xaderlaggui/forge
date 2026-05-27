@@ -4,7 +4,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../../../services/supabase';
 import { useAuthStore } from '../../../stores/authStore';
-import { useWorkouts } from '../../../hooks/useWorkouts';
+import { useWorkouts } from '../../../features/workout/hooks/useWorkouts';
 import { WeightEntry, MeasurementEntry } from '../types';
 import dayjs from 'dayjs';
 
