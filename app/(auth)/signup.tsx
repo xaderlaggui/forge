@@ -1,12 +1,12 @@
 import { useForgeTheme } from "@/hooks/useForgeTheme";
 import { useRouter } from 'expo-router';
 import { Lock, Mail, User } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ActivityIndicator, Alert,
-  KeyboardAvoidingView, Platform,
+  Keyboard, KeyboardAvoidingView, Platform,
   StyleSheet,
-  Text, TextInput, TouchableOpacity,
+  Text, TextInput, TouchableOpacity, TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import Animated, {
@@ -116,10 +116,19 @@ export default function SignupScreen() {
   // Entrance animation
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(24);
-  React.useEffect(() => {
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
     opacity.value = withDelay(100, withTiming(1, { duration: 600, easing: Easing.out(Easing.exp) }));
     translateY.value = withDelay(100, withTiming(0, { duration: 600, easing: Easing.out(Easing.exp) }));
+
+    const kbs = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
+    const kbw = Keyboard.addListener('keyboardWillShow', () => setKeyboardVisible(true));
+    const kbh = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+    const kbwh = Keyboard.addListener('keyboardWillHide', () => setKeyboardVisible(false));
+    return () => { kbs.remove(); kbw.remove(); kbh.remove(); kbwh.remove(); };
   }, []);
+
   const animStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
     transform: [{ translateY: translateY.value }],
@@ -168,7 +177,8 @@ export default function SignupScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={s.container}
     >
-      <View style={s.innerWrapper}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={s.innerWrapper}>
         <Animated.View style={[s.inner, animStyle]}>
 
           {/* Back to login */}
@@ -176,18 +186,24 @@ export default function SignupScreen() {
             <Text style={s.backText}>← Back to Login</Text>
           </TouchableOpacity>
 
-          <MascotImage
-            mascot="welcome"
-            width={150}
-            height={150}
-            animation="slideUp"
-            accessibilityLabel="Forge the bear welcoming you to FORGE"
-            style={{ alignSelf: 'center', marginBottom: 8 }}
-          />
-          {/* Brand */}
-          <Text style={s.wordmark}>FORGE</Text>
-          <Text style={s.title}>Create your account</Text>
-          <Text style={s.subtitle}>Start building your best self today.</Text>
+          {!isKeyboardVisible && (
+            <MascotImage
+              mascot="welcome"
+              width={150}
+              height={150}
+              animation="slideUp"
+              accessibilityLabel="Forge the bear welcoming you to FORGE"
+              style={{ alignSelf: 'center', marginBottom: 8 }}
+            />
+          )}
+
+          {!isKeyboardVisible && (
+            <>
+              <Text style={s.wordmark}>FORGE</Text>
+              <Text style={s.title}>Create your account</Text>
+              <Text style={s.subtitle}>Start building your best self today.</Text>
+            </>
+          )}
 
           {/* Fields */}
           <InputField
@@ -278,24 +294,28 @@ export default function SignupScreen() {
             }
           </TouchableOpacity>
 
-          {/* Terms */}
-          <Text style={s.terms}>
-            By signing up, you agree to our{' '}
-            <Text style={{ color: T.colors.forge }}>Terms of Service</Text>
-            {' '}and{' '}
-            <Text style={{ color: T.colors.forge }}>Privacy Policy</Text>.
-          </Text>
+          {/* Terms + Footer — hidden when keyboard is up */}
+          {!isKeyboardVisible && (
+            <>
+              <Text style={s.terms}>
+                By signing up, you agree to our{' '}
+                <Text style={{ color: T.colors.forge }}>Terms of Service</Text>
+                {' '}and{' '}
+                <Text style={{ color: T.colors.forge }}>Privacy Policy</Text>.
+              </Text>
 
-          {/* Footer */}
-          <View style={s.footer}>
-            <Text style={s.footerText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Text style={s.footerLink}>Log in</Text>
-            </TouchableOpacity>
-          </View>
+              <View style={s.footer}>
+                <Text style={s.footerText}>Already have an account? </Text>
+                <TouchableOpacity onPress={() => router.back()}>
+                  <Text style={s.footerLink}>Log in</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
 
         </Animated.View>
-      </View>
+        </View>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }
