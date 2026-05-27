@@ -1,9 +1,9 @@
 import dayjs from 'dayjs';
-import { useAiCoach } from '../../../hooks/useAiCoach';
-import { useNutrition } from '../../../hooks/useNutrition';
-import { useStreak } from '../../../hooks/useStreak';
-import { useWorkouts } from '../../../hooks/useWorkouts';
-import { useAllNutritionLogs } from '../../../hooks/useAllNutritionLogs';
+import { useAiCoach } from '../../../features/ai/hooks/useAiCoach';
+import { useNutrition } from '../../../features/nutrition/hooks/useNutrition';
+import { useStreak } from '../../../features/dashboard/hooks/useStreak';
+import { useWorkouts } from '../../../features/workout/hooks/useWorkouts';
+import { useAllNutritionLogs } from '../../../features/nutrition/hooks/useAllNutritionLogs';
 import { useAuthStore } from '../../../stores/authStore';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../../services/supabase';
