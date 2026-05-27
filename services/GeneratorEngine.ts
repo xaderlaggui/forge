@@ -7,16 +7,16 @@
  *  3. Firestore   → persist the generated plan to the user's document
  */
 
-import { supabase } from './supabase';
-import { groqComplete } from './groq';
 import dayjs from 'dayjs';
 import { generateExercisesPrompt, generateMealPlanPrompt } from '../constants/prompts';
+import { groqComplete } from './groq';
+import { supabase } from './supabase';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export type FitnessGoal      = 'cut' | 'maintain' | 'bulk';
-export type DietPreference   = 'anything' | 'vegan' | 'keto';
-export type EquipmentAccess  = 'full' | 'dumbbells' | 'bodyweight';
+export type FitnessGoal = 'cut' | 'maintain' | 'bulk';
+export type DietPreference = 'anything' | 'vegan' | 'keto';
+export type EquipmentAccess = 'full' | 'dumbbells' | 'bodyweight';
 
 export interface UserMetrics {
   uid: string;
@@ -81,18 +81,18 @@ function calculateTargetMacros(metrics: UserMetrics) {
 
   let targetCalories: number;
   switch (metrics.fitnessGoal) {
-    case 'cut':      targetCalories = Math.round(tdee * 0.82); break; // ~18% deficit
-    case 'bulk':     targetCalories = Math.round(tdee * 1.12); break; // ~12% surplus
-    default:         targetCalories = tdee;
+    case 'cut': targetCalories = Math.round(tdee * 0.82); break; // ~18% deficit
+    case 'bulk': targetCalories = Math.round(tdee * 1.12); break; // ~12% surplus
+    default: targetCalories = tdee;
   }
 
   // Protein: 2g/kg (high protein across all goals)
   const targetProtein = Math.round(metrics.weightKg * 2);
-  const proteinCal    = targetProtein * 4;
+  const proteinCal = targetProtein * 4;
 
   // Fat: 25% of total calories
-  const targetFat  = Math.round((targetCalories * 0.25) / 9);
-  const fatCal     = targetFat * 9;
+  const targetFat = Math.round((targetCalories * 0.25) / 9);
+  const fatCal = targetFat * 9;
 
   // Carbs: fill remainder
   const targetCarbs = Math.round((targetCalories - proteinCal - fatCal) / 4);
@@ -106,23 +106,23 @@ function getWorkoutSplit(goal: FitnessGoal): { day: string; focus: string; muscl
   // PPL (Push/Pull/Legs) is best for bulk/maintain; high-freq full-body for cut
   if (goal === 'cut') {
     return [
-      { day: 'Monday',    focus: 'Full Body A',            muscleGroups: ['chest', 'back', 'quads', 'shoulders'] },
-      { day: 'Wednesday', focus: 'Full Body B',            muscleGroups: ['hamstrings', 'biceps', 'triceps', 'core'] },
-      { day: 'Friday',    focus: 'Full Body C (Cardio-Strength)', muscleGroups: ['chest', 'back', 'legs', 'cardio'] },
-      { day: 'Tuesday',   focus: 'Rest / Light Cardio',   muscleGroups: [] },
-      { day: 'Thursday',  focus: 'Rest / Light Cardio',   muscleGroups: [] },
-      { day: 'Saturday',  focus: 'Active Recovery',        muscleGroups: [] },
-      { day: 'Sunday',    focus: 'Rest',                   muscleGroups: [] },
+      { day: 'Monday', focus: 'Full Body A', muscleGroups: ['chest', 'back', 'quads', 'shoulders'] },
+      { day: 'Wednesday', focus: 'Full Body B', muscleGroups: ['hamstrings', 'biceps', 'triceps', 'core'] },
+      { day: 'Friday', focus: 'Full Body C (Cardio-Strength)', muscleGroups: ['chest', 'back', 'legs', 'cardio'] },
+      { day: 'Tuesday', focus: 'Rest / Light Cardio', muscleGroups: [] },
+      { day: 'Thursday', focus: 'Rest / Light Cardio', muscleGroups: [] },
+      { day: 'Saturday', focus: 'Active Recovery', muscleGroups: [] },
+      { day: 'Sunday', focus: 'Rest', muscleGroups: [] },
     ];
   }
   return [
-    { day: 'Monday',    focus: 'Push (Chest / Shoulders / Triceps)', muscleGroups: ['chest', 'shoulders', 'triceps'] },
-    { day: 'Tuesday',   focus: 'Pull (Back / Biceps)',               muscleGroups: ['back', 'biceps', 'rear delts'] },
+    { day: 'Monday', focus: 'Push (Chest / Shoulders / Triceps)', muscleGroups: ['chest', 'shoulders', 'triceps'] },
+    { day: 'Tuesday', focus: 'Pull (Back / Biceps)', muscleGroups: ['back', 'biceps', 'rear delts'] },
     { day: 'Wednesday', focus: 'Legs (Quads / Hamstrings / Glutes)', muscleGroups: ['quads', 'hamstrings', 'glutes', 'calves'] },
-    { day: 'Thursday',  focus: 'Push (Strength Focus)',              muscleGroups: ['chest', 'shoulders', 'triceps'] },
-    { day: 'Friday',    focus: 'Pull (Hypertrophy Focus)',           muscleGroups: ['back', 'biceps'] },
-    { day: 'Saturday',  focus: 'Legs + Core',                        muscleGroups: ['quads', 'hamstrings', 'glutes', 'core'] },
-    { day: 'Sunday',    focus: 'Rest',                               muscleGroups: [] },
+    { day: 'Thursday', focus: 'Push (Strength Focus)', muscleGroups: ['chest', 'shoulders', 'triceps'] },
+    { day: 'Friday', focus: 'Pull (Hypertrophy Focus)', muscleGroups: ['back', 'biceps'] },
+    { day: 'Saturday', focus: 'Legs + Core', muscleGroups: ['quads', 'hamstrings', 'glutes', 'core'] },
+    { day: 'Sunday', focus: 'Rest', muscleGroups: [] },
   ];
 }
 
@@ -138,8 +138,8 @@ async function generateExercisesForDay(
   if (muscleGroups.length === 0) return []; // rest day
 
   const equipmentDesc = {
-    full:       'a full commercial gym (barbells, dumbbells, cables, machines)',
-    dumbbells:  'only dumbbells and a flat bench',
+    full: 'a full commercial gym (barbells, dumbbells, cables, machines)',
+    dumbbells: 'only dumbbells and a flat bench',
     bodyweight: 'no equipment, bodyweight only',
   }[equipment];
 
@@ -185,14 +185,14 @@ async function generateMealPlan(
 ): Promise<GeneratedMealPlan & { coachMessage: string }> {
   const dietDesc = {
     anything: 'no dietary restrictions — include meat, fish, eggs, dairy',
-    vegan:    'strictly vegan — no meat, fish, eggs, or dairy',
-    keto:     'ketogenic — very low carb, high fat, moderate protein',
+    vegan: 'strictly vegan — no meat, fish, eggs, or dairy',
+    keto: 'ketogenic — very low carb, high fat, moderate protein',
   }[diet];
 
   const goalDesc = {
-    cut:      'cutting (fat loss) — high satiety, low calorie density foods',
+    cut: 'cutting (fat loss) — high satiety, low calorie density foods',
     maintain: 'maintenance — balanced, sustainable everyday meals',
-    bulk:     'bulking (muscle gain) — calorie-dense, easy to eat in volume',
+    bulk: 'bulking (muscle gain) — calorie-dense, easy to eat in volume',
   }[goal];
 
   const prompt = generateMealPlanPrompt(
@@ -212,12 +212,12 @@ async function generateMealPlan(
   let parsed: any = {};
   try {
     parsed = JSON.parse(content);
-  } catch(e) {
+  } catch (e) {
     console.error("Failed to parse JSON", e);
   }
 
   let days: GeneratedMealDay[] = [];
-  
+
   if (Array.isArray(parsed.days) && parsed.days.length > 0) {
     days = parsed.days;
   } else if (Array.isArray(parsed.weeklyPlan) && parsed.weeklyPlan.length > 0) {
@@ -266,7 +266,7 @@ async function generateMealPlan(
  */
 export async function generateFullPlan(metrics: UserMetrics): Promise<GeneratedPlan> {
   const macros = calculateTargetMacros(metrics);
-  const split   = getWorkoutSplit(metrics.fitnessGoal);
+  const split = getWorkoutSplit(metrics.fitnessGoal);
 
   // Generate all workout days in parallel for speed
   const workoutWeek: GeneratedWorkoutDay[] = await Promise.all(
@@ -283,7 +283,7 @@ export async function generateFullPlan(metrics: UserMetrics): Promise<GeneratedP
   );
 
   const mealPlanResult = await generateMealPlan(macros, metrics.dietPreference, metrics.fitnessGoal, metrics, split);
-  
+
   const { coachMessage, ...mealPlan } = mealPlanResult;
 
   const plan: GeneratedPlan = {
@@ -295,7 +295,7 @@ export async function generateFullPlan(metrics: UserMetrics): Promise<GeneratedP
 
   // Persist to Supabase
   const dateKey = dayjs().format('YYYY-MM-DD');
-  
+
   // Save workout
   await supabase.from('generated_workout_plan_weekly').upsert({
     user_id: metrics.uid,

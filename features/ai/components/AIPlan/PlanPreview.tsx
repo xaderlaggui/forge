@@ -1,6 +1,6 @@
+import { Check, ChevronLeft } from 'lucide-react-native';
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { ChevronLeft, Check } from 'lucide-react-native';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { WeeklyCalendar } from '../../../../features/planner/components/WeeklyCalendar';
 import { GeneratedPlan } from '../../../../services/GeneratorEngine';
 import { CoachMessageCard } from './CoachMessageCard';
@@ -82,19 +82,20 @@ export function PlanPreview({ plan, onApply, onSaveDraft, isApplying, isSavingDr
       </View>
 
       {isWeekly && (
-        <View style={{ paddingHorizontal: 16, paddingTop: 16, backgroundColor: T.colors.bg0, borderBottomWidth: 0.5, borderBottomColor: T.colors.b1, paddingBottom: 12 }}>
+        <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
           <WeeklyCalendar
             days={weekDays}
             activeDayIdx={selectedDayIdx}
             onSelectDay={setSelectedDayIdx}
           />
+          <Text style={{ fontSize: 14, color: T.colors.t2, marginBottom: 10, fontWeight: '600' }}>
+            Targets: {plan.mealPlan.targetCalories} kcal • {plan.mealPlan.targetProtein}g P • {plan.mealPlan.targetCarbs}g C • {plan.mealPlan.targetFat}g F
+          </Text>
         </View>
+
       )}
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
-        <Text style={{ fontSize: 14, color: T.colors.t2, marginBottom: 8, fontWeight: '600' }}>
-          Targets: {plan.mealPlan.targetCalories} kcal • {plan.mealPlan.targetProtein}g P • {plan.mealPlan.targetCarbs}g C • {plan.mealPlan.targetFat}g F
-        </Text>
+      <ScrollView contentContainerStyle={{ padding: 16, }} showsVerticalScrollIndicator={false}>
 
         {(currentDay?.meals || []).map((meal: any, i: number) => (
           <View

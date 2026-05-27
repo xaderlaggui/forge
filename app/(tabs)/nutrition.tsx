@@ -64,6 +64,7 @@ export default function NutritionScreen() {
 
       {/* ── Composition: Meals ── */}
       <NutritionCoachBubble 
+        aggregates={aggregates}
         activePlanExists={!!activePlan}
         onGeneratePress={() => router.push(activePlan ? '/weeklyMealPlan' : '/aiPlan')} 
       />

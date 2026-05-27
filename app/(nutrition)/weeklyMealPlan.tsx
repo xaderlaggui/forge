@@ -1,7 +1,7 @@
 import { useForgeTheme } from '@/hooks/useForgeTheme';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Flame, RefreshCw, Sunrise, Sun, Moon, Apple } from 'lucide-react-native';
+import { Apple, ChevronLeft, Flame, Moon, RefreshCw, Sun, Sunrise } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GeneratedPlan } from '../../services/GeneratorEngine';
@@ -123,9 +123,9 @@ export default function WeeklyMealPlanScreen() {
             <View key={i} style={s.mealCard}>
               <View style={s.mealIconWrap}>
                 {i === 0 ? <Sunrise size={20} color={T.colors.forge} /> :
-                 i === 1 ? <Sun size={20} color={T.colors.forge} /> :
-                 i === 2 ? <Moon size={20} color={T.colors.forge} /> :
-                 <Apple size={20} color={T.colors.forge} />}
+                  i === 1 ? <Sun size={20} color={T.colors.forge} /> :
+                    i === 2 ? <Moon size={20} color={T.colors.forge} /> :
+                      <Apple size={20} color={T.colors.forge} />}
               </View>
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>

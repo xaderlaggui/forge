@@ -1,30 +1,21 @@
 import { useForgeTheme } from '@/hooks/useForgeTheme';
 import { Sparkles } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { MascotImage } from '../../../components/common/MascotImage';
-
-const TIPS = [
-  "To optimize your metabolism, make sure you're drinking at least 2 liters of water a day.",
-  "Eating a protein-rich breakfast can reduce cravings later in the day.",
-  "Don't fear healthy fats! Avocados and nuts are great for hormone balance.",
-  "Try to eat a rainbow of vegetables to ensure you're getting a variety of micronutrients.",
-  "If your goal is to build muscle, ensure you're eating in a slight caloric surplus.",
-  "Meal prepping on weekends can save you hours during busy weekdays.",
-  "Carbs are fuel! Focus on complex carbs like sweet potatoes and oats for sustained energy."
-];
+import { useNutritionCoachTip } from '../hooks/useNutritionCoachTip';
 
 interface Props {
   onGeneratePress: () => void;
   activePlanExists?: boolean;
+  aggregates?: any;
 }
 
-export function NutritionCoachBubble({ onGeneratePress, activePlanExists }: Props) {
+export function NutritionCoachBubble({ onGeneratePress, activePlanExists, aggregates }: Props) {
   const { T } = useForgeTheme();
   const s = useStyles(T);
 
-  // Pick a random tip once
-  const [tip] = useState(() => TIPS[Math.floor(Math.random() * TIPS.length)]);
+  const { tip, isLoading } = useNutritionCoachTip(aggregates);
   const [displayedText, setDisplayedText] = useState('');
 
   // Typewriter effect
@@ -56,7 +47,13 @@ export function NutritionCoachBubble({ onGeneratePress, activePlanExists }: Prop
             <Sparkles size={14} color={T.colors.forge} />
             <Text style={s.headerText}>AI COACH TIP</Text>
           </View>
-          <Text style={s.bodyText}>{displayedText}</Text>
+          {isLoading ? (
+            <View style={{ minHeight: 54, justifyContent: 'center' }}>
+              <ActivityIndicator size="small" color={T.colors.forge} />
+            </View>
+          ) : (
+            <Text style={s.bodyText}>{displayedText}</Text>
+          )}
 
           <TouchableOpacity style={s.button} onPress={onGeneratePress} activeOpacity={0.7}>
             <Text style={s.buttonText}>
