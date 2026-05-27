@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import dayjs from 'dayjs';
-import { useWorkouts } from '../../../hooks/useWorkouts';
+import { useWorkouts } from '../../../features/workout/hooks/useWorkouts';
 import { useRoutines } from '../../../hooks/useRoutines';
 import { ExerciseState, NumpadTarget } from '../types';
 
